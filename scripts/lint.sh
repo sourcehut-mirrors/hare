@@ -2,7 +2,7 @@
 
 # XXX: technically doesn't work with paths that have newlines in them, but
 # find -exec doesn't propagate the exit status
-find . -name '*.ha' | while read -r f; do
+find . -name '*.ha' -and -not -name '*_gen.ha' | while read -r f; do
 	awk 'BEGIN { state = "start" }
 		/[ \t]$/ {
 			print "trailing whitespace in " FILENAME

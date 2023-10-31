@@ -45,7 +45,7 @@ $(HARECACHE)/ascii.ssa: $(ascii_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/s
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $(HARECACHE)/ascii.ssa -t $(HARECACHE)/ascii.td.tmp -N ascii $(ascii_ha)
 
-errors_ha = errors/common.ha errors/opaque.ha errors/rt.ha errors/string.ha
+errors_ha = errors/common.ha errors/opaque.ha errors/rt+linux.ha errors/string.ha
 $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/rt.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
