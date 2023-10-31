@@ -946,6 +946,33 @@ export type at = enum u64 {
 
 	// Stack needed for signal delivery (AArch64).
 	MINSIGSTKSZ = 51,
+
+	// Helios-specific values:
+
+	// IPC buffer address
+	IPCBUF = (1 << 16) + 0,
+	// TLS master base address
+	TLS_BASE,
+	// TLS master size
+	TLS_SIZE,
+
+	// Capability for our own cspace
+	CAP_CSPACE,
+	// Capability for our own vspace
+	CAP_VSPACE,
+	// Capability for our own task
+	CAP_TASK,
+	// Memory capability
+	CAP_MEMORY,
+	// Capability for an endpoint
+	CAP_ENDPOINT,
+	// Indicates the interface implemented by the capability that follows
+	CAP_IFACE,
+	// Capability for driver readiness notifications
+	CAP_READY,
+
+	// I/O pool details
+	IO_POOL,
 };
 
 // Version definition section
