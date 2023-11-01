@@ -51,7 +51,7 @@ use format::ini;
 use format::tar;
 use fs;
 use getopt;
-//use glob;			// todo
+use glob;
 use hash;
 use hash::adler32;
 use hash::crc16;
@@ -66,11 +66,11 @@ use hare::parse;
 use hare::types;
 use hare::unit;
 use hare::unparse;
-//use log;			// time::chrono
+use log;
 use io;
 use math;
 use memio;
-//use mime;			// todo
+use mime;
 //use net;			// todo
 //use net::dial;		// todo
 //use net::dns;			// todo
@@ -92,8 +92,8 @@ use strings;
 use strings::template;
 //use temp;			// todo
 use time;
-//use time::chrono;		// todo
-//use time::date;		// todo
+use time::chrono;
+use time::date;
 use types;
 //use uuid;			// crypto::random
 
