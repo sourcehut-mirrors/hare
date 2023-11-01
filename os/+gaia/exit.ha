@@ -8,7 +8,6 @@ use rt::sys;
 export fn exit(status: int) never = {
 	rt::fini();
 	assert(rt::self != ~0);
-	// TODO: Make use of the exit status
-	sys::process_kill(rt::self);
+	sys::process_exit(rt::self, status: uint);
 	abort("unreachable");
 };

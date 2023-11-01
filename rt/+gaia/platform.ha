@@ -3,8 +3,8 @@
 
 use rt::sys;
 
-fn exit(status: int) never = {
+fn exit(status: uint) never = {
 	assert(self != ~0);
-	sys::process_kill(self);
+	sys::process_exit(self, status);
 	abort(); // Unreachable
 };

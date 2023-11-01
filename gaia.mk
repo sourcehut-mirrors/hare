@@ -88,6 +88,4 @@ rt/sys/pipe_gen.ha: \
 protos: rt/sys/pipe_gen.ha
 
 clean-protos:
-	rm -rf rt/io
-	rm -rf rt/meta
-	rm -rf rt/sys
+	rm -rf rt/io rt/meta rt/sys rt/dev rt/errors

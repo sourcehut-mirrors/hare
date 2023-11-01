@@ -44,8 +44,8 @@ export fn recv(cap: cap) (u64, u64) = {
 };
 
 // Signals a notification capability.
-export fn signal(note: cap) (void | syserror) = {
-	check(syscall1(SYS_signal, note: u64))?;
+export fn signal(note: cap, word: uint) (void | syserror) = {
+	check(syscall2(SYS_signal, note: u64, word: u64))?;
 };
 
 // Waits on a notification capability.

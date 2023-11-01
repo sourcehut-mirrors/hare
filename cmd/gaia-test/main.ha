@@ -97,6 +97,5 @@ use time;
 use types;
 //use uuid;			// crypto::random
 
-export fn main() void = {
-	test::main();
-};
+// Not used; entry point is __test_main with +test
+export fn main() void = void;
