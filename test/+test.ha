@@ -12,8 +12,6 @@ use os;
 use rt;
 use strings;
 use time;
-use unix::signal;
-use unix::tty;
 
 type test = struct {
 	name: str,
@@ -43,8 +41,6 @@ type context = struct {
 	output: []output,
 	maxname: size,
 	total_time: time::duration,
-	default_round: uint,
-	cwd: str,
 };
 
 fn finish_context(ctx: *context) void = {
@@ -55,12 +51,10 @@ fn finish_context(ctx: *context) void = {
 		finish_output(&ctx.output[i]);
 	};
 	free(ctx.output);
-	free(ctx.cwd);
 };
 
 fn colored() bool = {
-	return len(os::tryenv("NO_COLOR", "")) == 0
-		&& unix::tty::isatty(os::stdout_file);
+	return false;
 };
 
 let jmpbuf = rt::jmpbuf { ... };
@@ -96,8 +90,6 @@ export @symbol("__test_main") fn main() size = {
 		stdout = memio::dynamic(),
 		stderr = memio::dynamic(),
 		maxname = maxname,
-		default_round = rt::fegetround(),
-		cwd = strings::dup(os::getcwd()),
 		...
 	};
 	defer finish_context(&ctx);
@@ -167,14 +159,10 @@ export @symbol("__test_main") fn main() size = {
 };
 
 fn reset(ctx: *context) void = {
-	rt::fesetround(ctx.default_round);
-	rt::feclearexcept(~0u);
-	signal::resetall();
-	os::chdir(ctx.cwd)!;
+	void; // TODO
 };
 
 fn do_test(ctx: *context, test: test) void = {
-	signal::handle(signal::sig::SEGV, &handle_segv, signal::flag::NODEFER);
 	memio::reset(&ctx.stdout);
 	memio::reset(&ctx.stderr);
 
@@ -304,12 +292,4 @@ fn dots(n: size) void = {
 	for (let i = 0z; i < n; i += 1) {
 		fmt::print(".")!;
 	};
-};
-
-fn handle_segv(
-	sig: signal::sig,
-	info: *signal::siginfo,
-	ucontext: *opaque,
-) void = {
-	rt::longjmp(&jmpbuf, 2);
 };

@@ -2,6 +2,12 @@ IPCGEN=ipcgen
 PROTOS=/usr/share/mercury/proto
 IPCFLAGS=-Nrt:: -Rrt::ipc
 
+$(BINOUT)/gaia-test: protos
+	HARECFLAGS="-T" $(BINOUT)/hare build \
+		   -T^+x86_64+gaia+test -o $@ \
+		   cmd/gaia-test/
+.PHONY: $(BINOUT)/gaia-test
+
 $(HARECACHE)/rt/rt-gaia.ssa: protos
 .PHONY: protos
 
