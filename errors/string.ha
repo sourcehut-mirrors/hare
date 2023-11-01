@@ -38,6 +38,8 @@ case interrupted =>
 	yield "Operation interrupted";
 case again =>
 	yield "Try again";
+case rofs =>
+	yield "Read-only filesystem";
 case let op: opaque_ =>
 	yield op.strerror(&op.data);
 };
