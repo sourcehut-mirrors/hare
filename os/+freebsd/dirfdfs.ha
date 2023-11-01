@@ -11,6 +11,12 @@ use strings;
 use time;
 use types::c;
 
+// Opens a directory as a filesystem.
+export fn diropen(path: str) (*fs::fs | fs::error) = {
+	const file = open(path, fs::flag::DIRECTORY | fs::flag::RDONLY)?;
+	return dirfdopen(file);
+};
+
 type os_filesystem = struct {
 	fs: fs::fs,
 	dirfd: int,

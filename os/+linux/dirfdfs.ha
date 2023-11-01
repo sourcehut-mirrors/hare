@@ -11,6 +11,12 @@ use strings;
 use time;
 use types::c;
 
+// Opens a directory as a filesystem.
+export fn diropen(path: str) (*fs::fs | fs::error) = {
+	const file = open(path, fs::flag::DIRECTORY | fs::flag::RDONLY)?;
+	return dirfdopen(file);
+};
+
 // Controls how symlinks are followed (or not) in a dirfd filesystem. Support
 // for this feature varies, you should gate usage of this enum behind a build
 // tag.
