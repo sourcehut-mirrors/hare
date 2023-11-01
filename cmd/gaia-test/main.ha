@@ -80,7 +80,7 @@ use net::ip;
 //use net::unix;		// todo
 use net::uri;
 use os;
-//use os::exec;			// todo
+use os::exec;
 use path;
 use regex;
 use rt;
