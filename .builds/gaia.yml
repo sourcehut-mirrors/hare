@@ -1,0 +1,51 @@
+image: alpine/latest
+packages:
+- binutils
+- qemu
+- qemu-system-x86_64
+- scdoc
+- syslinux
+- xorriso
+sources:
+- git://c9x.me/qbe.git
+- https://git.sr.ht/~sircmpwn/harec
+- https://git.sr.ht/~sircmpwn/hare
+- https://git.sr.ht/~sircmpwn/ipcgen
+- https://git.sr.ht/~sircmpwn/helios
+- https://git.sr.ht/~sircmpwn/mercury
+- https://git.sr.ht/~sircmpwn/hare-gaia
+tasks:
+- qbe: |
+    cd qbe
+    make -j2 PREFIX=/usr
+    sudo make install PREFIX=/usr
+- harec: |
+    mkdir harec/build
+    cd harec/build
+    ../configure --prefix=/usr
+    make -j2
+    sudo make install
+- hare: |
+    cd hare
+    cp config.example.mk config.mk
+    make -j2
+    sudo make install
+- ipcgen: |
+    cd ipcgen
+    make -j2
+    sudo cp ipcgen /usr/local/bin/
+- helios: |
+    cd ~/helios
+    cp config.def.mk config.mk
+- mercury: |
+    cd mercury
+    cp config.def.mk config.mk
+    make
+    sudo make install PREFIX=/usr
+- protos: |
+    cd hare
+    make protos
+- gaia: |
+    cd ~/hare-gaia
+    cp config.def.mk config.mk
+    make check
