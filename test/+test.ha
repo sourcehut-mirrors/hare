@@ -40,6 +40,7 @@ type context = struct {
 	failures: []failure,
 	output: []output,
 	maxname: size,
+	default_round: uint,
 	total_time: time::duration,
 };
 
@@ -90,6 +91,7 @@ export @symbol("__test_main") fn main() size = {
 		stdout = memio::dynamic(),
 		stderr = memio::dynamic(),
 		maxname = maxname,
+		default_round = rt::fegetround(),
 		...
 	};
 	defer finish_context(&ctx);
@@ -159,7 +161,8 @@ export @symbol("__test_main") fn main() size = {
 };
 
 fn reset(ctx: *context) void = {
-	void; // TODO
+	rt::fesetround(ctx.default_round);
+	rt::feclearexcept(~0u);
 };
 
 fn do_test(ctx: *context, test: test) void = {
