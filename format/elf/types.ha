@@ -973,6 +973,9 @@ export type at = enum u64 {
 
 	// I/O pool details
 	IO_POOL,
+
+	// Initial working directory
+	INIT_CWD,
 };
 
 // Version definition section

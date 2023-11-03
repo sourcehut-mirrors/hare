@@ -5,6 +5,7 @@ use format::elf;
 use format::elf::{at};
 use rt::ipc;
 use rt::sys;
+use types::c;
 
 export fn start_gaia(iv: *[*]uintptr) never = {
 	argc = iv[0]: size;
@@ -38,6 +39,9 @@ export fn start_gaia(iv: *[*]uintptr) never = {
 			iopool_init(auxv[i].a_ptr: *iopool_aux);
 		case at::CLKTCK =>
 			clktck = auxv[i].a_val;
+		case elf::at::INIT_CWD =>
+			const cstr = auxv[i].a_ptr: *const c::char;
+			init_cwd = c::tostr(cstr)!;
 		case =>
 			yield;
 		};

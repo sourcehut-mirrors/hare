@@ -177,5 +177,13 @@ fn prepare_iv(cmd: *command) (rt::cap, uintptr) = {
 		offs += len(arg);
 	};
 
+	const dir = if (len(cmd.dir) != 0) cmd.dir else os::getcwd();
+	let lcwd = &vec[offs]: *size;
+	*lcwd = len(dir);
+	offs += size(size);
+	let dirbuf = vec[offs..offs+len(dir)];
+	dirbuf[..] = strings::toutf8(dir);
+	offs += len(dir);
+
 	return (page, &vec[0]: uintptr);
 };

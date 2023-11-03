@@ -24,6 +24,39 @@ export fn init_cwd() void = {
 	init_cwd();
 };
 
+let _cwd: str = "";
+
+@init fn init_cwd() void = {
+	_cwd = rt::init_cwd;
+};
+
+// Returns the current working directory. The return value is statically
+// allocated and must be duplicated (see [[strings::dup]]) before calling getcwd
+// again.
+export fn getcwd() str = {
+	return _cwd;
+};
+
+// Change the current working directory.
+export fn chdir(target: (*fs::fs | str)) (void | fs::error) = {
+	const path = match (target) {
+	case *fs::fs =>
+		return errors::unsupported;
+	case let path: str =>
+		yield path;
+	};
+
+	if (_cwd != rt::init_cwd) {
+		free(_cwd);
+	};
+	let path = path::init(path)!;
+	if (!path::abs(&path)) {
+		path::popprefix(&path, ".")!;
+		path::prepend(&path, _cwd)!;
+	};
+	_cwd = strings::dup(path::string(&path));
+};
+
 // A directory entry in the IPC format.
 type ipc_dirent = struct {
 	mode: fs::mode,
@@ -79,13 +112,20 @@ export fn dirfile(fs: *fs::fs) io::file = {
 
 // Prepares an I/O pool buffer with the provided path.
 fn mkpath(path: str) (rt::cap, uintptr, size) = {
-	assert(len(path) <= rt::PAGESIZE); // TODO
+	let path = path::init(path)!;
+	if (!path::abs(&path)) {
+		path::popprefix(&path, ".")!;
+		path::prepend(&path, _cwd)!;
+	};
+
+	const path = path::string(&path);
 	const n = len(path);
 	const data = strings::toutf8(path);
 	const (page, base) = rt::pool_acquire();
 
-	let buf = (base: *[*]u8)[..n];
-	buf[..] = data[..];
+	assert(n <= rt::PAGESIZE);
+	let buf = (base: *[*]u8)[..len(data)];
+	buf[..] = data[..n];
 	return (page, base, n);
 };
 

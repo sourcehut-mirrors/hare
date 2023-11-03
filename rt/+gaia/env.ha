@@ -17,5 +17,8 @@ export let vspace: cap = ~0;
 // The current process.
 export let self: cap = ~0;
 
+// Initial current working directory.
+export let init_cwd: str = "/";
+
 // Clock tick rate via auxv.
 export let clktck: u64 = 0;
