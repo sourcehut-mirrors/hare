@@ -37,14 +37,13 @@ let args_static: [32]str = [""...];
 
 // Returns a slice of the environment strings in the form KEY=VALUE.
 export fn getenvs() []str = {
-	// NOTE: This is a shim for Gaia support. Environment variables are not
-	// supported by Gaia but are planned to be introduced later. The PATH
-	// variable is set as a temporary measure so that os::exec works
-	// properly.
 	if (len(envp) != 0) {
 		return envp;
 	};
-	append(envp, strings::dup("PATH=/bin:/sbin"));
+	for (let i = 0z; rt::envp[i] != null; i += 1) {
+		let s = c::tostr(rt::envp[i]: *const c::char)!;
+		append(envp, strings::dup(s));
+	};
 	return envp;
 };
 
