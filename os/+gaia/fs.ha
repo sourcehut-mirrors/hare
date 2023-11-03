@@ -322,7 +322,10 @@ fn fs_resolve(fs: *fs::fs, path: str) str = {
 	if (path::abs(path)) {
 		return path;
 	};
-	abort(); // TODO: Implement getcwd
+	// XXX: This approach might not be right if this fs is based on a subdir
+	static let buf = path::buffer { ... };
+	path::set(&buf, getcwd(), path)!;
+	return path::string(&buf);
 };
 
 fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
