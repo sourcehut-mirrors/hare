@@ -71,7 +71,7 @@ fn platform_finish(cmd: *command) void = io::close(cmd.platform)!;
 
 fn platform_exec(cmd: *command) error = {
 	assert(len(cmd.files) == 0); // TODO
-	const (page, base) = prepare_argv(cmd.argv);
+	const (page, base) = prepare_iv(cmd);
 	sys::process_load(rt::self, cmd.platform, [page], base);
 	abort(); // Unreachable
 };
@@ -82,7 +82,7 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 	let proc: rt::cap = 0;
 	sys::procmgr_new(procmgr, &proc);
 
-	const (page, base) = prepare_argv(cmd.argv);
+	const (page, base) = prepare_iv(cmd);
 	defer rt::pool_release(base);
 	sys::process_load(proc, cmd.platform, [page], base);
 
@@ -142,16 +142,32 @@ let pipeserv: rt::cap = ~0;
 	};
 };
 
-fn prepare_argv(args: []str) (rt::cap, uintptr) = {
+fn prepare_iv(cmd: *command) (rt::cap, uintptr) = {
 	const (page, base) = rt::pool_acquire();
 	let vec = base: *[*]u8;
 
-	let narg = &vec[0]: *size;
-	*narg = len(args);
+	let offs = 0z;
+	let nenv = &vec[offs]: *size;
+	*nenv = len(cmd.env);
+	offs += size(size);
 
-	let offs = size(size);
-	for (let i = 0z; i < len(args); i += 1) {
-		const arg = args[i];
+	for (let i = 0z; i < len(cmd.env); i += 1) {
+		const env = cmd.env[i];
+		let envln = &vec[offs]: *size;
+		*envln = len(env);
+		offs += size(size);
+
+		let envbuf = vec[offs..offs+len(env)];
+		envbuf[..] = strings::toutf8(env);
+		offs += len(env);
+	};
+
+	let narg = &vec[offs]: *size;
+	*narg = len(cmd.argv);
+	offs += size(size);
+
+	for (let i = 0z; i < len(cmd.argv); i += 1) {
+		const arg = cmd.argv[i];
 		let argln = &vec[offs]: *size;
 		*argln = len(arg);
 		offs += size(size);
