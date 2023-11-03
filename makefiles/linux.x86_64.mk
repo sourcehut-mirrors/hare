@@ -243,7 +243,7 @@ $(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/encoding_
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $(HARECACHE)/shlex.ssa -t $(HARECACHE)/shlex.td.tmp -N shlex $(shlex_ha)
 
-unix_tty_ha = unix/tty/+linux/isatty.ha unix/tty/+linux/open.ha unix/tty/+linux/pty.ha unix/tty/+linux/termios.ha unix/tty/+linux/winsize.ha unix/tty/pty_common.ha unix/tty/types.ha
+unix_tty_ha = unix/tty/+linux/isatty.ha unix/tty/+linux/open.ha unix/tty/+linux/pty.ha unix/tty/+linux/termios.ha unix/tty/+linux/winsize.ha unix/tty/types.ha
 $(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/bufio.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

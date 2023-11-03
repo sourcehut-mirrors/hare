@@ -18,6 +18,15 @@ rt/dev/clock_gen.ha: $(PROTOS)/dev/clock.ipc
 		client <$(PROTOS)/dev/clock.ipc >$@
 protos: rt/dev/clock_gen.ha
 
+rt/dev/console_gen.ha: $(PROTOS)/dev/console.ipc
+	@printf 'IPCGEN %s\n' "$@"
+	@mkdir -p "$$(dirname $@)"
+	@$(IPCGEN) $(IPCFLAGS) \
+		-I$(PROTOS)/io/file.ipc \
+		-I$(PROTOS)/meta/refcount.ipc \
+		client <$(PROTOS)/dev/console.ipc >$@
+protos: rt/dev/console_gen.ha
+
 rt/errors/errors_gen.ha: $(PROTOS)/errors/errors.ipc
 	@printf 'IPCGEN %s\n' "$@"
 	@mkdir -p "$$(dirname $@)"
