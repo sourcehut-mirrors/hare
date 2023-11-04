@@ -7,6 +7,7 @@ use format::elf::{at};
 use io;
 use os;
 use rt::sys;
+use rt::meta;
 use rt;
 use strings;
 use fmt;
@@ -60,8 +61,9 @@ export fn fork() (process | void | error) = {
 // 	exec::wait(&proc)!;
 export fn pipe() (io::file, io::file) = {
 	assert(pipeserv != ~0);
-	let rd: rt::cap = ~0, wr: rt::cap = ~0;
-	sys::pipeserv_pipe(pipeserv, &rd, &wr);
+	const pipe = sys::pipeserv_pipe(pipeserv, rt::self);
+	const rd = (pipe >> 32): rt::cap;
+	const wr = (pipe & 0xFFFFFFFF): rt::cap;
 	return (rd, wr);
 };
 
@@ -101,13 +103,13 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 		case closefd =>
 			continue;
 		};
-		sys::process_refat(proc, from, to);
+		meta::refstore_refat(proc, from, to);
 	};
 
 	// Install standard files
 	for (let i = 0u; i < 3; i += 1) {
 		if (stdfiles & (1 << i) != 0) {
-			sys::process_refat(proc, i, i);
+			meta::refstore_refat(proc, i, i);
 		};
 	};
 

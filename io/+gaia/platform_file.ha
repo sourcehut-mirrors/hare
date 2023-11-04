@@ -4,7 +4,7 @@
 use errors;
 use rt;
 use rt::io;
-use rt::sys;
+use rt::meta;
 
 // This is an opaque type which encloses an OS-level file handle resource. It
 // can be used as a [[handle]] in most situations, but there are some APIs which
@@ -57,7 +57,7 @@ fn fd_write(fd: file, buf: const []u8) (size | error) = {
 
 fn fd_close(fd: file) (void | error) = {
 	assert(rt::self != ~0);
-	sys::process_unref(rt::self, fd);
+	meta::refstore_unref(rt::self, fd);
 };
 
 fn fd_seek(

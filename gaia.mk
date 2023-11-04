@@ -63,6 +63,14 @@ rt/meta/refcount_gen.ha: $(PROTOS)/meta/refcount.ipc
 		client <$(PROTOS)/meta/refcount.ipc >$@
 protos: rt/meta/refcount_gen.ha
 
+rt/meta/refstore_gen.ha: $(PROTOS)/meta/refstore.ipc
+	@printf 'IPCGEN %s\n' "$@"
+	@mkdir -p "$$(dirname $@)"
+	@$(IPCGEN) $(IPCFLAGS) \
+		-I$(PROTOS)/meta/refcount.ipc \
+		client <$(PROTOS)/meta/refstore.ipc >$@
+protos: rt/meta/refstore_gen.ha
+
 rt/sys/mman_gen.ha: $(PROTOS)/sys/mman.ipc
 	@printf 'IPCGEN %s\n' "$@"
 	@mkdir -p "$$(dirname $@)"
@@ -74,25 +82,29 @@ rt/sys/proc_gen.ha: \
 		$(PROTOS)/sys/proc.ipc \
 		$(PROTOS)/sys/mman.ipc \
 		$(PROTOS)/io/file.ipc \
-		$(PROTOS)/meta/refcount.ipc
+		$(PROTOS)/meta/refcount.ipc \
+		$(PROTOS)/meta/refstore.ipc
 	@printf 'IPCGEN %s\n' "$@"
 	@mkdir -p "$$(dirname $@)"
 	@$(IPCGEN) $(IPCFLAGS) \
 		-I$(PROTOS)/sys/mman.ipc \
 		-I$(PROTOS)/io/file.ipc \
 		-I$(PROTOS)/meta/refcount.ipc \
+		-I$(PROTOS)/meta/refstore.ipc \
 		client <$(PROTOS)/sys/proc.ipc >$@
 protos: rt/sys/proc_gen.ha
 
 rt/sys/pipe_gen.ha: \
 		$(PROTOS)/sys/pipe.ipc \
 		$(PROTOS)/io/file.ipc \
-		$(PROTOS)/meta/refcount.ipc
+		$(PROTOS)/meta/refcount.ipc \
+		$(PROTOS)/meta/refstore.ipc
 	@printf 'IPCGEN %s\n' "$@"
 	@mkdir -p "$$(dirname $@)"
 	@$(IPCGEN) $(IPCFLAGS) \
 		-I$(PROTOS)/io/file.ipc \
 		-I$(PROTOS)/meta/refcount.ipc \
+		-I$(PROTOS)/meta/refstore.ipc \
 		client <$(PROTOS)/sys/pipe.ipc >$@
 protos: rt/sys/pipe_gen.ha
 

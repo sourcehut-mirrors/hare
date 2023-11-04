@@ -1,9 +1,9 @@
-use rt::sys;
+use rt::meta;
 use rt;
 
 // Duplicates a file descriptor.
 export fn dup(old: file) (file | error) = {
-	return sys::process_ref(rt::self, old): file;
+	return meta::refstore_ref(rt::self, old): file;
 };
 
 // Duplicates a file descriptor and stores the new file at a specific file
@@ -11,6 +11,6 @@ export fn dup(old: file) (file | error) = {
 // file, this file will be closed before the file descriptor is reused.
 export fn dup2(old: file, new: file) (file | error) = {
 	// Note: this works fine even if there is not already a file here
-	sys::process_unref(rt::self, new);
-	return sys::process_refat(rt::self, old, new: uint): file;
+	meta::refstore_unref(rt::self, new);
+	return meta::refstore_refat(rt::self, old, new: uint): file;
 };
