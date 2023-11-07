@@ -9,6 +9,7 @@ fn syscall4(u64, u64, u64, u64, u64) (u64, u64);
 fn syscall5(u64, u64, u64, u64, u64, u64) (u64, u64);
 fn syscall6(u64, u64, u64, u64, u64, u64, u64) (u64, u64);
 
+export def SYS_writecons: uint = 0;
 export def SYS_yield: uint = 1;
 export def SYS_send: uint = 3;
 export def SYS_recv: uint = 4;
@@ -21,6 +22,13 @@ export def SYS_call: uint = 10;
 export def SYS_reply: uint = 11;
 export def SYS_poll: uint = 12;
 export def SYS_pollx: uint = 13;
+
+// Writes data to the kernel console, returning the number of bytes written.
+export fn writecons(buf: []u8) size = {
+	return syscall2(SYS_writecons,
+		buf: *[*]u8: uintptr: u64,
+		len(buf): u64).1: size;
+};
 
 // Yields the current task's time slice.
 export fn yieldtask() void = {
