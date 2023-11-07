@@ -17,7 +17,12 @@ type os_filesystem = struct {
 
 export fn init_cwd() void = {
 	static let cwd_fs = os_filesystem { cap = ~0, ... };
-	cwd = static_dirfdopen(rt::service(rfs::FS_ID), &cwd_fs);
+	match (rt::try_service(rfs::FS_ID)) {
+	case let cap: rt::cap =>
+		cwd = static_dirfdopen(cap, &cwd_fs);
+	case void =>
+		yield; // No filesystem available
+	};
 };
 
 @init fn init() void = {
