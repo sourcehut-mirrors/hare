@@ -22,3 +22,6 @@ export let init_cwd: str = "/";
 
 // Clock tick rate via auxv.
 export let clktck: u64 = 0;
+
+// Kernel-provided bootinfo, only valid for sysinit.
+export let bi: nullable *bootinfo = null;

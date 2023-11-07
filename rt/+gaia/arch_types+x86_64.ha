@@ -37,3 +37,17 @@ export type context = struct {
 	rsp: u64,
 	ss: u64,
 };
+
+// x86_64-specific boot information
+export type arch_bootinfo = struct {
+	// Page table capabilities
+	pdpt: cap_range,
+	pd: cap_range,
+	pt: cap_range,
+
+	// TSC rate in Hz
+	tsc_rate: u64,
+
+	// vbe_mode_info physical address from multiboot (or zero)
+	vbe_mode_info: uintptr,
+};

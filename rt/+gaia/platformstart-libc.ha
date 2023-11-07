@@ -7,7 +7,7 @@ use rt::ipc;
 use rt::sys;
 use types::c;
 
-export fn start_gaia(iv: *[*]uintptr) never = {
+export fn start_gaia(iv: *[*]uintptr, bootinfo: nullable *bootinfo) never = {
 	argc = iv[0]: size;
 	argv = &iv[1]: *[*]*u8;
 	envp = &argv[argc + 1]: *[*]nullable *u8;
@@ -45,6 +45,11 @@ export fn start_gaia(iv: *[*]uintptr) never = {
 		case =>
 			yield;
 		};
+	};
+
+	if (auxv[0].a_type == at::NULL) {
+		// bootinfo is valid
+		bi = bootinfo;
 	};
 
 	start_ha();
