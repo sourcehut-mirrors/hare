@@ -3,14 +3,16 @@
 
 use bytes;
 use endian;
+use errors;
 use io;
 use memio;
 use strconv;
-use types::c;
+use strings;
 
 export type reader = struct {
 	src: io::handle,
 	name: [255]u8,
+	padding: size,
 };
 
 // Creates a new reader for a tar file. Use [[next]] to iterate through entries
@@ -33,43 +35,72 @@ export fn read(src: io::handle) reader = {
 // Note that reading from the header will modify the file size.
 export fn next(rd: *reader) (entry | error | io::EOF) = {
 	static let buf: [BLOCKSZ]u8 = [0...];
-	io::readall(rd.src, buf)?;
+
+	// Read any padding data from the previous file, if necessary
+	if (rd.padding != 0) {
+		match (io::read(rd.src, buf[..rd.padding])) {
+		case let z: size =>
+			if (z != rd.padding) {
+				return truncated;
+			};
+			rd.padding = 0;
+		case io::EOF =>
+			return truncated;
+		};
+	};
+
+	match (io::read(rd.src, buf)?) {
+	case let z: size =>
+		if (z != len(buf)) {
+			return truncated;
+		};
+	case io::EOF =>
+		return io::EOF;
+	};
 
 	if (zeroed(buf)) {
-		io::readall(rd.src, buf)?;
+		match (io::read(rd.src, buf)?) {
+		case let z: size =>
+			if (z != len(buf)) {
+				return truncated;
+			};
+		case io::EOF =>
+			return io::EOF;
+		};
 		if (!zeroed(buf)) {
-			return invalid;
+			return truncated;
 		};
 		return io::EOF;
 	};
 
 	const reader = memio::fixed(buf);
-	const name = readstr(&reader, 100);
-	const mode = readoct(&reader, 8)?;
-	const uid = readoct(&reader, 8)?;
-	const gid = readoct(&reader, 8)?;
-	const fsize = readsize(&reader, 12)?;
-	const mtime = readoct(&reader, 12)?;
-	const checksum = readoct(&reader, 8)?;
-	const etype = readoct(&reader, 1)?: entry_type;
-	const link = readstr(&reader, 100);
-
+	let name = readstr(&reader, 100);
 	let ent = entry {
-		vtable = if (etype == entry_type::FILE) &file_vtable
-			else &nonfile_vtable,
-		src = rd.src,
-		orig = fsize,
-		remain = fsize,
+		vtable = &null_vtable,
+		src = &(null: io::stream),
 		name = name,
-		mode = mode,
-		uid = uid,
-		gid = gid,
-		fsize = fsize,
-		mtime = mtime,
-		checksum = checksum,
-		etype = etype,
-		link = link,
+		mode = readoct(&reader, 8)?,
+		uid = readoct(&reader, 8)?,
+		gid = readoct(&reader, 8)?,
+		fsize = readsize(&reader, 12)?,
+		mtime = readoct(&reader, 12)?,
+		checksum = readoct(&reader, 8)?,
+		etype = readoct(&reader, 1)?: entry_type,
+		link = readstr(&reader, 100),
 		...
+	};
+
+	if (ent.etype == entry_type::FILE) {
+		ent.vtable = &file_vtable;
+		ent.src = rd.src;
+		ent.orig = ent.fsize;
+		ent.remain = ent.orig;
+	} else {
+		ent.vtable = &null_vtable;
+	};
+
+	if (ent.fsize % BLOCKSZ != 0) {
+		rd.padding = BLOCKSZ - (ent.orig % BLOCKSZ);
 	};
 
 	const ustar = readstr(&reader, 6);
@@ -91,12 +122,19 @@ export fn next(rd: *reader) (entry | error | io::EOF) = {
 	return ent;
 };
 
+// Seeks the tar file to the start.
+export fn reset(rd: *reader) (void | io::error) = {
+	io::seek(rd.src, 0, io::whence::SET)?;
+	rd.padding = 0;
+};
+
 // Seeks the underlying tar file to the entry following this one.
 export fn skip(ent: *entry) (void | io::error) = {
-	let amt = ent.remain;
-	if (amt % BLOCKSZ != 0) {
-		amt += BLOCKSZ - (amt % BLOCKSZ);
+	if (ent.etype != entry_type::FILE) {
+		return;
 	};
+
+	const amt = ent.remain;
 	match (io::seek(ent.src, amt: io::off, io::whence::CUR)) {
 	case io::off =>
 		return;
@@ -106,13 +144,13 @@ export fn skip(ent: *entry) (void | io::error) = {
 	io::copy(io::empty, ent)?;
 };
 
-const file_vtable: io::vtable = io::vtable {
+const null_vtable = io::vtable { ... };
+
+const file_vtable = io::vtable {
 	reader = &file_read,
 	seeker = &file_seek,
 	...
 };
-
-const nonfile_vtable: io::vtable = io::vtable { ... };
 
 fn file_read(s: *io::stream, buf: []u8) (size | io::EOF | io::error) = {
 	let ent = s: *ent_reader;
@@ -133,13 +171,6 @@ fn file_read(s: *io::stream, buf: []u8) (size | io::EOF | io::error) = {
 		return io::EOF;
 	};
 	ent.remain -= z;
-
-	// Read until we reach the block size
-	if (ent.remain == 0 && ent.orig % BLOCKSZ != 0) {
-		static let buf: [BLOCKSZ]u8 = [0...];
-		io::readall(ent.src, buf[..BLOCKSZ - (ent.orig % BLOCKSZ)])?;
-	};
-
 	return z;
 };
 
@@ -183,11 +214,14 @@ fn readstr(rd: *memio::stream, ln: size) str = {
 	case io::EOF =>
 		abort();
 	};
-	return c::tostr(buf: *[*]u8: *const c::char)!;
+	return strings::rtrim(strings::fromutf8(buf[..ln])!, ' ', '\0');
 };
 
 fn readoct(rd: *memio::stream, ln: size) (uint | invalid) = {
 	const string = readstr(rd, ln);
+	if (len(string) == 0) {
+		return 0; // XXX: is that right?
+	};
 	match (strconv::stoub(string, strconv::base::OCT)) {
 	case let u: uint =>
 		return u;
