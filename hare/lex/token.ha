@@ -133,7 +133,8 @@ export type ltok = enum uint {
 	SLICE,
 	TIMES,
 	TIMESEQ,
-	LAST_BTOK = TIMESEQ,
+	HASH,
+	LAST_BTOK = HASH,
 
 	LIT_U8,
 	LIT_U16,
@@ -280,6 +281,7 @@ const bmap: [_]str = [
 	"..",
 	"*",
 	"*=",
+	"#",
 ];
 
 static assert(len(bmap) == ltok::LAST_BTOK: size + 1);
