@@ -37,3 +37,27 @@ export fn exit(status: int) never = {
 	syscall(sys::EXIT, status: u64);
 	abort();
 };
+
+export fn mmap(
+	addr: nullable *opaque,
+	length: size,
+	prot: uint,
+	flags: uint,
+	fd: int,
+	offs: size
+) (*opaque | errno) = {
+	const opts = mmap_options {
+		addr = addr,
+		length = length,
+		prot = prot: int,
+		flags = flags: int,
+		fd = fd,
+		offs = offs: i64,
+	};
+	const r = syswrap(syscall(sys::MMAP, &opts))?;
+	return r: uintptr: *opaque;
+};
+
+export fn munmap(addr: *opaque, length: size) (void | errno) = {
+	syswrap(syscall(sys::MUNMAP, addr, length))?;
+};

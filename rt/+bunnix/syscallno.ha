@@ -6,5 +6,10 @@ export type sys = enum u64 {
 	WRITEV,
 	LSEEK,
 	CLOSE,
+	GETPID,
+	KILL,
 	EXIT,
+	MMAP,
+	MUNMAP,
+	MPROTECT,
 };
