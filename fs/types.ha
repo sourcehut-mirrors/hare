@@ -55,75 +55,6 @@ case let err: io::error =>
 	yield io::strerror(err);
 };
 
-// File mode information. These bits do not necessarily reflect the underlying
-// operating system's mode representation, though they were chosen to be
-// consistent with typical Unix file permissions. All implementations shall
-// support at least USER_RW, DIR, and REG.
-export type mode = enum uint {
-	// Read, write, and execute permissions for the file owner
-	USER_RWX	= 0o700,
-	// Read and write permissions for the file owner
-	USER_RW		= 0o600,
-	// Read and execute permissions for the file owner
-	USER_RX		= 0o500,
-	// Read permissions for the file owner
-	USER_R		= 0o400,
-	// Write permissions for the file owner
-	USER_W		= 0o200,
-	// Execute permissions for the file owner
-	USER_X		= 0o100,
-
-	// Read, write, and execute permissions for group members
-	GROUP_RWX	= 0o070,
-	// Read and write permissions for group members
-	GROUP_RW	= 0o060,
-	// Read and execute permissions for group members
-	GROUP_RX	= 0o050,
-	// Read permissions for group members
-	GROUP_R		= 0o040,
-	// Write permissions for group members
-	GROUP_W		= 0o020,
-	// Execute permissions for group members
-	GROUP_X		= 0o010,
-
-	// Read, write, and execute permissions for other users
-	OTHER_RWX	= 0o007,
-	// Read and write permissions for other users
-	OTHER_RW	= 0o006,
-	// Read and execute permissions for other users
-	OTHER_RX	= 0o005,
-	// Read permissions for other users
-	OTHER_R		= 0o004,
-	// Write permissions for other users
-	OTHER_W		= 0o002,
-	// Execute permissions for other users
-	OTHER_X		= 0o001,
-
-	// Entry has the set-uid bit set
-	SETUID	= 0o4000,
-	// Entry has the set-gid bit set
-	SETGID	= 0o2000,
-	// Entry has the sticky bit set
-	STICKY	= 0o1000,
-
-	// Entry is of an unknown type
-	UNKNOWN	= 0,
-	// Entry is a FIFO (named pipe)
-	FIFO	= 0o010000,
-	// Entry is a directory
-	DIR	= 0o040000,
-	// Entry is a character device
-	CHR	= 0o020000,
-	// Entry is a block device
-	BLK	= 0o060000,
-	// Entry is a regular file
-	REG	= 0o100000,
-	// Entry is a symbolic link
-	LINK	= 0o120000,
-	// Entry is a Unix socket
-	SOCK	= 0o140000,
-};
-
 // A mask defining what items are populated in the stat structure.
 export type stat_mask = enum uint {
 	UID	= 1 << 0,
@@ -139,7 +70,7 @@ export type stat_mask = enum uint {
 // fields are set; mode is always set.
 export type filestat = struct {
 	mask: stat_mask,
-	mode: mode,
+	mode: io::mode,
 	uid: uint,
 	gid: uint,
 	sz: size,
@@ -158,7 +89,7 @@ export type dirent = struct {
 	name: str,
 
 	// The type of this entry. The permission bits may be unset.
-	ftype: mode,
+	ftype: io::mode,
 };
 
 // Duplicates a [[dirent]] object. Call [[dirent_finish]] to get rid of it
@@ -204,10 +135,10 @@ export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type statfunc = fn(fs: *fs, path: str) (filestat | error);
 export type fstatfunc = fn(fs: *fs, file: io::file) (filestat | error);
-export type mkdirfunc = fn(fs: *fs, path: str, mode: mode) (void | error);
+export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
-export type chmodfunc = fn(fs: *fs, path: str, mode: mode) (void | error);
-export type fchmodfunc = fn(fd: io::file, mode: mode) (void | error);
+export type chmodfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
+export type fchmodfunc = fn(fd: io::file, mode: io::mode) (void | error);
 export type chownfunc = fn(fs: *fs, path: str, uid: uint, gid: uint) (void | error);
 export type fchownfunc = fn(fd: io::file, uid: uint, gid: uint) (void | error);
 export type chtimesfunc = fn(fs: *fs, path: str, atime: (time::instant | void),
@@ -234,14 +165,14 @@ export type openfilefunc = fn(
 export type createfunc = fn(
 	fs: *fs,
 	path: str,
-	mode: mode,
+	mode: io::mode,
 	flags: flag,
 ) (io::handle | error);
 
 export type createfilefunc = fn(
 	fs: *fs,
 	path: str,
-	mode: mode,
+	mode: io::mode,
 	flags: flag,
 ) (io::file | error);
 

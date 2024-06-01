@@ -145,7 +145,7 @@ fn next_match(gen: *generator) (str | void | failure) = {
 	case done =>
 		break;
 	case let de: fs::dirent =>
-		if (patm && !fs::isdir(de.ftype) && !fs::islink(de.ftype)) {
+		if (patm && !io::isdir(de.ftype) && !io::islink(de.ftype)) {
 			continue;
 		};
 		if (!fnmatch::fnmatch(pat, de.name, flgs)) {
@@ -159,17 +159,17 @@ fn next_match(gen: *generator) (str | void | failure) = {
 		};
 		memio::concat(b, dir, de.name)!;
 		if (patm || gen.flgs & flag::MARK != 0) {
-			let m = fs::isdir(de.ftype);
+			let m = io::isdir(de.ftype);
 			// POSIX does not specify the behavior when a pathname
 			// that matches the pattern is a symlink to a
 			// directory. But in major implementation a slash
 			// character is appended in this case.
-			if (fs::islink(de.ftype)) {
+			if (io::islink(de.ftype)) {
 				match (os::realpath(memio::string(b)!)) {
 				case let r: str =>
 					match (os::stat(r)) {
 					case let s: fs::filestat =>
-						m = fs::isdir(s.mode);
+						m = io::isdir(s.mode);
 					case fs::error => void;
 					};
 				case fs::error => void;

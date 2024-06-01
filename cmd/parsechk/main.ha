@@ -25,7 +25,7 @@ fn iter(buf: *path::buffer, status: *int) void = {
 		path::push(buf, ent.name)!;
 		defer path::pop(buf);
 		const st = os::stat(path::string(buf))!;
-		if (fs::isfile(st.mode)) {
+		if (io::isfile(st.mode)) {
 			match (path::peek_ext(buf)) {
 			case let s: str =>
 				if (s == "ha") {
@@ -33,7 +33,7 @@ fn iter(buf: *path::buffer, status: *int) void = {
 				};
 			case void => void;
 			};
-		} else if (fs::isdir(st.mode)) {
+		} else if (io::isdir(st.mode)) {
 			iter(buf, status);
 		};
 	};

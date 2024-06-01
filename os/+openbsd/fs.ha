@@ -76,7 +76,7 @@ export fn access(path: str, mode: amode) (bool | fs::error) = {
 };
 
 // Makes a FIFO node. This function is only available on Unix-like systems.
-export fn mkfifo(path: str, mode: fs::mode) (void | fs::error) = {
+export fn mkfifo(path: str, mode: io::mode) (void | fs::error) = {
 	match (rt::mknodat(rt::AT_FDCWD, path,
 			mode: rt::mode_t | rt::S_IFIFO, 0)) {
 	case let err: rt::errno =>
@@ -88,7 +88,7 @@ export fn mkfifo(path: str, mode: fs::mode) (void | fs::error) = {
 // Makes a regular file. This function is only available on Unix-like systems.
 // This function should only be used if you have a special reason; most of the
 // time you should use [[create]] instead.
-export fn mkfile(path: str, mode: fs::mode) (void | fs::error) = {
+export fn mkfile(path: str, mode: io::mode) (void | fs::error) = {
 	let file = match(rt::openat(rt::AT_FDCWD, path, rt::O_RDONLY | rt::O_CREAT,
 		mode: rt::mode_t)) {
 	case let f: int =>

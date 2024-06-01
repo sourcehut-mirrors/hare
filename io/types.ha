@@ -23,14 +23,6 @@ export fn strerror(err: error) str = {
 	};
 };
 
-// Used to indicate if a stream should be used for reading, or writing, or both.
-export type mode = enum u8 {
-	NONE	= 0,
-	READ	= 1 << 0,
-	WRITE	= 1 << 1,
-	RDWR	= READ | WRITE,
-};
-
 // From "whence" a seek operation should occur.
 export type whence = enum {
 	SET = 0, // Relative to beginning (i.e. set absolute position).

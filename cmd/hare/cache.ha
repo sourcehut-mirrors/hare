@@ -4,6 +4,7 @@
 use fmt;
 use fs;
 use getopt;
+use io;
 use os;
 use path;
 
@@ -55,7 +56,7 @@ fn dirsize(buf: *path::buffer) (size | error) = {
 		path::push(buf, d.name)?;
 		let stat = os::stat(path::string(buf))?;
 		s += stat.sz;
-		if (fs::isdir(stat.mode)) {
+		if (io::isdir(stat.mode)) {
 			s += dirsize(buf)?;
 		};
 		path::pop(buf);

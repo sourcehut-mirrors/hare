@@ -118,7 +118,7 @@ fn fs_readlink(fs: *fs::fs, path: str) (str | fs::error) = {
 fn fs_create_file(
 	fs: *fs::fs,
 	path: str,
-	mode: fs::mode,
+	mode: io::mode,
 	flags: fs::flag,
 ) (io::file | fs::error) = {
 	flags |= fs::flag::CREATE;
@@ -128,7 +128,7 @@ fn fs_create_file(
 fn fs_create(
 	fs: *fs::fs,
 	path: str,
-	mode: fs::mode,
+	mode: io::mode,
 	flags: fs::flag,
 ) (io::handle | fs::error) = fs_create_file(fs, path, mode, flags)?;
 
@@ -191,25 +191,25 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 			continue;
 		};
 
-		let ftype: fs::mode = switch (de.d_type) {
+		const ftype = switch (de.d_type) {
 		case rt::DT_UNKNOWN =>
-			yield fs::mode::UNKNOWN;
+			yield io::mode::UNKNOWN;
 		case rt::DT_FIFO =>
-			yield fs::mode::FIFO;
+			yield io::mode::FIFO;
 		case rt::DT_CHR =>
-			yield fs::mode::CHR;
+			yield io::mode::CHR;
 		case rt::DT_DIR =>
-			yield fs::mode::DIR;
+			yield io::mode::DIR;
 		case rt::DT_BLK =>
-			yield fs::mode::BLK;
+			yield io::mode::BLK;
 		case rt::DT_REG =>
-			yield fs::mode::REG;
+			yield io::mode::REG;
 		case rt::DT_LNK =>
-			yield fs::mode::LINK;
+			yield io::mode::LINK;
 		case rt::DT_SOCK =>
-			yield fs::mode::SOCK;
+			yield io::mode::SOCK;
 		case =>
-			yield fs::mode::UNKNOWN;
+			yield io::mode::UNKNOWN;
 		};
 		return fs::dirent {
 			name = name,
@@ -269,7 +269,7 @@ fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
 			| fs::stat_mask::ATIME
 			| fs::stat_mask::MTIME
 			| fs::stat_mask::CTIME,
-		mode = stat.st_mode: fs::mode,
+		mode = stat.st_mode: io::mode,
 		uid = stat.st_uid,
 		gid = stat.st_gid,
 		sz = stat.st_size: size,
@@ -289,7 +289,7 @@ fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
 	};
 };
 
-fn fs_mkdir(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
+fn fs_mkdir(fs: *fs::fs, path: str, mode: io::mode) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
 	match (rt::mkdirat(fs.dirfd, path, mode: uint)) {
 	case let err: rt::errno =>
@@ -313,7 +313,7 @@ fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
 
 };
 
-fn fs_chmod(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
+fn fs_chmod(fs: *fs::fs, path: str, mode: io::mode) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
 	match (rt::fchmodat(fs.dirfd, path, mode: uint, 0)) {
 	case let err: rt::errno =>
@@ -322,7 +322,7 @@ fn fs_chmod(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
 	};
 };
 
-fn fs_fchmod(fd: io::file, mode: fs::mode) (void | fs::error) = {
+fn fs_fchmod(fd: io::file, mode: io::mode) (void | fs::error) = {
 	match (rt::fchmod(fd, mode: uint)) {
 	case let err: rt::errno =>
 		return errno_to_fs(err);

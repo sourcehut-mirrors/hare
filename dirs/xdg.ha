@@ -4,6 +4,7 @@
 use errors;
 use fmt;
 use fs;
+use io;
 use os;
 use path;
 use unix;
@@ -22,7 +23,7 @@ fn lookup(prog: str, var: str, default: str) str = {
 			os::mkdirs(path, 0o755)!;
 			return path;
 		case let st: fs::filestat =>
-			if (fs::isdir(st.mode)) {
+			if (io::isdir(st.mode)) {
 				return path;
 			};
 		};
@@ -91,10 +92,10 @@ export fn runtime() (str | fs::error) = {
 
 	const st = os::stat(path)?;
 	const uid = unix::getuid(): uint;
-	if (st.uid != uid || fs::mode_perm(st.mode) != fs::mode::USER_RWX) {
+	if (st.uid != uid || io::mode_perm(st.mode) != io::mode::USER_RWX) {
 		return errors::noaccess;
 	};
-	if (!fs::isdir(st.mode)) {
+	if (!io::isdir(st.mode)) {
 		return fs::wrongtype;
 	};
 

@@ -4,10 +4,11 @@
 use bytes;
 use fs;
 use hare::ast;
+use io;
 use os;
 use path;
-use sort;
 use sort::cmp;
+use sort;
 use strings;
 use time;
 
@@ -197,7 +198,7 @@ fn _findsrcs(
 	};
 
 	let tmp = pathstr;
-	for (fs::islink(stat.mode)) {
+	for (io::islink(stat.mode)) {
 		if (time::compare(res.mtime, stat.mtime) < 0) {
 			res.mtime = stat.mtime;
 		};
@@ -205,7 +206,7 @@ fn _findsrcs(
 		stat = os::stat(tmp)?;
 	};
 
-	if (fs::isfile(stat.mode)) {
+	if (io::isfile(stat.mode)) {
 		let ext = match (path::pop_ext(buf)) {
 		case void =>
 			return;
@@ -263,7 +264,7 @@ fn _findsrcs(
 		return;
 	};
 
-	if (!fs::isdir(stat.mode)) return; // ignore special files
+	if (!io::isdir(stat.mode)) return; // ignore special files
 
 	append(res.dirs, strings::dup(pathstr));
 	if (time::compare(res.mtime, stat.mtime) < 0) {
@@ -282,7 +283,7 @@ fn _findsrcs(
 		path::push(buf, d.name)?;
 		defer path::pop(buf);
 
-		if (fs::isdir(d.ftype)) {
+		if (io::isdir(d.ftype)) {
 			if (tagindex(strings::toutf8(d.name)) != 0) {
 				continue;
 			};
@@ -299,7 +300,7 @@ fn _findsrcs(
 
 			_findsrcs(buf, in_tags, srcs, res,
 				tagdepth+len(wanttags))?;
-		} else if (fs::isfile(d.ftype)) {
+		} else if (io::isfile(d.ftype)) {
 			_findsrcs(buf, in_tags, srcs, res, tagdepth)?;
 		};
 	};

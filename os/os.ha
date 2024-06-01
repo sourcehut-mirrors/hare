@@ -47,10 +47,10 @@ export fn fstat(fd: io::file) (fs::filestat | fs::error) = fs::fstat(cwd, fd);
 export fn exists(path: str) bool = fs::exists(cwd, path);
 
 // Creates a directory.
-export fn mkdir(path: str, mode: fs::mode) (void | fs::error) = fs::mkdir(cwd, path, mode);
+export fn mkdir(path: str, mode: io::mode) (void | fs::error) = fs::mkdir(cwd, path, mode);
 
 // Creates a directory, and all non-extant directories in its path.
-export fn mkdirs(path: str, mode: fs::mode) (void | fs::error) = fs::mkdirs(cwd, path, mode);
+export fn mkdirs(path: str, mode: io::mode) (void | fs::error) = fs::mkdirs(cwd, path, mode);
 
 // Removes a directory. The target directory must be empty; see [[rmdirall]] to
 // remove its contents as well.
@@ -60,10 +60,10 @@ export fn rmdir(path: str) (void | fs::error) = fs::rmdir(cwd, path);
 export fn rmdirall(path: str) (void | fs::error) = fs::rmdirall(cwd, path);
 
 // Changes mode flags on a file or directory. Type bits are discared.
-export fn chmod(path: str, mode: fs::mode) (void | fs::error) = fs::chmod(cwd, path, mode);
+export fn chmod(path: str, mode: io::mode) (void | fs::error) = fs::chmod(cwd, path, mode);
 
 // Changes mode flags on a [[io::file]]. Type bits are discared.
-export fn fchmod(fd: io::file, mode: fs::mode) (void | fs::error) = fs::fchmod(cwd, fd, mode);
+export fn fchmod(fd: io::file, mode: io::mode) (void | fs::error) = fs::fchmod(cwd, fd, mode);
 
 // Changes ownership of a file.
 export fn chown(path: str, uid: uint, gid: uint) (void | fs::error) = fs::chown(cwd, path, uid, gid);
@@ -123,7 +123,7 @@ export fn open(
 // To create a file without opening it, see [[mkfile]].
 export fn create(
 	path: str,
-	mode: fs::mode,
+	mode: io::mode,
 	flags: fs::flag = fs::flag::WRONLY | fs::flag::TRUNC,
 ) (io::file | fs::error) = fs::create_file(cwd, path, mode, flags);
 

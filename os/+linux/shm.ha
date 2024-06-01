@@ -43,7 +43,7 @@ fn shm_path(name: str) (str | fs::error) = {
 export fn shm_open(
 	name: str,
 	oflag: fs::flag = fs::flag::CREATE | fs::flag::RDWR,
-	mode: fs::mode = 0o600,
+	mode: io::mode = 0o600,
 ) (io::file | fs::error) = {
 	const path = shm_path(name)?;
 	oflag |= fs::flag::NOFOLLOW | fs::flag::NONBLOCK;

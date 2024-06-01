@@ -3,6 +3,7 @@
 
 use errors;
 use fs;
+use io;
 use path;
 use rt;
 use types::c;
@@ -52,7 +53,7 @@ export fn chroot(target: str) (void | fs::error) = {
 };
 
 // Makes a FIFO node. This function is only available on Unix systems.
-export fn mkfifo(path: str, mode: fs::mode) (void | fs::error) = {
+export fn mkfifo(path: str, mode: io::mode) (void | fs::error) = {
 	match (rt::mknodat(rt::AT_FDCWD, path,
 			mode: rt::mode_t | rt::S_IFIFO, 0)) {
 	case let err: rt::errno =>
@@ -65,7 +66,7 @@ export fn mkfifo(path: str, mode: fs::mode) (void | fs::error) = {
 // systems.
 export fn mkblk(
 	path: str,
-	mode: fs::mode,
+	mode: io::mode,
 	major: uint,
 	minor: uint,
 ) (void | fs::error) = {
@@ -82,7 +83,7 @@ export fn mkblk(
 // systems.
 export fn mkchr(
 	path: str,
-	mode: fs::mode,
+	mode: io::mode,
 	major: uint,
 	minor: uint,
 ) (void | fs::error) = {
@@ -97,7 +98,7 @@ export fn mkchr(
 // Makes a regular file. This function is only available on Unix-like systems.
 // This function should only be used if you have a special reason; most of the
 // time you should use [[create]] instead.
-export fn mkfile(path: str, mode: fs::mode) (void | fs::error) = {
+export fn mkfile(path: str, mode: io::mode) (void | fs::error) = {
 	match (rt::mknodat(rt::AT_FDCWD, path,
 			mode: rt::mode_t | rt::S_IFREG, 0)) {
 	case let err: rt::errno =>

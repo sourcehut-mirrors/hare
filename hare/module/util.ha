@@ -3,6 +3,7 @@
 
 use ascii;
 use fs;
+use io;
 use os;
 use strings;
 use time;
@@ -49,7 +50,7 @@ export fn outdated(target: str, deps: []str, mtime: time::instant) bool = {
 // Wrapper for [[fs::next]] that only returns valid submodule directories.
 export fn next(it: *fs::iterator) (fs::dirent | done | fs::error) = {
 	for (let d => fs::next(it)?) {
-		if (!fs::isdir(d.ftype)) {
+		if (!io::isdir(d.ftype)) {
 			continue;
 		};
 		if (is_submodule(d.name)) {

@@ -56,7 +56,7 @@ export fn open_file(
 export fn create(
 	fs: *fs,
 	path: str,
-	mode: mode,
+	mode: io::mode,
 	flags: flag = flag::WRONLY | flag::TRUNC,
 ) (io::handle | error) = {
 	match (fs.create) {
@@ -74,7 +74,7 @@ export fn create(
 export fn create_file(
 	fs: *fs,
 	path: str,
-	mode: mode,
+	mode: io::mode,
 	flags: flag = flag::WRONLY | flag::TRUNC,
 ) (io::file | error) = {
 	match (fs.createfile) {
@@ -123,7 +123,7 @@ export fn move(fs: *fs, oldpath: str, newpath: str) (void | error) = {
 	// TODO:
 	// - Move non-regular files
 	let st = stat(fs, oldpath)?;
-	assert(isfile(st.mode), "TODO: move non-regular files");
+	assert(io::isfile(st.mode), "TODO: move non-regular files");
 	let old = open(fs, oldpath)?;
 	let new = match (create(fs, newpath, st.mode)) {
 	case let h: io::handle =>
@@ -213,7 +213,7 @@ export fn readlink(fs: *fs, path: str) (str | error) = {
 };
 
 // Creates a directory.
-export fn mkdir(fs: *fs, path: str, mode: mode) (void | error) = {
+export fn mkdir(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	match (fs.mkdir) {
 	case null =>
 		return errors::unsupported;
@@ -223,7 +223,7 @@ export fn mkdir(fs: *fs, path: str, mode: mode) (void | error) = {
 };
 
 // Makes a directory, and all non-extant directories in its path.
-export fn mkdirs(fs: *fs, path: str, mode: mode) (void | error) = {
+export fn mkdirs(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	let parent = path::dirname(path);
 	if (path != parent) {
 		match (mkdirs(fs, parent, mode)) {
@@ -256,7 +256,7 @@ export fn rmdir(fs: *fs, path: str) (void | error) = {
 };
 
 // Changes mode flags on a file or directory.
-export fn chmod(fs: *fs, path: str, mode: mode) (void | error) = {
+export fn chmod(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	match (fs.chmod) {
 	case null =>
 		return errors::unsupported;
@@ -266,7 +266,7 @@ export fn chmod(fs: *fs, path: str, mode: mode) (void | error) = {
 };
 
 // Changes mode flags on a [[io::file]].
-export fn fchmod(fs: *fs, fd: io::file, mode: mode) (void | error) = {
+export fn fchmod(fs: *fs, fd: io::file, mode: io::mode) (void | error) = {
 	match (fs.fchmod) {
 	case null =>
 		return errors::unsupported;

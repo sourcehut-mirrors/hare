@@ -171,7 +171,7 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 
 	let dest = os::stdout_file;
 	if (output != "-") {
-		let mode: fs::mode = 0o644;
+		let mode: io::mode = 0o644;
 		if (ctx.goal == build::stage::BIN) {
 			mode |= 0o111;
 		};
@@ -211,7 +211,7 @@ fn get_output(goal: build::stage, input: str) (str | error) = {
 	static let buf = path::buffer { ... };
 	let stat = os::stat(input)?;
 	path::set(&buf, os::realpath(input)?)?;
-	if (!fs::isdir(stat.mode)) {
+	if (!io::isdir(stat.mode)) {
 		path::pop_ext(&buf);
 	};
 	// don't add the .bin extension if the goal is to create a binary
@@ -234,8 +234,8 @@ fn get_output(goal: build::stage, input: str) (str | error) = {
 		// XXX: double cast here (and below) shouldn't be necessary
 		return output: output_exists: error;
 	};
-	if (!fs::isfile(stat.mode)
-			|| fs::mode_perm(stat.mode) & fs::mode::USER_X == 0) {
+	if (!io::isfile(stat.mode)
+			|| io::mode_perm(stat.mode) & io::mode::USER_X == 0) {
 		return output: output_exists: error;
 	};
 	return output;
