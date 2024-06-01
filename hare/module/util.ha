@@ -48,9 +48,9 @@ export fn outdated(target: str, deps: []str, mtime: time::instant) bool = {
 	return false;
 };
 
-// Wrapper for [[fs::next]] that only returns valid submodule directories.
-export fn next(it: *fs::iterator) (fs::dirent | done | fs::error) = {
-	for (let d => fs::next(it)?) {
+// Wrapper for [[os::next]] that only returns valid submodule directories.
+export fn next(it: *os::iterator) (os::dirent | done | errors::error) = {
+	for (let d => os::next(it)?) {
 		if (!io::isdir(d.ftype)) {
 			continue;
 		};

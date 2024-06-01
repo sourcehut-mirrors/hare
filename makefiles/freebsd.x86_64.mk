@@ -117,7 +117,7 @@ $(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/strings.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/path.td.tmp -N path $(path_ha)
 
-fs_ha = fs/fs.ha fs/types.ha fs/util.ha
+fs_ha = fs/fs.ha fs/types.ha
 $(HARECACHE)/fs.ssa: $(fs_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HARECACHE)/path.td $(HARECACHE)/strings.td $(HARECACHE)/time.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

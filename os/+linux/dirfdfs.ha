@@ -67,7 +67,6 @@ export fn dirfdopen(
 fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 	*filesystem = os_filesystem {
 		fs = fs::fs {
-			iter = &fs_iter,
 			mkdir = &fs_mkdir,
 			...
 		},
@@ -141,101 +140,4 @@ fn fs_close(fs: *fs::fs) void = {
 	let fs = fs: *os_filesystem;
 	rt::close(fs.dirfd)!;
 	free(fs);
-};
-
-// Based on musl's readdir
-type os_iterator = struct {
-	iter: fs::iterator,
-	fd: int,
-	buf_pos: size,
-	buf_end: size,
-	buf: []u8,
-};
-
-fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
-	let fs = fs: *os_filesystem;
-	let oh = rt::open_how {
-		flags = (rt::O_RDONLY | rt::O_CLOEXEC | rt::O_DIRECTORY): u64,
-		...
-	};
-	let fd: int = match (rt::openat2(fs.dirfd, path,
-			&oh, size(rt::open_how))) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case let fd: int =>
-		yield fd;
-	};
-
-	let buf = match (rt::malloc(fs.getdents_bufsz)) {
-	case let v: *opaque =>
-		yield v: *[*]u8;
-	case null =>
-		return errors::nomem;
-	};
-	let iter = alloc(os_iterator {
-		iter = fs::iterator {
-			next = &iter_next,
-			finish = &iter_finish,
-		},
-		fd = fd,
-		buf = buf[..fs.getdents_bufsz],
-		...
-	});
-	return &iter.iter;
-};
-
-fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
-	let iter = iter: *os_iterator;
-	if (iter.buf_pos >= iter.buf_end) {
-		let n = match (rt::getdents64(iter.fd,
-			iter.buf: *[*]u8, len(iter.buf))) {
-		case let err: rt::errno =>
-			return errno_to_fs(err);
-		case let n: size =>
-			yield n;
-		};
-		if (n == 0) {
-			return done;
-		};
-		iter.buf_end = n;
-		iter.buf_pos = 0;
-	};
-	let de = &iter.buf[iter.buf_pos]: *rt::dirent64;
-	iter.buf_pos += de.d_reclen;
-	let name = c::tostr(&de.d_name: *const c::char)?;
-	if (name == "." || name == "..") {
-		return iter_next(iter);
-	};
-
-	const ftype = switch (de.d_type) {
-	case rt::DT_UNKNOWN =>
-		yield io::mode::UNKNOWN;
-	case rt::DT_FIFO =>
-		yield io::mode::FIFO;
-	case rt::DT_CHR =>
-		yield io::mode::CHR;
-	case rt::DT_DIR =>
-		yield io::mode::DIR;
-	case rt::DT_BLK =>
-		yield io::mode::BLK;
-	case rt::DT_REG =>
-		yield io::mode::REG;
-	case rt::DT_LNK =>
-		yield io::mode::LINK;
-	case rt::DT_SOCK =>
-		yield io::mode::SOCK;
-	case =>
-		yield io::mode::UNKNOWN;
-	};
-	return fs::dirent {
-		name = name,
-		ftype = ftype,
-	};
-};
-
-fn iter_finish(iter: *fs::iterator) void = {
-	let iter = iter: *os_iterator;
-	rt::close(iter.fd)!;
-	free(iter.buf);
-	free(iter);
 };

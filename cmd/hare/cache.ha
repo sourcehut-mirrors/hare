@@ -50,9 +50,9 @@ fn cache(name: str, cmd: *getopt::command) (void | error) = {
 fn dirsize(buf: *path::buffer) (size | error) = {
 	let s = 0z;
 	let it = os::iter(path::string(buf))?;
-	defer fs::finish(it);
+	defer os::finish(&it);
 
-	for (let d => fs::next(it)?) {
+	for (let d => os::next(&it)?) {
 		path::push(buf, d.name)?;
 		let stat = os::stat(path::string(buf))?;
 		s += stat.sz;

@@ -26,9 +26,10 @@ fn trim_comment(s: str) str = {
 export fn submodules(path: str, show_undocumented: bool) ([]str | error) = {
 	let submodules: []str = [];
 	let it = os::iter(path)?;
-	defer fs::finish(it);
+	defer os::finish(&it);
+
 	let pathbuf = path::init(path)!;
-	for (let d => module::next(it)?) {
+	for (let d => module::next(&it)?) {
 		path::set(&pathbuf, path, d.name, "README")!;
 		if (show_undocumented || os::exists(path::string(&pathbuf))) {
 			append(submodules, strings::dup(d.name));

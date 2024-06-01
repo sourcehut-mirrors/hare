@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use encoding::utf8;
+use errors;
 use fmt;
 use fs;
 use hare::ast;
@@ -15,7 +16,7 @@ use os::exec;
 export type haredoc_colors_error = !str;
 
 export type error = !(lex::error | parse::error | doc::error | io::error |
-	module::error | exec::error | fs::error | haredoc_colors_error |
+	module::error | exec::error | errors::error | haredoc_colors_error |
 	utf8::invalid);
 
 export fn strerror(err: error) str = {
@@ -32,8 +33,8 @@ export fn strerror(err: error) str = {
 		return module::strerror(err);
 	case let err: exec::error =>
 		return exec::strerror(err);
-	case let err: fs::error =>
-		return fs::strerror(err);
+	case let err: errors::error =>
+		return errors::strerror(err);
 	case let err: utf8::invalid =>
 		return utf8::strerror(err);
 	case let err: haredoc_colors_error =>

@@ -273,14 +273,14 @@ fn _findsrcs(
 	};
 
 	let iter = match (os::iter(pathstr)) {
-	case let i: *fs::iterator =>
+	case let i: os::iterator =>
 		yield i;
-	case let e: fs::error =>
+	case let e: errors::error =>
 		return attach(strings::dup(pathstr), e);
 	};
-	defer fs::finish(iter);
+	defer os::finish(&iter);
 
-	for (let d => fs::next(iter)?) {
+	for (let d => os::next(&iter)?) {
 		path::push(buf, d.name)?;
 		defer path::pop(buf);
 

@@ -132,20 +132,20 @@ fn next_match(gen: *generator) (str | void | failure) = {
 		flgs |= fnmatch::flag::NOESCAPE;
 	};
 	let it = match (os::iter(if (len(dir) > 0) dir else ".")) {
-	case let i: *fs::iterator =>
+	case let i: os::iterator =>
 		yield i;
-	case let e: fs::error =>
+	case let e: errors::error =>
 		return failure {
 			path = dir,
 			error = e,
 		};
 	};
-	defer fs::finish(it);
+	defer os::finish(&it);
 
-	for (true) match (fs::next(it)) {
+	for (true) match (os::next(&it)) {
 	case done =>
 		break;
-	case let de: fs::dirent =>
+	case let de: os::dirent =>
 		if (patm && !io::isdir(de.ftype) && !io::islink(de.ftype)) {
 			continue;
 		};
@@ -184,7 +184,7 @@ fn next_match(gen: *generator) (str | void | failure) = {
 			};
 		};
 		gen.matc += 1;
-	case let e: fs::error =>
+	case let e: errors::error =>
 		return failure {
 			path = dir,
 			error = e,

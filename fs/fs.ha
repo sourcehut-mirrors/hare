@@ -15,27 +15,6 @@ export fn close(fs: *fs) void = {
 	};
 };
 
-// Returns an iterator for a path, which yields the contents of a directory.
-// Pass empty string to yield from the root. The order in which entries are
-// returned is undefined. The return value must be finished with [[finish]].
-export fn iter(fs: *fs, path: str) (*iterator | error) = {
-	match (fs.iter) {
-	case null =>
-		return errors::unsupported;
-	case let f: *iterfunc =>
-		return f(fs, path);
-	};
-};
-
-// Frees state associated with an [[iterator]].
-export fn finish(iter: *iterator) void = {
-	match (iter.finish) {
-	case null => void;
-	case let f: *finishfunc =>
-		return f(iter);
-	};
-};
-
 // Creates a directory.
 export fn mkdir(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	match (fs.mkdir) {
@@ -64,11 +43,3 @@ export fn mkdirs(fs: *fs, path: str, mode: io::mode) (void | error) = {
 		return err;
 	};
 };
-
-// Returns the next directory entry from an iterator, or done if none remain.
-// '.' and '..' are skipped. It is a programming error to call this again after
-// it has returned void. Calling this again after an error is safe. The list is
-// not guaranteed to be complete when an error has been returned. The file stat
-// returned may only have the type bits set on the file mode; callers should
-// call [[stat]] to obtain the detailed file mode.
-export fn next(iter: *iterator) (dirent | done | error) = iter.next(iter);

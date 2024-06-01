@@ -54,32 +54,7 @@ case let err: io::error =>
 	yield io::strerror(err);
 };
 
-// An entry in a directory. This may be borrowed from the filesystem's internal
-// state. If you want to keep this around beyond one call to [[next]], use
-// [[dirent_dup]].
-export type dirent = struct {
-	// The name of this entry. Not fully qualified: for example,
-	// "foo/bar/baz.txt" would store "baz.txt" here.
-	name: str,
-
-	// The type of this entry. The permission bits may be unset.
-	ftype: io::mode,
-};
-
-// Duplicates a [[dirent]] object. Call [[dirent_finish]] to get rid of it
-// later.
-export fn dirent_dup(e: *dirent) dirent = {
-	let new = *e;
-	new.name = strings::dup(e.name);
-	return new;
-};
-
-// Frees memory associated with a [[dirent]] object which was duplicated with
-// [[dirent_dup]].
-export fn dirent_finish(e: *dirent) void = free(e.name);
-
 export type closefunc = fn(fs: *fs) void;
-export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
 
@@ -94,30 +69,6 @@ export type fs = struct {
 	// Frees resources associated with this filesystem.
 	close: nullable *closefunc,
 
-	// Returns an iterator for a path, which yields the contents of a
-	// directory. Pass empty string to yield from the root.
-	//
-	// The iterator must return all entries without error. If an error would
-	// occur, it should be identified here and returned upfront.
-	iter: nullable *iterfunc,
-
 	// Creates a directory.
 	mkdir: nullable *mkdirfunc,
-};
-
-// A function which returns the next directory from an [[iterator]].
-export type nextfunc = fn(iter: *iterator) (dirent | done | error);
-
-// A function which frees state associated with an [[iterator]].
-export type finishfunc = fn(iter: *iterator) void;
-
-// A directory iterator. To implement a directory iterator for a filesystem,
-// subtype this struct to store any necessary state and populate the pointers
-// with your implementation.
-export type iterator = struct {
-	// Returns the next member of the directory, or done if there are none
-	// remaining.
-	next: *nextfunc,
-	// Frees resources associated with the iterator.
-	finish: nullable *finishfunc,
 };
