@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
+//
+// Miscellaneous functions for working with the host filesystem.
 
 use errors;
 use io;

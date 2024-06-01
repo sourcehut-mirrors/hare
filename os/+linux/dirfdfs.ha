@@ -70,7 +70,6 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
-			readlink = &fs_readlink,
 			mkdir = &fs_mkdir,
 			rmdir = &fs_rmdir,
 			resolve = &fs_resolve,
@@ -151,23 +150,6 @@ fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 		return errno_to_fs(err);
 	case void => void;
 	};
-};
-
-fn fs_readlink(fs: *fs::fs, path: str) (str | fs::error) = {
-	let fs = fs: *os_filesystem;
-	static let buf: [rt::PATH_MAX]u8 = [0...];
-	let z = match (rt::readlinkat(fs.dirfd, path, buf[..])) {
-	case let err: rt::errno =>
-		switch (err) {
-		case rt::EINVAL =>
-			return fs::wrongtype;
-		case =>
-			return errno_to_fs(err);
-		};
-	case let z: size =>
-		yield z;
-	};
-	return strings::fromutf8(buf[..z])!;
 };
 
 fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
