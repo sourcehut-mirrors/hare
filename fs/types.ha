@@ -84,8 +84,6 @@ export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
-export type linkfunc = fn(fs: *fs, old: str, new: str) (void | error);
-export type symlinkfunc = fn(fs: *fs, target: str, path: str) (void | error);
 
 // An abstract implementation of a filesystem, which provides common filesystem
 // operations such as file creation and deletion, but which may be backed by any
@@ -116,12 +114,6 @@ export type fs = struct {
 
 	// Removes a directory. The target directory must be empty.
 	rmdir: nullable *rmdirfunc,
-
-	// Creates a new (hard) link.
-	link: nullable *linkfunc,
-
-	// Creates a new symbolic link.
-	symlink: nullable *symlinkfunc,
 };
 
 // A function which returns the next directory from an [[iterator]].

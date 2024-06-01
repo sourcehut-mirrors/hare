@@ -72,8 +72,6 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			iter = &fs_iter,
 			mkdir = &fs_mkdir,
 			rmdir = &fs_rmdir,
-			link = &fs_link,
-			symlink = &fs_symlink,
 			...
 		},
 		dirfd = fd,
@@ -163,24 +161,6 @@ fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
 fn fs_mkdir(fs: *fs::fs, path: str, mode: io::mode) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
 	match (rt::mkdirat(fs.dirfd, path, mode: uint)) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case void => void;
-	};
-};
-
-fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
-	let fs = fs: *os_filesystem;
-	match (rt::linkat(fs.dirfd, old, fs.dirfd, new, 0)) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case void => void;
-	};
-};
-
-fn fs_symlink(fs: *fs::fs, target: str, path: str) (void | fs::error) = {
-	let fs = fs: *os_filesystem;
-	match (rt::symlinkat(target, fs.dirfd, path)) {
 	case let err: rt::errno =>
 		return errno_to_fs(err);
 	case void => void;
