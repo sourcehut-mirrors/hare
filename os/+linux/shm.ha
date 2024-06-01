@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use fs;
 use io;
 use path;
 use rt;

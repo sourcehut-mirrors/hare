@@ -117,8 +117,8 @@ $(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/rt.td $(HAR
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/path.td.tmp -N path $(path_ha)
 
-fs_ha = fs/fs.ha fs/types.ha
-$(HARECACHE)/fs.ssa: $(fs_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HARECACHE)/path.td $(HARECACHE)/strings.td $(HARECACHE)/time.td
+fs_ha = fs/types.ha
+$(HARECACHE)/fs.ssa: $(fs_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HARECACHE)/path.td $(HARECACHE)/strings.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/fs.td.tmp -N fs $(fs_ha)
@@ -129,7 +129,7 @@ $(HARECACHE)/types_c.ssa: $(types_c_ha) $(HARECACHE)/encoding_utf8.td $(HARECACH
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/types_c.td.tmp -N types::c $(types_c_ha)
 
-os_ha = os/+openbsd/dirfdfs.ha os/+openbsd/exit.ha os/+openbsd/fs.ha os/+openbsd/platform_environ.ha os/+openbsd/shm.ha os/+openbsd/status.ha os/+openbsd/stdfd.ha os/environ.ha os/os.ha
+os_ha = os/+openbsd/dirfdfs.ha os/+openbsd/exit.ha os/+openbsd/fs.ha os/+openbsd/platform_environ.ha os/+openbsd/shm.ha os/+openbsd/status.ha os/+openbsd/stdfd.ha os/environ.ha
 $(HARECACHE)/os.ssa: $(os_ha) $(HARECACHE)/bufio.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/math.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -214,7 +214,7 @@ $(HARECACHE)/unix_signal.ssa: $(unix_signal_ha) $(HARECACHE)/errors.td $(HARECAC
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix_signal.td.tmp -N unix::signal $(unix_signal_ha)
 
 os_exec_ha = os/exec/+openbsd/exec.ha os/exec/+openbsd/platform_cmd.ha os/exec/+openbsd/process.ha os/exec/cmd.ha os/exec/types.ha
-$(HARECACHE)/os_exec.ssa: $(os_exec_ha) $(HARECACHE)/ascii.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td $(HARECACHE)/unix_signal.td
+$(HARECACHE)/os_exec.ssa: $(os_exec_ha) $(HARECACHE)/ascii.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td $(HARECACHE)/unix_signal.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/os_exec.td.tmp -N os::exec $(os_exec_ha)

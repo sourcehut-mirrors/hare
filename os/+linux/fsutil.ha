@@ -22,7 +22,6 @@ export fn realpath(path: str) (str | errors::error) = {
 	};
 
 	const iter = path::iter(&inbuf);
-
 	for (let item => path::nextiter(&iter)) {
 		const item = path::push(&res, item)!;
 
@@ -101,5 +100,43 @@ export fn remove(path: str) (void | errors::error) = {
 
 // Removes a directory, and anything in it.
 export fn rmdirall(path: str) (void | errors::error) = {
-	abort(); // TODO
+	let buf = path::init(path)!;
+	return rmdirall_path(&buf);
+};
+
+fn rmdirall_path(buf: *path::buffer) (void | errors::error) = {
+	let it = iter(path::string(buf))?;
+	defer finish(&it);
+	for (let ent => next(&it)?) {
+		path::push(buf, ent.name)!;
+
+		if (io::isdir(ent.ftype)) {
+			rmdirall_path(buf)?;
+		} else {
+			remove(path::string(buf))?;
+		};
+
+		path::pop(buf);
+	};
+	return rmdir(path::string(buf));
+};
+
+// Makes a directory, and all non-extant directories in its path.
+export fn mkdirs(path: str, mode: io::mode) (void | errors::error) = {
+	let parent = path::dirname(path);
+	if (path != parent) {
+		match (mkdirs(parent, mode)) {
+		case errors::exists => void;
+		case void => void;
+		case let err: errors::error =>
+			return err;
+		};
+	};
+
+	match (mkdir(path, mode)) {
+	case errors::exists => void;
+	case void => void;
+	case let err: errors::error =>
+		return err;
+	};
 };

@@ -53,22 +53,3 @@ case let err: utf8::invalid =>
 case let err: io::error =>
 	yield io::strerror(err);
 };
-
-export type closefunc = fn(fs: *fs) void;
-export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
-export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
-
-// An abstract implementation of a filesystem, which provides common filesystem
-// operations such as file creation and deletion, but which may be backed by any
-// underlying storage system. See [[os::cwd]] for access to the host filesystem.
-//
-// To create a custom filesystem implementation, embed this type as the first
-// member of a struct with user-specific data and fill out these fields as
-// appropriate.
-export type fs = struct {
-	// Frees resources associated with this filesystem.
-	close: nullable *closefunc,
-
-	// Creates a directory.
-	mkdir: nullable *mkdirfunc,
-};

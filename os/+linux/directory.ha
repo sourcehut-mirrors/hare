@@ -7,6 +7,24 @@ use rt;
 use strings;
 use types::c;
 
+// Makes a new directory at a path relative to a directory file descriptor.
+export fn mkdirat(
+	dirfd: io::file,
+	path: str,
+	mode: io::mode,
+) (void | errors::error) = {
+	match (rt::mkdirat(dirfd, path, mode: uint)) {
+	case let err: rt::errno =>
+		return errors::errno(err);
+	case void => void;
+	};
+};
+
+// Makes a directory.
+export fn mkdir(path: str, mode: io::mode) (void | errors::error) = {
+	return mkdirat(AT_FDCWD, path, mode);
+};
+
 def GETDENTS_BUFSZ: size = 32768;
 
 // An entry in a directory.

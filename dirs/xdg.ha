@@ -33,7 +33,7 @@ fn lookup(prog: str, var: str, default: str) str = {
 	const home = os::getenv("HOME") as str;
 	const path = path::set(&buf, home, default, prog)!;
 	match (os::mkdirs(path, 0o755)) {
-	case let err: fs::error =>
+	case let err: errors::error =>
 		fmt::fatalf("Error creating {}: {}",
 			path, fs::strerror(err));
 	case void => void;
