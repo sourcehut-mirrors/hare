@@ -63,4 +63,3 @@ export fn create(
 ) (io::file | errors::error) = {
 	return openat(AT_FDCWD, path, flags | io::flag::CREATE, mode);
 };
-

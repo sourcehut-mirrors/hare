@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MPL-2.0
+// (c) Hare authors <https://harelang.org>
+
 // Flags to use for opening a file. Not all operating systems support all flags;
 // at a minimum, RDONLY, WRONLY, RDWR, CREATE, and TRUNC will be supported.
 // Note that NOCTTY and CLOEXEC are on by default, and the CTTY/NOCLOEXEC flags
