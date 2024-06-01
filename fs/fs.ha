@@ -25,34 +25,6 @@ export fn remove(fs: *fs, path: str) (void | error) = {
 	};
 };
 
-// Renames a file. This generally only works if the source and destination path
-// are both on the same filesystem. See [[move]] for an implementation which
-// falls back on a "copy & remove" procedure in this situation.
-export fn rename(fs: *fs, oldpath: str, newpath: str) (void | error) = {
-	match (fs.rename) {
-	case null =>
-		return errors::unsupported;
-	case let f: *renamefunc =>
-		return f(fs, oldpath, newpath);
-	};
-};
-
-// Moves a file. This will use [[rename]] if possible, and will fall back to
-// copy and remove if necessary.
-export fn move(fs: *fs, oldpath: str, newpath: str) (void | error) = {
-	match (rename(fs, oldpath, newpath)) {
-	case let err: error =>
-		match (err) {
-		case (cannotrename | errors::unsupported) => void; // Fallback
-		case =>
-			return err;
-		};
-	case void =>
-		return; // Success
-	};
-	abort(); // TODO: move me to os:: and re-introduce xdev fallback
-};
-
 // Returns an iterator for a path, which yields the contents of a directory.
 // Pass empty string to yield from the root. The order in which entries are
 // returned is undefined. The return value must be finished with [[finish]].

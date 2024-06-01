@@ -80,7 +80,6 @@ export fn dirent_finish(e: *dirent) void = free(e.name);
 
 export type closefunc = fn(fs: *fs) void;
 export type removefunc = fn(fs: *fs, path: str) (void | error);
-export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
@@ -98,9 +97,6 @@ export type fs = struct {
 
 	// Removes a file.
 	remove: nullable *removefunc,
-
-	// Renames a file.
-	rename: nullable *renamefunc,
 
 	// Returns an iterator for a path, which yields the contents of a
 	// directory. Pass empty string to yield from the root.

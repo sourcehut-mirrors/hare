@@ -93,3 +93,31 @@ export fn symlinkat(
 export fn symlink(target: str, path: str) (void | errors::error) = {
 	return symlinkat(target, AT_FDCWD, path);
 };
+
+// Moves a node on the filesystem from one path to another, relative to two
+// respective directory file descriptors.
+//
+// Note that this will not move a node from one underlying filesystem to
+// another; [[renameat]] returns [[errors::xdev]] in this case. See [[move]] for
+// a high-level API that falls back to a file copy in this situation.
+export fn renameat(
+	old_dirfd: io::file,
+	old_path: str,
+	new_dirfd: io::file,
+	new_path: str,
+) (void | errors::error) = {
+	match (rt::renameat(old_dirfd, old_path, new_dirfd, new_path, 0)) {
+	case let err: rt::errno =>
+		return errors::errno(err);
+	case void => void;
+	};
+};
+
+// Moves a node on the filesystem from one path to another.
+//
+// Note that this will not move a node from one underlying filesystem to
+// another; [[rename]] returns [[errors::xdev]] in this case. See [[move]] for a
+// high-level API that falls back to a file copy in this situation.
+export fn rename(old: str, new: str) (void | errors::error) = {
+	return renameat(AT_FDCWD, old, AT_FDCWD, new);
+};

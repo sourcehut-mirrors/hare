@@ -4,6 +4,7 @@
 // Filesystem-related helper functions for common high-level operations.
 
 use errors;
+use io;
 use path;
 
 // Canonicalizes a path in this filesystem by resolving all symlinks and
@@ -42,4 +43,47 @@ export fn realpath(path: str) (str | errors::error) = {
 	};
 
 	return path::string(&res);
+};
+
+// Moves a file. This will use [[rename]] if possible. Otherwise, falls back to
+// copying the file to the destination, then removing the original.
+//
+// This function only supports moving regular files, other kinds of inodes will
+// return [[errors::unsupported]].
+export fn move(oldpath: str, newpath: str) (void | errors::error) = {
+	match (rename(oldpath, newpath)) {
+	case errors::xdev => void; // Use fallback
+	case let err: errors::error =>
+		return err;
+	case void =>
+		return;
+	};
+
+	const st = stat(oldpath)?;
+	if (!io::isfile(st.mode)) {
+		return errors::unsupported;
+	};
+
+	const old = open(oldpath)?;
+	defer io::close(old)!;
+
+	const new = match (create(newpath, st.mode)) {
+	case let file: io::file =>
+		yield file;
+	case let err: errors::error =>
+		return err;
+	};
+	defer io::close(new)!;
+
+	match (io::copy(new, old)) {
+	case let err: io::error =>
+		unlink(newpath)?;
+
+		// io::error only adds io::underread to errors::error, which
+		// should not be possible under these conditions.
+		return err as errors::error;
+	case size => void;
+	};
+
+	unlink(oldpath)?;
 };
