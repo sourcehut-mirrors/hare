@@ -98,9 +98,3 @@ export fn symlink(target: str, path: str) (void | fs::error) =
 // statically allocated by [[fs::realpath]]. Thus, calls to this function or to
 // [[fs::realpath]] will overwrite the return value of either function.
 export fn realpath(path: str) (str | fs::error) = fs::realpath(cwd, path);
-
-// Opens a directory as a filesystem.
-export fn diropen(path: str) (*fs::fs | fs::error) = {
-	const file = open(path, io::flag::DIRECTORY | io::flag::RDONLY)?;
-	return dirfdopen(file);
-};
