@@ -3,7 +3,6 @@
 
 use bufio;
 use fmt;
-use fs;
 use io;
 use os;
 use strings;
@@ -12,8 +11,6 @@ use strings;
 	let pty = openpty()!;
 	defer io::close(pty.1)!;
 	defer io::close(pty.0)!;
-
-	assert(fs::exists(os::cwd, ptsname(pty.0)!));
 
 	for (let i: u16 = 5; i < 100; i += 1) {
 		let sz1 = ttysize { rows = i, columns = i };

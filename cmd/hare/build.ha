@@ -226,11 +226,11 @@ fn get_output(goal: build::stage, input: str) (str | error) = {
 		return unknown_output;
 	};
 	stat = match (os::stat(output)) {
-	case let s: fs::filestat =>
+	case let s: os::filestat =>
 		yield s;
 	case errors::noentry =>
 		return output;
-	case fs::error =>
+	case errors::error =>
 		// XXX: double cast here (and below) shouldn't be necessary
 		return output: output_exists: error;
 	};

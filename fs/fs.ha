@@ -120,29 +120,7 @@ export fn move(fs: *fs, oldpath: str, newpath: str) (void | error) = {
 	case void =>
 		return; // Success
 	};
-	// TODO:
-	// - Move non-regular files
-	let st = stat(fs, oldpath)?;
-	assert(io::isfile(st.mode), "TODO: move non-regular files");
-	let old = open(fs, oldpath)?;
-	let new = match (create(fs, newpath, st.mode)) {
-	case let h: io::handle =>
-		yield h;
-	case let err: error =>
-		io::close(old): void;
-		return err;
-	};
-	match (io::copy(new, old)) {
-	case let err: io::error =>
-		io::close(new): void;
-		io::close(old): void;
-		remove(fs, newpath)?;
-		return err;
-	case size => void;
-	};
-	io::close(new)?;
-	io::close(old)?;
-	remove(fs, oldpath)?;
+	abort(); // TODO: move me to os:: and re-introduce xdev fallback
 };
 
 // Returns an iterator for a path, which yields the contents of a directory.
@@ -163,41 +141,6 @@ export fn finish(iter: *iterator) void = {
 	case null => void;
 	case let f: *finishfunc =>
 		return f(iter);
-	};
-};
-
-// Obtains information about a file or directory. If the target is a symlink,
-// information is returned about the link, not its target.
-export fn stat(fs: *fs, path: str) (filestat | error) = {
-	match (fs.stat) {
-	case null =>
-		return errors::unsupported;
-	case let f: *statfunc =>
-		return f(fs, path);
-	};
-};
-
-// Obtains information about an [[io::file]].
-export fn fstat(fs: *fs, fd: io::file) (filestat | error) = {
-	match (fs.fstat) {
-	case null =>
-		return errors::unsupported;
-	case let f: *fstatfunc =>
-		return f(fs, fd);
-	};
-};
-
-// Returns true if a node exists at the given path, or false if not.
-//
-// Note that testing for file existence before using the file can often lead to
-// race conditions. If possible, prefer to simply attempt to use the file (e.g.
-// via "open"), and handle the resulting error should the file not exist.
-export fn exists(fs: *fs, path: str) bool = {
-	match (stat(fs, path)) {
-	case filestat =>
-		return true;
-	case error =>
-		return false;
 	};
 };
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // (c) Hare authors <https://harelang.org>
 
+use errors;
 use fs;
 use hare::module;
 use hare::parse;
@@ -14,6 +15,7 @@ type error = !(
 	exec::error |
 	fs::error |
 	io::error |
+	errors::error |
 	module::error |
 	path::error |
 	parse::error |

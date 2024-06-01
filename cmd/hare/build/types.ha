@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use crypto::sha256;
+use errors;
 use fs;
 use hare::ast;
 use hare::module;
@@ -9,7 +10,14 @@ use io;
 use os::exec;
 use path;
 
-export type error = !(exec::error | fs::error | io::error | module::error | path::error);
+export type error = !(
+	exec::error |
+	errors::error |
+	fs::error |
+	io::error |
+	module::error |
+	path::error
+);
 
 export type unknown_platform = !str;
 

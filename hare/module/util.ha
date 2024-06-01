@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use ascii;
+use errors;
 use fs;
 use io;
 use os;
@@ -26,9 +27,9 @@ fn insert_uniq(into: *[]str, s: str) void = {
 // returns true. If any of the deps don't exist, they are skipped.
 export fn outdated(target: str, deps: []str, mtime: time::instant) bool = {
 	let current = match (os::stat(target)) {
-	case fs::error =>
+	case errors::error =>
 		return true;
-	case let stat: fs::filestat =>
+	case let stat: os::filestat =>
 		yield stat.mtime;
 	};
 	if (time::compare(current, mtime) < 0) {
@@ -36,9 +37,9 @@ export fn outdated(target: str, deps: []str, mtime: time::instant) bool = {
 	};
 	for (let dep .. deps) {
 		match (os::stat(dep)) {
-		case fs::error =>
+		case errors::error =>
 			continue;
-		case let stat: fs::filestat =>
+		case let stat: os::filestat =>
 			if (time::compare(current, stat.mtime) < 0) {
 				return true;
 			};

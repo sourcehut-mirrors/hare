@@ -4,6 +4,7 @@
 use bufio;
 use debug::dwarf;
 use debug::image;
+use errors;
 use fmt;
 use format::elf;
 use fs;
@@ -28,10 +29,10 @@ fn backtrace(self: *image::image, frame: stackframe) void = {
 	frame = orig;
 
 	const st = match (os::fstat(self.fd)) {
-	case let st: fs::filestat =>
+	case let st: os::filestat =>
 		yield st;
-	case fs::error =>
-		yield fs::filestat { mask = 0, ... };
+	case errors::error =>
+		yield os::filestat { ... };
 	};
 
 	static let seen: [MAX_FRAMES]uintptr = [0: uintptr...];
@@ -58,7 +59,7 @@ fn backtrace(self: *image::image, frame: stackframe) void = {
 fn printframe(
 	self: *image::image,
 	seen: *[]uintptr,
-	imgstat: *fs::filestat,
+	imgstat: *os::filestat,
 	frame: stackframe,
 ) void = {
 	const pc = frame_pc(frame);
@@ -134,15 +135,12 @@ fn printframe(
 	static append(seen, pc);
 	fmt::errorln(): void;
 
-	if (imgstat.mask & fs::stat_mask::MTIME != 0) {
-		match (os::fstat(file)) {
-		case let st: fs::filestat =>
-			if (st.mask & fs::stat_mask::MTIME == 0) yield;
-			if (time::compare(st.mtime, imgstat.mtime) == 1) {
-				fmt::errorln("* Warning: file was modified after executable was built"): void;
-			};
-		case => void;
+	match (os::fstat(file)) {
+	case let st: os::filestat =>
+		if (time::compare(st.mtime, imgstat.mtime) == 1) {
+			fmt::errorln("* Warning: file was modified after executable was built"): void;
 		};
+	case => void;
 	};
 
 	fmt::errorfln("| {}", context): void;

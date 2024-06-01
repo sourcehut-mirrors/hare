@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use encoding::utf8;
+use errors;
 use fs;
 use hare::ast;
 use hare::parse;
@@ -36,6 +37,7 @@ export type errcontext = !(str, *error);
 export type error = !(
 	fs::error |
 	io::error |
+	errors::error |
 	path::error |
 	parse::error |
 	utf8::invalid |
@@ -103,6 +105,8 @@ fn _strerror(e: error, buf: *memio::stream) void = {
 		yield fs::strerror(e);
 	case let e: io::error =>
 		yield io::strerror(e);
+	case let e: errors::error =>
+		yield errors::strerror(e);
 	case let e: parse::error =>
 		yield parse::strerror(e);
 	case let e: path::error =>

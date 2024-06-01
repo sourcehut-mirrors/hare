@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use errors;
 use fmt;
 use fnmatch;
 use fs;
@@ -168,9 +169,9 @@ fn next_match(gen: *generator) (str | void | failure) = {
 				match (os::realpath(memio::string(b)!)) {
 				case let r: str =>
 					match (os::stat(r)) {
-					case let s: fs::filestat =>
+					case let s: os::filestat =>
 						m = io::isdir(s.mode);
-					case fs::error => void;
+					case errors::error => void;
 					};
 				case fs::error => void;
 				};

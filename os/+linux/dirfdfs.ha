@@ -69,8 +69,6 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
-			stat = &fs_stat,
-			fstat = &fs_fstat,
 			readlink = &fs_readlink,
 			mkdir = &fs_mkdir,
 			rmdir = &fs_rmdir,
@@ -231,57 +229,6 @@ fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 	case let err: rt::errno =>
 		return errno_to_fs(err);
 	case void => void;
-	};
-};
-
-fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
-	let fs = fs: *os_filesystem;
-	let st = rt::st { ... };
-	match (rt::fstatat(fs.dirfd, path, &st, rt::AT_SYMLINK_NOFOLLOW)) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case void => void;
-	};
-	return st_to_filestat(&st);
-};
-
-fn fs_fstat(fs: *fs::fs, fd: io::file) (fs::filestat | fs::error) = {
-	let fs = fs: *os_filesystem;
-	let st = rt::st { ... };
-	match (rt::fstatat(fd, "", &st, rt::AT_EMPTY_PATH)) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case void => void;
-	};
-	return st_to_filestat(&st);
-};
-
-fn st_to_filestat(st: *rt::st) fs::filestat = {
-	return fs::filestat {
-		mask = fs::stat_mask::UID
-			| fs::stat_mask::GID
-			| fs::stat_mask::SIZE
-			| fs::stat_mask::INODE
-			| fs::stat_mask::ATIME
-			| fs::stat_mask::MTIME
-			| fs::stat_mask::CTIME,
-		mode = st.mode: io::mode,
-		uid = st.uid,
-		gid = st.gid,
-		sz = st.sz,
-		inode = st.ino,
-		atime = time::instant {
-			sec = st.atime.tv_sec,
-			nsec = st.atime.tv_nsec,
-		},
-		mtime = time::instant {
-			sec = st.mtime.tv_sec,
-			nsec = st.mtime.tv_nsec,
-		},
-		ctime = time::instant {
-			sec = st.ctime.tv_sec,
-			nsec = st.ctime.tv_nsec,
-		},
 	};
 };
 

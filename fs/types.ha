@@ -55,31 +55,6 @@ case let err: io::error =>
 	yield io::strerror(err);
 };
 
-// A mask defining what items are populated in the stat structure.
-export type stat_mask = enum uint {
-	UID	= 1 << 0,
-	GID	= 1 << 1,
-	SIZE	= 1 << 2,
-	INODE	= 1 << 3,
-	ATIME	= 1 << 4,
-	MTIME	= 1 << 5,
-	CTIME	= 1 << 6,
-};
-
-// Information about a file or directory. The mask field defines what other
-// fields are set; mode is always set.
-export type filestat = struct {
-	mask: stat_mask,
-	mode: io::mode,
-	uid: uint,
-	gid: uint,
-	sz: size,
-	inode: u64,
-	atime: time::instant,
-	mtime: time::instant,
-	ctime: time::instant,
-};
-
 // An entry in a directory. This may be borrowed from the filesystem's internal
 // state. If you want to keep this around beyond one call to [[next]], use
 // [[dirent_dup]].
@@ -133,8 +108,6 @@ export type closefunc = fn(fs: *fs) void;
 export type removefunc = fn(fs: *fs, path: str) (void | error);
 export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
-export type statfunc = fn(fs: *fs, path: str) (filestat | error);
-export type fstatfunc = fn(fs: *fs, file: io::file) (filestat | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
 export type chmodfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
@@ -211,14 +184,6 @@ export type fs = struct {
 	// The iterator must return all entries without error. If an error would
 	// occur, it should be identified here and returned upfront.
 	iter: nullable *iterfunc,
-
-	// Obtains information about a file or directory. If the target is a
-	// symbolic link, information is returned about the link, not its
-	// target.
-	stat: nullable *statfunc,
-
-	// Obtains information about an [[io::file]].
-	fstat: nullable *fstatfunc,
 
 	// Returns the path referred to by a symbolic link. The caller will free
 	// the return value.

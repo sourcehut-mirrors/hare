@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // (c) Hare authors <https://harelang.org>
 
+use errors;
 use cmd::hare::build;
 use fmt;
 use fs;
@@ -103,6 +104,8 @@ export fn main() void = {
 		};
 		match (task(subcmd.0, subcmd.1)) {
 		case void => void;
+		case let e: errors::error =>
+			fmt::fatal("Error:", errors::strerror(e));
 		case let e: exec::error =>
 			fmt::fatal("Error:", exec::strerror(e));
 		case let e: fs::error =>

@@ -40,6 +40,13 @@ export type interrupted = !void;
 // The user should attempt an operation again.
 export type again = !void;
 
+// An entry of a particular type was sought, but is something else in practice.
+// For example, opening a file with [[iter]].
+export type wrongtype = !void;
+
+// Attempted to perform a cross-device filesystem link operation.
+export type xdev = !void;
+
 // A tagged union of all error types.
 export type error = !(
 	busy |
@@ -55,5 +62,7 @@ export type error = !(
 	nomem |
 	interrupted |
 	again |
+	wrongtype |
+	xdev |
 	opaque_
 );

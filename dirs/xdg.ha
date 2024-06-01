@@ -19,10 +19,10 @@ fn lookup(prog: str, var: str, default: str) str = {
 			yield;
 		};
 		match (os::stat(path)) {
-		case let err: fs::error =>
+		case let err: errors::error =>
 			os::mkdirs(path, 0o755)!;
 			return path;
-		case let st: fs::filestat =>
+		case let st: os::filestat =>
 			if (io::isdir(st.mode)) {
 				return path;
 			};

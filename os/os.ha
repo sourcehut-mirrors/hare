@@ -32,20 +32,6 @@ export fn iter(path: str) (*fs::iterator | fs::error) = fs::iter(cwd, path);
 // with [[fs::dirents_free]].
 export fn readdir(path: str) ([]fs::dirent | fs::error) = fs::readdir(cwd, path);
 
-// Returns file information for a given path. If the target is a symlink,
-// information is returned about the link, not its target.
-export fn stat(path: str) (fs::filestat | fs::error) = fs::stat(cwd, path);
-
-// Returns file information for an [[io::file]].
-export fn fstat(fd: io::file) (fs::filestat | fs::error) = fs::fstat(cwd, fd);
-
-// Returns true if a node exists at the given path, or false if not.
-//
-// Note that testing for file existence before using the file can often lead to
-// race conditions. If possible, prefer to simply attempt to use the file (e.g.
-// via "open"), and handle the resulting error should the file not exist.
-export fn exists(path: str) bool = fs::exists(cwd, path);
-
 // Creates a directory.
 export fn mkdir(path: str, mode: io::mode) (void | fs::error) = fs::mkdir(cwd, path, mode);
 

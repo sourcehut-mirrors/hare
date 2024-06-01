@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use bytes;
+use errors;
 use fs;
 use hare::ast;
 use io;
@@ -191,9 +192,9 @@ fn _findsrcs(
 ) (void | error) = {
 	const pathstr = path::string(buf);
 	const stat = match (os::stat(pathstr)) {
-	case let stat: fs::filestat =>
+	case let stat: os::filestat =>
 		yield stat;
-	case fs::error =>
+	case errors::error =>
 		return;
 	};
 

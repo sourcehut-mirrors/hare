@@ -70,7 +70,7 @@ $(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/errors.td $(HARECACHE)/math.td $(
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time.td.tmp -N time $(time_ha)
 
 io_ha = io/+openbsd/dup.ha io/+openbsd/mmap.ha io/+openbsd/platform_file.ha io/+openbsd/vector.ha io/arch+aarch64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/mode.ha io/stream.ha io/tee.ha io/types.ha io/util.ha io/zero.ha
-$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/rt.td $(HARECACHE)/time.td $(HARECACHE)/types.td
+$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/io.td.tmp -N io $(io_ha)
@@ -129,7 +129,7 @@ $(HARECACHE)/types_c.ssa: $(types_c_ha) $(HARECACHE)/encoding_utf8.td $(HARECACH
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/types_c.td.tmp -N types::c $(types_c_ha)
 
-os_ha = os/+openbsd/dirfdfs.ha os/+openbsd/exit.ha os/+openbsd/fs.ha os/+openbsd/platform_environ.ha os/+openbsd/shm.ha os/+openbsd/status.ha os/+openbsd/stdfd.ha os/environ.ha os/os.ha
+os_ha = os/+openbsd/dirfdfs.ha os/+openbsd/exit.ha os/+openbsd/fs.ha os/+openbsd/platform_environ.ha os/+openbsd/shm.ha os/+openbsd/status.ha os/+openbsd/stdfd.ha os/environ.ha os/fsutil.ha os/os.ha
 $(HARECACHE)/os.ssa: $(os_ha) $(HARECACHE)/bufio.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/math.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -196,7 +196,7 @@ $(HARECACHE)/time_date.ssa: $(time_date_ha) $(HARECACHE)/ascii.td $(HARECACHE)/f
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time_date.td.tmp -N time::date $(time_date_ha)
 
 hare_module_ha = hare/module/cache.ha hare/module/deps.ha hare/module/format.ha hare/module/srcs.ha hare/module/types.ha hare/module/util.ha
-$(HARECACHE)/hare_module.ssa: $(hare_module_ha) $(HARECACHE)/ascii.td $(HARECACHE)/bufio.td $(HARECACHE)/bytes.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/hare_ast.td $(HARECACHE)/hare_lex.td $(HARECACHE)/hare_parse.td $(HARECACHE)/hare_unparse.td $(HARECACHE)/io.td $(HARECACHE)/memio.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/sort.td $(HARECACHE)/sort_cmp.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/time_chrono.td $(HARECACHE)/time_date.td
+$(HARECACHE)/hare_module.ssa: $(hare_module_ha) $(HARECACHE)/ascii.td $(HARECACHE)/bufio.td $(HARECACHE)/bytes.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/hare_ast.td $(HARECACHE)/hare_lex.td $(HARECACHE)/hare_parse.td $(HARECACHE)/hare_unparse.td $(HARECACHE)/io.td $(HARECACHE)/memio.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/sort.td $(HARECACHE)/sort_cmp.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/time_chrono.td $(HARECACHE)/time_date.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/hare_module.td.tmp -N hare::module $(hare_module_ha)
@@ -238,7 +238,7 @@ $(HARECACHE)/cmd_hare_build.ssa: $(cmd_hare_build_ha) $(HARECACHE)/crypto_sha256
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/cmd_hare_build.td.tmp -N cmd::hare::build $(cmd_hare_build_ha)
 
 dirs_ha = dirs/xdg.ha
-$(HARECACHE)/dirs.ssa: $(dirs_ha) $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/unix.td
+$(HARECACHE)/dirs.ssa: $(dirs_ha) $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/unix.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/dirs.td.tmp -N dirs $(dirs_ha)
