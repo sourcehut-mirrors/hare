@@ -165,14 +165,14 @@ fn _fs_open(
 fn fs_open_file(
 	fs: *fs::fs,
 	path: str,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::file | fs::error) = {
-	flags ^= fs::flag::CTTY | fs::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
+	flags ^= io::flag::CTTY | io::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
 
-	if ((flags & fs::flag::DIRECTORY) == fs::flag::DIRECTORY) {
+	if ((flags & io::flag::DIRECTORY) == io::flag::DIRECTORY) {
 		// This is arch-specific
-		flags &= ~fs::flag::DIRECTORY;
-		flags |= rt::O_DIRECTORY: fs::flag;
+		flags &= ~io::flag::DIRECTORY;
+		flags |= rt::O_DIRECTORY: io::flag;
 	};
 
 	let oh = rt::open_how {
@@ -185,17 +185,17 @@ fn fs_open_file(
 fn fs_open(
 	fs: *fs::fs,
 	path: str,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::handle | fs::error) = fs_open_file(fs, path, flags)?;
 
 fn fs_create_file(
 	fs: *fs::fs,
 	path: str,
 	mode: io::mode,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::file | fs::error) = {
-	flags ^= fs::flag::CTTY | fs::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
-	flags |= fs::flag::CREATE;
+	flags ^= io::flag::CTTY | io::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
+	flags |= io::flag::CREATE;
 
 	let oh = rt::open_how {
 		flags = flags: u64,
@@ -209,7 +209,7 @@ fn fs_create(
 	fs: *fs::fs,
 	path: str,
 	mode: io::mode,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::handle | fs::error) = {
 	return fs_create_file(fs, path, mode, flags)?;
 };

@@ -79,31 +79,6 @@ export fn dirent_dup(e: *dirent) dirent = {
 // [[dirent_dup]].
 export fn dirent_finish(e: *dirent) void = free(e.name);
 
-// Flags to use for opening a file. Not all operating systems support all flags;
-// at a minimum, RDONLY, WRONLY, RDWR, CREATE, and TRUNC will be supported.
-// Note that NOCTTY and CLOEXEC are on by default, and the CTTY/NOCLOEXEC flags
-// respectively disable them.
-export type flag = enum int {
-	RDONLY		= 0,
-	WRONLY		= 1,
-	RDWR		= 2,
-	CREATE		= 0o100,
-	EXCL		= 0o200,
-	CTTY		= 0o400,
-	TRUNC		= 0o1000,
-	APPEND		= 0o2000,
-	NONBLOCK	= 0o4000,
-	DSYNC		= 0o10000,
-	SYNC		= 0o4010000,
-	RSYNC		= 0o4010000,
-	DIRECTORY	= 0o200000,
-	NOFOLLOW	= 0o400000,
-	NOATIME		= 0o1000000,
-	NOCLOEXEC	= 0o2000000,
-	PATH		= 0o10000000,
-	TMPFILE		= 0o20200000,
-};
-
 export type closefunc = fn(fs: *fs) void;
 export type removefunc = fn(fs: *fs, path: str) (void | error);
 export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
@@ -126,27 +101,27 @@ export type symlinkfunc = fn(fs: *fs, target: str, path: str) (void | error);
 export type openfunc = fn(
 	fs: *fs,
 	path: str,
-	flags: flag,
+	flags: io::flag,
 ) (io::handle | error);
 
 export type openfilefunc = fn(
 	fs: *fs,
 	path: str,
-	flags: flag,
+	flags: io::flag,
 ) (io::file | error);
 
 export type createfunc = fn(
 	fs: *fs,
 	path: str,
 	mode: io::mode,
-	flags: flag,
+	flags: io::flag,
 ) (io::handle | error);
 
 export type createfilefunc = fn(
 	fs: *fs,
 	path: str,
 	mode: io::mode,
-	flags: flag,
+	flags: io::flag,
 ) (io::file | error);
 
 // An abstract implementation of a filesystem, which provides common filesystem

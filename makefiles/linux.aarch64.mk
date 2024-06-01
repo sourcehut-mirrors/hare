@@ -93,7 +93,7 @@ $(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/errors.td $(HARECACHE)/linux_vdso
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time.td.tmp -N time $(time_ha)
 
-io_ha = io/+linux/dup.ha io/+linux/mmap.ha io/+linux/platform_file.ha io/+linux/vector.ha io/arch+aarch64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/mode.ha io/stream.ha io/tee.ha io/types.ha io/util.ha io/zero.ha
+io_ha = io/+linux/dup.ha io/+linux/mmap.ha io/+linux/platform_file.ha io/+linux/platform_flags.ha io/+linux/vector.ha io/arch+aarch64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/mode.ha io/stream.ha io/tee.ha io/types.ha io/util.ha io/zero.ha
 $(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

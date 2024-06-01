@@ -135,7 +135,7 @@ export fn getpsid(pid: pid) (pid | errors::noentry | errors::noaccess) = {
 // leader.
 //
 // Upon return, the new session will have no controlling terminal. To establish
-// one, the caller must open a terminal file with [[fs::flag::CTTY]]; this
+// one, the caller must open a terminal file with [[io::flag::CTTY]]; this
 // opt-in approach differs from the Unix norm where O_NOCTTY is required to
 // opt-out of establishing a controlling terminal.
 //

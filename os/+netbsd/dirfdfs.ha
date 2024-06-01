@@ -110,53 +110,53 @@ fn _fs_open(
 	return io::fdopen(fd);
 };
 
-fn fsflags_to_bsd(flags: fs::flag) (int | errors::unsupported) = {
+fn fsflags_to_bsd(flags: io::flag) (int | errors::unsupported) = {
 	let out = rt::O_NOCTTY | rt::O_CLOEXEC;
-	if (flags & fs::flag::WRONLY == fs::flag::WRONLY) {
+	if (flags & io::flag::WRONLY == io::flag::WRONLY) {
 		out |= rt::O_WRONLY;
 	};
-	if (flags & fs::flag::RDWR == fs::flag::RDWR) {
+	if (flags & io::flag::RDWR == io::flag::RDWR) {
 		out |= rt::O_RDWR;
 	};
-	if (flags & fs::flag::CREATE == fs::flag::CREATE) {
+	if (flags & io::flag::CREATE == io::flag::CREATE) {
 		out |= rt::O_CREAT;
 	};
-	if (flags & fs::flag::EXCL == fs::flag::EXCL) {
+	if (flags & io::flag::EXCL == io::flag::EXCL) {
 		out |= rt::O_EXCL;
 	};
-	if (flags & fs::flag::CTTY == fs::flag::CTTY) {
+	if (flags & io::flag::CTTY == io::flag::CTTY) {
 		out &= ~rt::O_NOCTTY;
 	};
-	if (flags & fs::flag::TRUNC == fs::flag::TRUNC) {
+	if (flags & io::flag::TRUNC == io::flag::TRUNC) {
 		out |= rt::O_TRUNC;
 	};
-	if (flags & fs::flag::APPEND == fs::flag::APPEND) {
+	if (flags & io::flag::APPEND == io::flag::APPEND) {
 		out |= rt::O_APPEND;
 	};
-	if (flags & fs::flag::NONBLOCK == fs::flag::NONBLOCK) {
+	if (flags & io::flag::NONBLOCK == io::flag::NONBLOCK) {
 		out |= rt::O_NONBLOCK;
 	};
-	if (flags & fs::flag::DSYNC == fs::flag::DSYNC) {
+	if (flags & io::flag::DSYNC == io::flag::DSYNC) {
 		out |= rt::O_DSYNC;
 	};
-	if (flags & fs::flag::SYNC == fs::flag::SYNC) {
+	if (flags & io::flag::SYNC == io::flag::SYNC) {
 		out |= rt::O_SYNC;
 	};
-	if (flags & fs::flag::RSYNC == fs::flag::RSYNC) {
+	if (flags & io::flag::RSYNC == io::flag::RSYNC) {
 		out |= rt::O_SYNC;
 	};
-	if (flags & fs::flag::DIRECTORY == fs::flag::DIRECTORY) {
+	if (flags & io::flag::DIRECTORY == io::flag::DIRECTORY) {
 		out |= rt::O_DIRECTORY;
 	};
-	if (flags & fs::flag::NOFOLLOW == fs::flag::NOFOLLOW) {
+	if (flags & io::flag::NOFOLLOW == io::flag::NOFOLLOW) {
 		out |= rt::O_NOFOLLOW;
 	};
-	if (flags & fs::flag::NOCLOEXEC == fs::flag::NOCLOEXEC) {
+	if (flags & io::flag::NOCLOEXEC == io::flag::NOCLOEXEC) {
 		out &= ~rt::O_CLOEXEC;
 	};
-	if (flags & fs::flag::PATH == fs::flag::PATH
-			|| flags & fs::flag::NOATIME == fs::flag::NOATIME
-			|| flags & fs::flag::TMPFILE == fs::flag::TMPFILE) {
+	if (flags & io::flag::PATH == io::flag::PATH
+			|| flags & io::flag::NOATIME == io::flag::NOATIME
+			|| flags & io::flag::TMPFILE == io::flag::TMPFILE) {
 		return errors::unsupported;
 	};
 	return out;
@@ -165,7 +165,7 @@ fn fsflags_to_bsd(flags: fs::flag) (int | errors::unsupported) = {
 fn fs_open_file(
 	fs: *fs::fs,
 	path: str,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::file | fs::error) = {
 	return _fs_open(fs, path, fsflags_to_bsd(flags)?, 0);
 };
@@ -173,16 +173,16 @@ fn fs_open_file(
 fn fs_open(
 	fs: *fs::fs,
 	path: str,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::handle | fs::error) = fs_open_file(fs, path, flags)?;
 
 fn fs_create_file(
 	fs: *fs::fs,
 	path: str,
 	mode: io::mode,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::file | fs::error) = {
-	flags |= fs::flag::CREATE;
+	flags |= io::flag::CREATE;
 	return _fs_open(fs, path, fsflags_to_bsd(flags)?, mode)?;
 };
 
@@ -190,7 +190,7 @@ fn fs_create(
 	fs: *fs::fs,
 	path: str,
 	mode: io::mode,
-	flags: fs::flag,
+	flags: io::flag,
 ) (io::handle | fs::error) = {
 	return fs_create_file(fs, path, mode, flags)?;
 };

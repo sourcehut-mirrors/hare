@@ -22,7 +22,7 @@ export fn close(fs: *fs) void = {
 export fn open(
 	fs: *fs,
 	path: str,
-	flags: flag = flag::RDONLY,
+	flags: io::flag = io::flag::RDONLY,
 ) (io::handle | error) = {
 	match (fs.open) {
 	case null =>
@@ -41,7 +41,7 @@ export fn open(
 export fn open_file(
 	fs: *fs,
 	path: str,
-	flags: flag = flag::RDONLY,
+	flags: io::flag = io::flag::RDONLY,
 ) (io::file | error) = {
 	match (fs.openfile) {
 	case null =>
@@ -57,7 +57,7 @@ export fn create(
 	fs: *fs,
 	path: str,
 	mode: io::mode,
-	flags: flag = flag::WRONLY | flag::TRUNC,
+	flags: io::flag = io::flag::WRONLY | io::flag::TRUNC,
 ) (io::handle | error) = {
 	match (fs.create) {
 	case null =>
@@ -75,7 +75,7 @@ export fn create_file(
 	fs: *fs,
 	path: str,
 	mode: io::mode,
-	flags: flag = flag::WRONLY | flag::TRUNC,
+	flags: io::flag = io::flag::WRONLY | io::flag::TRUNC,
 ) (io::file | error) = {
 	match (fs.createfile) {
 	case null =>

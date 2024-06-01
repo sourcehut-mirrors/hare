@@ -130,7 +130,7 @@ fn run_task(ctx: *context, jobs: *[]job, t: *task) (bool | error) = {
 
 	path::set(&buf, out)?;
 	let lock = path::push_ext(&buf, "lock")?;
-	let lock = os::create(lock, 0o644, fs::flag::WRONLY)?;
+	let lock = os::create(lock, 0o644, io::flag::WRONLY)?;
 	if (!io::lock(lock, false, io::lockop::EXCLUSIVE)?) {
 		io::close(lock)?;
 		return false;
@@ -278,7 +278,7 @@ fn cleanup_ssa_task(ctx: *context, t: *task, out: str) (void | error) = {
 	let tmp = strings::concat(out, ".td.tmp");
 	defer free(tmp);
 
-	let f = match (os::create(tmp, 0o644, fs::flag::RDWR)) {
+	let f = match (os::create(tmp, 0o644, io::flag::RDWR)) {
 	case let f: io::file =>
 		yield f;
 	case let err: fs::error =>

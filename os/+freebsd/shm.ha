@@ -21,16 +21,16 @@ fn shm_path(name: str) (str | fs::error) = {
 	return path::string(&buf);
 };
 
-// Opens (or creates, given [[fs::flag::CREATE]]) a global shared memory file
+// Opens (or creates, given [[io::flag::CREATE]]) a global shared memory file
 // with the given name, suitable for use with [[io::mmap]] to establish shared
 // memory areas with other processes using the same name.
 //
 // The name must not contain any forward slashes (one is permissible at the
 // start, e.g. "/example") and cannot be "." or "..".
 //
-// The "oflag" parameter, if provided, must include either [[fs::flag::RDONLY]]
-// or [[fs::flag::RDWR]], and may optionally add [[fs::flag::CREATE]],
-// [[fs::flag::EXCL]], and/or [[fs::flag::TRUNC]], which are supported on all
+// The "oflag" parameter, if provided, must include either [[io::flag::RDONLY]]
+// or [[io::flag::RDWR]], and may optionally add [[io::flag::CREATE]],
+// [[io::flag::EXCL]], and/or [[io::flag::TRUNC]], which are supported on all
 // POSIX-compatible platforms. Other platforms may support additional
 // non-standard flags; consult the shm_open(3) manual for your target system for
 // details.
@@ -42,7 +42,7 @@ fn shm_path(name: str) (str | fs::error) = {
 // Call [[shm_unlink]] to remove the global shared memory object.
 export fn shm_open(
 	name: str,
-	oflag: fs::flag = fs::flag::CREATE | fs::flag::RDWR,
+	oflag: io::flag = io::flag::CREATE | io::flag::RDWR,
 	mode: fs::mode = 0o600,
 ) (io::file | fs::error) = {
 	const path = shm_path(name)?;

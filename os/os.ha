@@ -93,11 +93,11 @@ export fn symlink(target: str, path: str) (void | fs::error) =
 
 // Opens a file.
 //
-// [[fs::flag::CREATE]] isn't very useful with this function, since the new
+// [[io::flag::CREATE]] isn't very useful with this function, since the new
 // file's mode is set to zero. For this use-case, use [[create]] instead.
 export fn open(
 	path: str,
-	flags: fs::flag = fs::flag::RDONLY,
+	flags: io::flag = io::flag::RDONLY,
 ) (io::file | fs::error) = fs::open_file(cwd, path, flags);
 
 // Creates a new file with the given mode if it doesn't already exist and opens
@@ -110,7 +110,7 @@ export fn open(
 export fn create(
 	path: str,
 	mode: io::mode,
-	flags: fs::flag = fs::flag::WRONLY | fs::flag::TRUNC,
+	flags: io::flag = io::flag::WRONLY | io::flag::TRUNC,
 ) (io::file | fs::error) = fs::create_file(cwd, path, mode, flags);
 
 // Canonicalizes a path in this filesystem by resolving all symlinks and
@@ -123,6 +123,6 @@ export fn realpath(path: str) (str | fs::error) = fs::realpath(cwd, path);
 
 // Opens a directory as a filesystem.
 export fn diropen(path: str) (*fs::fs | fs::error) = {
-	const file = open(path, fs::flag::DIRECTORY | fs::flag::RDONLY)?;
+	const file = open(path, io::flag::DIRECTORY | io::flag::RDONLY)?;
 	return dirfdopen(file);
 };

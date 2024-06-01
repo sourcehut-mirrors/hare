@@ -85,7 +85,7 @@ fn get_deps(cachedir: str, srcs: *srcset) ([]ast::ident | error) = {
 
 	let outofdate = outdated(path::string(&buf), srcs.ha, srcs.mtime);
 	os::mkdirs(cachedir, 0o755)?;
-	let depsfile = os::create(path::string(&buf), 0o644, fs::flag::RDWR)?;
+	let depsfile = os::create(path::string(&buf), 0o644, io::flag::RDWR)?;
 	defer io::close(depsfile)!;
 	io::lock(depsfile, true, io::lockop::EXCLUSIVE)?;
 
