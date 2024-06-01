@@ -84,8 +84,6 @@ export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
-export type resolvefunc = fn(fs: *fs, path: str) str;
-export type readlinkfunc = fn(fs: *fs, path: str) (str | error);
 export type linkfunc = fn(fs: *fs, old: str, new: str) (void | error);
 export type symlinkfunc = fn(fs: *fs, target: str, path: str) (void | error);
 
@@ -113,20 +111,11 @@ export type fs = struct {
 	// occur, it should be identified here and returned upfront.
 	iter: nullable *iterfunc,
 
-	// Returns the path referred to by a symbolic link. The caller will free
-	// the return value.
-	readlink: nullable *readlinkfunc,
-
 	// Creates a directory.
 	mkdir: nullable *mkdirfunc,
 
 	// Removes a directory. The target directory must be empty.
 	rmdir: nullable *rmdirfunc,
-
-	// Resolves a path to its absolute, normalized value. If the fs
-	// implementation does not provide this, [resolve] presumes that
-	// relative paths are rooted (i.e. "foo" == "/foo").
-	resolve: nullable *resolvefunc,
 
 	// Creates a new (hard) link.
 	link: nullable *linkfunc,

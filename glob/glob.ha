@@ -131,7 +131,7 @@ fn next_match(gen: *generator) (str | void | failure) = {
 	if (gen.flgs & flag::NOESCAPE != 0) {
 		flgs |= fnmatch::flag::NOESCAPE;
 	};
-	let it = match(os::iter(if (len(dir) > 0) dir else ".")) {
+	let it = match (os::iter(if (len(dir) > 0) dir else ".")) {
 	case let i: *fs::iterator =>
 		yield i;
 	case let e: fs::error =>
@@ -173,7 +173,7 @@ fn next_match(gen: *generator) (str | void | failure) = {
 						m = io::isdir(s.mode);
 					case errors::error => void;
 					};
-				case fs::error => void;
+				case errors::error => void;
 				};
 			};
 			if (m) {

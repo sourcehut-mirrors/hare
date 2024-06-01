@@ -48,35 +48,3 @@ fn rmdirall_path(fs: *fs, buf: *path::buffer) (void | error) = {
 	};
 	return rmdir(fs, path::string(buf));
 };
-
-// Canonicalizes a path in this filesystem by resolving all symlinks and
-// collapsing any "." or ".." path components. The return value is statically
-// allocated and will be overwritten on subsequent calls.
-export fn realpath(fs: *fs, path: str) (str | error) = {
-	static let res = path::buffer { ... };
-	path::set(&res)!;
-	static let pathbuf = path::buffer { ... };
-	path::set(&pathbuf, resolve(fs, path))!;
-	const iter = path::iter(&pathbuf);
-
-	for (let item => path::nextiter(&iter)) {
-		const item = path::push(&res, item)!;
-
-		const link = match (readlink(fs, item)) {
-		case let link: str =>
-			yield link;
-		case wrongtype =>
-			continue;
-		case let err: error =>
-			return err;
-		};
-
-		if (!path::abs(link)) {
-			path::push(&res, "..", link)!;
-		} else {
-			path::set(&res, link)!;
-		};
-	};
-
-	return path::string(&res);
-};

@@ -45,13 +45,6 @@ export fn rmdir(path: str) (void | fs::error) = fs::rmdir(cwd, path);
 // Removes a directory, and anything in it.
 export fn rmdirall(path: str) (void | fs::error) = fs::rmdirall(cwd, path);
 
-// Resolves a path to its absolute, normalized value. Relative paths will be
-// rooted (if supported by the host filesystem), and "." and ".." components
-// will be reduced. This function does not follow symlinks; see [[realpath]] if
-// you need this behavior. The return value is statically allocated; use
-// [[strings::dup]] to extend its lifetime.
-export fn resolve(path: str) str = fs::resolve(cwd, path);
-
 // Creates a new (hard) link at 'new' for the file at 'old'.
 export fn link(old: str, new: str) (void | fs::error) = fs::link(cwd, old, new);
 

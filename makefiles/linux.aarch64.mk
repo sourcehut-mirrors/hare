@@ -153,7 +153,7 @@ $(HARECACHE)/unix.ssa: $(unix_ha) $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HA
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix.td.tmp -N unix $(unix_ha)
 
-os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fcntl.ha os/+linux/fsmisc.ha os/+linux/inode.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/os.ha
+os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fcntl.ha os/+linux/fsmisc.ha os/+linux/fsutil.ha os/+linux/inode.ha os/+linux/link.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/os.ha
 $(HARECACHE)/os.ssa: $(os_ha) $(HARECACHE)/bufio.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/math.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

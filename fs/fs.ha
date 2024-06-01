@@ -74,17 +74,6 @@ export fn finish(iter: *iterator) void = {
 	};
 };
 
-// Returns the path referred to by a symbolic link. The return value is
-// statically allocated and will be overwritten on subsequent calls.
-export fn readlink(fs: *fs, path: str) (str | error) = {
-	match (fs.readlink) {
-	case null =>
-		return errors::unsupported;
-	case let f: *readlinkfunc =>
-		return f(fs, path);
-	};
-};
-
 // Creates a directory.
 export fn mkdir(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	match (fs.mkdir) {
@@ -126,22 +115,6 @@ export fn rmdir(fs: *fs, path: str) (void | error) = {
 	case let f: *rmdirfunc =>
 		return f(fs, path);
 	};
-};
-
-// Resolves a path to its absolute, normalized value. Relative paths will be
-// rooted (if supported by the fs implementation), and "." and ".." components
-// will be reduced. This function does not follow symlinks; see [[realpath]] if
-// you need this behavior. The return value is statically allocated; use
-// [[strings::dup]] to extend its lifetime.
-export fn resolve(fs: *fs, path: str) str = {
-	match (fs.resolve) {
-	case null => void;
-	case let f: *resolvefunc =>
-		return f(fs, path);
-	};
-	static let buf = path::buffer { ... };
-	path::set(&buf, path)!;
-	return path::string(&buf);
 };
 
 // Creates a new (hard) link at 'new' for the file at 'old'.

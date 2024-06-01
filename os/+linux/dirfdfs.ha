@@ -72,7 +72,6 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			iter = &fs_iter,
 			mkdir = &fs_mkdir,
 			rmdir = &fs_rmdir,
-			resolve = &fs_resolve,
 			link = &fs_link,
 			symlink = &fs_symlink,
 			...
@@ -168,16 +167,6 @@ fn fs_mkdir(fs: *fs::fs, path: str, mode: io::mode) (void | fs::error) = {
 		return errno_to_fs(err);
 	case void => void;
 	};
-};
-
-fn fs_resolve(fs: *fs::fs, path: str) str = {
-	if (path::abs(path)) {
-		return path;
-	};
-	// XXX: This approach might not be right if this fs is based on a subdir
-	static let buf = path::buffer { ... };
-	path::set(&buf, getcwd(), path)!;
-	return path::string(&buf);
 };
 
 fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
