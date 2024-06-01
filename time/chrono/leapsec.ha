@@ -3,6 +3,7 @@
 
 use bufio;
 use encoding::utf8;
+use errors;
 use fs;
 use io;
 use os;
@@ -29,7 +30,7 @@ use strings;
 // timescales. Therefore, we have decided to take an alternative approach.
 
 // Error initializing the [[utc]] [[timescale]].
-type utciniterror = !(fs::error | io::error | utf8::invalid);
+type utciniterror = !(errors::error | io::error | utf8::invalid);
 
 // The number of seconds between the years 1900 and 1970.
 //

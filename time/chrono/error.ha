@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use errors;
 use encoding::utf8;
 use fmt;
 use fs;
@@ -26,10 +27,10 @@ export fn strerror(err: error) const str = {
 	case let err: tzdberror =>
 		static let buf: [1024]u8 = [0...];
 		match (err) {
-		case let err: fs::error =>
+		case let err: errors::error =>
 			return fmt::bsprintf(buf,
 				"Timezone database error: {}",
-				fs::strerror(err),
+				errors::strerror(err),
 			);
 		case let err: io::error =>
 			return fmt::bsprintf(buf,

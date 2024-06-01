@@ -182,7 +182,7 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 		dest = match (os::create(output, mode)) {
 		case let f: io::file =>
 			yield f;
-		case let e: fs::error =>
+		case let e: errors::error =>
 			return (output, e): output_failed;
 		};
 	};

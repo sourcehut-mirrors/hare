@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use bufio;
+use errors;
 use fmt;
 use fs;
 use hare::ast;
@@ -33,7 +34,7 @@ export fn parse_deps(files: str...) ([]ast::ident | error) = {
 		let handle = match (os::open(file)) {
 		case let f: io::file =>
 			yield f;
-		case let e: fs::error =>
+		case let e: errors::error =>
 			return attach(strings::dup(file), e);
 		};
 		defer io::close(handle)!;

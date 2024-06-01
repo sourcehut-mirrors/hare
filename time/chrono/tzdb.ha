@@ -5,6 +5,7 @@ use bufio;
 use bytes;
 use encoding::utf8;
 use endian;
+use errors;
 use fs;
 use io;
 use os;
@@ -13,7 +14,7 @@ use strings;
 use time;
 
 // Error concerning the Timezone database.
-export type tzdberror = !(invalidtzif | fs::error | io::error);
+export type tzdberror = !(invalidtzif | errors::error | io::error);
 
 // Invalid TZif data.
 export type invalidtzif = !void;

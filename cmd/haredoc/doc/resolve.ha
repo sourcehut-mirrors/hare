@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use bufio;
+use errors;
 use fmt;
 use fs;
 use hare::ast;
@@ -183,8 +184,9 @@ export fn scan(path: str) ([]ast::decl | parse::error) = {
 	const input = match (os::open(path)) {
 	case let f: io::file =>
 		yield f;
-	case let err: fs::error =>
-		fmt::fatalf("Error reading {}: {}", path, fs::strerror(err));
+	case let err: errors::error =>
+		fmt::fatalf("Error reading {}: {}", path,
+			errors::strerror(err));
 	};
 	defer io::close(input)!;
 	let sc = bufio::newscanner(input, types::SIZE_MAX);

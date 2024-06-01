@@ -281,7 +281,7 @@ fn cleanup_ssa_task(ctx: *context, t: *task, out: str) (void | error) = {
 	let f = match (os::create(tmp, 0o644, io::flag::RDWR)) {
 	case let f: io::file =>
 		yield f;
-	case let err: fs::error =>
+	case let err: errors::error =>
 		return err;
 	};
 	defer io::close(f)!;
@@ -313,7 +313,7 @@ fn get_td(ctx: *context, idx: size) (void | error) = {
 	let ptr = strings::concat(ssa, ".td");
 	defer free(ptr);
 	let ptr = match (os::open(ptr)) {
-	case fs::error =>
+	case errors::error =>
 		return;
 	case let ptr: io::file =>
 		yield ptr;

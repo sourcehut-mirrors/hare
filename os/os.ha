@@ -91,28 +91,6 @@ export fn link(old: str, new: str) (void | fs::error) = fs::link(cwd, old, new);
 export fn symlink(target: str, path: str) (void | fs::error) =
 	fs::symlink(cwd, target, path);
 
-// Opens a file.
-//
-// [[io::flag::CREATE]] isn't very useful with this function, since the new
-// file's mode is set to zero. For this use-case, use [[create]] instead.
-export fn open(
-	path: str,
-	flags: io::flag = io::flag::RDONLY,
-) (io::file | fs::error) = fs::open_file(cwd, path, flags);
-
-// Creates a new file with the given mode if it doesn't already exist and opens
-// it for writing.
-//
-// Only the permission bits of the mode are used. If other bits are set, they
-// are discarded.
-//
-// To create a file without opening it, see [[mkfile]].
-export fn create(
-	path: str,
-	mode: io::mode,
-	flags: io::flag = io::flag::WRONLY | io::flag::TRUNC,
-) (io::file | fs::error) = fs::create_file(cwd, path, mode, flags);
-
 // Canonicalizes a path in this filesystem by resolving all symlinks and
 // collapsing any "." or ".." path components.
 //

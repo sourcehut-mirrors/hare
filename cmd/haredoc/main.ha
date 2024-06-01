@@ -3,6 +3,7 @@
 
 use bufio;
 use cmd::haredoc::doc;
+use errors;
 use fmt;
 use fs;
 use getopt;
@@ -37,6 +38,8 @@ export fn main() void = {
 		fmt::fatal(doc::strerror(e));
 	case let e: exec::error =>
 		fmt::fatal(exec::strerror(e));
+	case let e: errors::error =>
+		fmt::fatal(errors::strerror(e));
 	case let e: fs::error =>
 		fmt::fatal(fs::strerror(e));
 	case let e: io::error =>
@@ -239,7 +242,7 @@ fn doc(name: str, cmd: *getopt::command) (void | error) = {
 		match (os::open(path::string(&rpath))) {
 		case let f: io::file =>
 			readme = f;
-		case fs::error => void;
+		case errors::error => void;
 		};
 	};
 

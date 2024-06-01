@@ -99,7 +99,7 @@ fn printframe(
 	};
 
 	const file = match (os::open(path)) {
-	case fs::error =>
+	case errors::error =>
 		printframe_with_symbol(&sym, name, path, (line, col), pc);
 		return;
 	case let file: io::file =>

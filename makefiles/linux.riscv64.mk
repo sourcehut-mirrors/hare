@@ -153,7 +153,7 @@ $(HARECACHE)/unix.ssa: $(unix_ha) $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HA
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix.td.tmp -N unix $(unix_ha)
 
-os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fs.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/fsutil.ha os/os.ha
+os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fcntl.ha os/+linux/fs.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/fsutil.ha os/os.ha
 $(HARECACHE)/os.ssa: $(os_ha) $(HARECACHE)/bufio.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/math.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -208,7 +208,7 @@ $(HARECACHE)/hare_unparse.ssa: $(hare_unparse_ha) $(HARECACHE)/fmt.td $(HARECACH
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/hare_unparse.td.tmp -N hare::unparse $(hare_unparse_ha)
 
 time_chrono_ha = time/chrono/+linux.ha time/chrono/arithmetic.ha time/chrono/chronology.ha time/chrono/error.ha time/chrono/leapsec.ha time/chrono/timescale.ha time/chrono/timezone.ha time/chrono/tzdb.ha
-$(HARECACHE)/time_chrono.ssa: $(time_chrono_ha) $(HARECACHE)/bufio.td $(HARECACHE)/bytes.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/endian.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/sort.td $(HARECACHE)/strconv.td $(HARECACHE)/strings.td $(HARECACHE)/time.td
+$(HARECACHE)/time_chrono.ssa: $(time_chrono_ha) $(HARECACHE)/bufio.td $(HARECACHE)/bytes.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/endian.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/path.td $(HARECACHE)/sort.td $(HARECACHE)/strconv.td $(HARECACHE)/strings.td $(HARECACHE)/time.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time_chrono.td.tmp -N time::chrono $(time_chrono_ha)

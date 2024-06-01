@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use cmd::haredoc::doc;
+use errors;
 use fs;
 use hare::module;
 use hare::parse;
@@ -12,6 +13,7 @@ use strconv;
 
 type error = !(
 	exec::error |
+	errors::error |
 	fs::error |
 	io::error |
 	module::error |

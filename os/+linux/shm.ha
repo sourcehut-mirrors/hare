@@ -10,7 +10,7 @@ use strings;
 
 def SHM_PATH: str = "/dev/shm/";
 
-fn shm_path(name: str) (str | fs::error) = {
+fn shm_path(name: str) (str | errors::error) = {
 	const name = strings::ltrim(name, '/');
 	if (len(name) > rt::NAME_MAX) {
 		return errors::invalid;
@@ -44,7 +44,7 @@ export fn shm_open(
 	name: str,
 	oflag: io::flag = io::flag::CREATE | io::flag::RDWR,
 	mode: io::mode = 0o600,
-) (io::file | fs::error) = {
+) (io::file | errors::error) = {
 	const path = shm_path(name)?;
 	oflag |= io::flag::NOFOLLOW | io::flag::NONBLOCK;
 	oflag &= ~io::flag::NOCLOEXEC; // Unconditionally set CLOEXEC
@@ -55,6 +55,6 @@ export fn shm_open(
 // hold a reference to the file may continue to use the memory associated with
 // it. Once all processes have unmapped the associated shared memory object, or
 // exited, the memory is released.
-export fn shm_unlink(name: str) (void | fs::error) = {
-	return remove(shm_path(name)?);
+export fn shm_unlink(name: str) (void | errors::error) = {
+	return remove(shm_path(name)?)!; // TODO: error handling post-fs removal
 };

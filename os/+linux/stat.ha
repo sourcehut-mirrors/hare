@@ -28,7 +28,7 @@ export type filestat = struct {
 // Otherwise, the first argument must be a directory file descriptor and the
 // path argument is used to look up a file whose status shall be interrogated.
 export fn fstatat(
-	dirfd: int,
+	dirfd: io::file,
 	path: str,
 	flags: int,
 ) (filestat | errors::error) = {

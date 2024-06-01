@@ -8,7 +8,7 @@ use os;
 use os::exec;
 
 // Fallback implementation of self() that performs path resolution on argv[0]
-fn self_argv() (image | io::error | fs::error) = {
+fn self_argv() (image | io::error | errors::error) = {
 	match (exec::lookup(os::args[0])) {
 	case let path: str =>
 		const file = os::open(path)?;
@@ -21,6 +21,6 @@ fn self_argv() (image | io::error | fs::error) = {
 			abort("Running program image is not a valid ELF file");
 		};
 	case void =>
-		return errors::noentry: fs::error;
+		return errors::noentry: errors::error;
 	};
 };

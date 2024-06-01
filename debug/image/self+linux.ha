@@ -2,12 +2,11 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use fs;
 use io;
 use os;
 
 // Opens the executing process's binary image.
-export fn self() (image | io::error | fs::error) = {
+export fn self() (image | io::error | errors::error) = {
 	const file = match (os::open("/proc/self/exe")) {
 	case let file: io::file =>
 		yield file;
