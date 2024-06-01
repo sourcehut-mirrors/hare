@@ -14,6 +14,7 @@ export fn close(fs: *fs) void = {
 		f(fs);
 	};
 };
+
 // Removes a file.
 export fn remove(fs: *fs, path: str) (void | error) = {
 	match (fs.remove) {
@@ -124,78 +125,6 @@ export fn rmdir(fs: *fs, path: str) (void | error) = {
 		return errors::unsupported;
 	case let f: *rmdirfunc =>
 		return f(fs, path);
-	};
-};
-
-// Changes mode flags on a file or directory.
-export fn chmod(fs: *fs, path: str, mode: io::mode) (void | error) = {
-	match (fs.chmod) {
-	case null =>
-		return errors::unsupported;
-	case let f: *chmodfunc =>
-		return f(fs, path, mode);
-	};
-};
-
-// Changes mode flags on a [[io::file]].
-export fn fchmod(fs: *fs, fd: io::file, mode: io::mode) (void | error) = {
-	match (fs.fchmod) {
-	case null =>
-		return errors::unsupported;
-	case let f: *fchmodfunc =>
-		return f(fd, mode);
-	};
-};
-
-// Changes ownership of a file.
-export fn chown(fs: *fs, path: str, uid: uint, gid: uint) (void | error) = {
-	match (fs.chown) {
-	case null =>
-		return errors::unsupported;
-	case let f: *chownfunc =>
-		return f(fs, path, uid, gid);
-	};
-};
-
-// Changes ownership of a [[io::file]].
-export fn fchown(fs: *fs, fd: io::file, uid: uint, gid: uint) (void | error) = {
-	match (fs.fchown) {
-	case null =>
-		return errors::unsupported;
-	case let f: *fchownfunc =>
-		return f(fd, uid, gid);
-	};
-};
-
-// Changes the access and modification time of a file. A void value will leave
-// the corresponding time unchanged.
-export fn chtimes(
-	fs: *fs,
-	path: str,
-	atime: (time::instant | void),
-	mtime: (time::instant | void)
-) (void | error) = {
-	match (fs.chtimes) {
-	case null =>
-		return errors::unsupported;
-	case let f: *chtimesfunc =>
-		return f(fs, path, atime, mtime);
-	};
-};
-
-// Changes the access and modification time of an [[io::file]]. A void value
-// will leave the corresponding time unchanged.
-export fn fchtimes(
-	fs: *fs,
-	fd: io::file,
-	atime: (time::instant | void),
-	mtime: (time::instant | void)
-) (void | error) = {
-	match (fs.fchtimes) {
-	case null =>
-		return errors::unsupported;
-	case let f: *fchtimesfunc =>
-		return f(fd, atime, mtime);
 	};
 };
 

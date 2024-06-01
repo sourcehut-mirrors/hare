@@ -6,7 +6,6 @@ use errors;
 use io;
 use path;
 use strings;
-use time;
 
 // An entry of a particular type was sought, but is something else in practice.
 // For example, opening a file with [[iter]].
@@ -85,14 +84,6 @@ export type renamefunc = fn(fs: *fs, oldpath: str, newpath: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
-export type chmodfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
-export type fchmodfunc = fn(fd: io::file, mode: io::mode) (void | error);
-export type chownfunc = fn(fs: *fs, path: str, uid: uint, gid: uint) (void | error);
-export type fchownfunc = fn(fd: io::file, uid: uint, gid: uint) (void | error);
-export type chtimesfunc = fn(fs: *fs, path: str, atime: (time::instant | void),
-	mtime: (time::instant | void)) (void | error);
-export type fchtimesfunc = fn(fd: io::file, atime: (time::instant | void),
-	mtime: (time::instant | void)) (void | error);
 export type resolvefunc = fn(fs: *fs, path: str) str;
 export type readlinkfunc = fn(fs: *fs, path: str) (str | error);
 export type linkfunc = fn(fs: *fs, old: str, new: str) (void | error);
@@ -131,24 +122,6 @@ export type fs = struct {
 
 	// Removes a directory. The target directory must be empty.
 	rmdir: nullable *rmdirfunc,
-
-	// Changes mode flags on a file or directory.
-	chmod: nullable *chmodfunc,
-
-	// Changes mode flags on a [[io::file]].
-	fchmod: nullable *fchmodfunc,
-
-	// Changes ownership of a file.
-	chown: nullable *chownfunc,
-
-	// Changes ownership of a [[io::file]].
-	fchown: nullable *fchownfunc,
-
-	// Changes access and modification time of a file.
-	chtimes: nullable *chtimesfunc,
-
-	// Changes access and modification time of an [[io::file]].
-	fchtimes: nullable *fchtimesfunc,
 
 	// Resolves a path to its absolute, normalized value. If the fs
 	// implementation does not provide this, [resolve] presumes that

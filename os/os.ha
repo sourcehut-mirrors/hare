@@ -45,34 +45,6 @@ export fn rmdir(path: str) (void | fs::error) = fs::rmdir(cwd, path);
 // Removes a directory, and anything in it.
 export fn rmdirall(path: str) (void | fs::error) = fs::rmdirall(cwd, path);
 
-// Changes mode flags on a file or directory. Type bits are discared.
-export fn chmod(path: str, mode: io::mode) (void | fs::error) = fs::chmod(cwd, path, mode);
-
-// Changes mode flags on a [[io::file]]. Type bits are discared.
-export fn fchmod(fd: io::file, mode: io::mode) (void | fs::error) = fs::fchmod(cwd, fd, mode);
-
-// Changes ownership of a file.
-export fn chown(path: str, uid: uint, gid: uint) (void | fs::error) = fs::chown(cwd, path, uid, gid);
-
-// Changes ownership of a [io::file]].
-export fn fchown(fd: io::file, uid: uint, gid: uint) (void | fs::error) = fs::fchown(cwd, fd, uid, gid);
-
-// Changes the access and modification time of a file. A void value will leave
-// the corresponding time unchanged.
-export fn chtimes(
-	path: str,
-	atime: (time::instant | void),
-	mtime: (time::instant | void)
-) (void | fs::error) = fs::chtimes(cwd, path, atime, mtime);
-
-// Changes the access and modification time of an [[io::file]]. A void value
-// will leave the corresponding time unchanged.
-export fn fchtimes(
-	fd: io::file,
-	atime: (time::instant | void),
-	mtime: (time::instant | void)
-) (void | fs::error) = fs::fchtimes(cwd, fd, atime, mtime);
-
 // Resolves a path to its absolute, normalized value. Relative paths will be
 // rooted (if supported by the host filesystem), and "." and ".." components
 // will be reduced. This function does not follow symlinks; see [[realpath]] if
