@@ -87,3 +87,19 @@ export fn move(oldpath: str, newpath: str) (void | errors::error) = {
 
 	unlink(oldpath)?;
 };
+
+// Removes a file or directory. The direcotry
+export fn remove(path: str) (void | errors::error) = {
+	match (unlink(path)) {
+	case void => void;
+	case errors::wrongtype =>
+		return rmdir(path);
+	case let err: errors::error =>
+		return err;
+	};
+};
+
+// Removes a directory, and anything in it.
+export fn rmdirall(path: str) (void | errors::error) = {
+	abort(); // TODO
+};

@@ -121,3 +121,9 @@ export fn renameat(
 export fn rename(old: str, new: str) (void | errors::error) = {
 	return renameat(AT_FDCWD, old, AT_FDCWD, new);
 };
+
+// Removes a directory. The directory must be empty, see [[rmdirall]] to
+// recursively remove a directory and all of its contents.
+export fn rmdir(path: str) (void | errors::error) = {
+	return unlinkat(AT_FDCWD, path, AT_REMOVEDIR);
+};

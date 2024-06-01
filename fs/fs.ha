@@ -15,16 +15,6 @@ export fn close(fs: *fs) void = {
 	};
 };
 
-// Removes a file.
-export fn remove(fs: *fs, path: str) (void | error) = {
-	match (fs.remove) {
-	case null =>
-		return errors::unsupported;
-	case let f: *removefunc =>
-		return f(fs, path);
-	};
-};
-
 // Returns an iterator for a path, which yields the contents of a directory.
 // Pass empty string to yield from the root. The order in which entries are
 // returned is undefined. The return value must be finished with [[finish]].
@@ -72,20 +62,6 @@ export fn mkdirs(fs: *fs, path: str, mode: io::mode) (void | error) = {
 	case void => void;
 	case let err: error =>
 		return err;
-	};
-};
-
-// Removes a directory. The target directory must be empty; see [[rmdirall]] to
-// remove its contents as well.
-export fn rmdir(fs: *fs, path: str) (void | error) = {
-	if (path == "") {
-		return errors::invalid;
-	};
-	match (fs.rmdir) {
-	case null =>
-		return errors::unsupported;
-	case let f: *rmdirfunc =>
-		return f(fs, path);
 	};
 };
 

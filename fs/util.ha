@@ -26,25 +26,3 @@ export fn dirents_free(dirents: []dirent) void = {
 	free(dirents);
 };
 
-// Removes a directory, and anything in it.
-export fn rmdirall(fs: *fs, path: str) (void | error) = {
-	let buf = path::init(path)!;
-	return rmdirall_path(fs, &buf);
-};
-
-fn rmdirall_path(fs: *fs, buf: *path::buffer) (void | error) = {
-	let it = iter(fs, path::string(buf))?;
-	defer finish(it);
-	for (let ent => next(it)?) {
-		path::push(buf, ent.name)!;
-
-		switch (ent.ftype & io::mode::DIR) {
-		case io::mode::DIR =>
-			rmdirall_path(fs, buf)?;
-		case =>
-			remove(fs, path::string(buf))?;
-		};
-		path::pop(buf);
-	};
-	return rmdir(fs, path::string(buf));
-};

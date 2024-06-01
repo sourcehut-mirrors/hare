@@ -79,7 +79,6 @@ export fn dirent_dup(e: *dirent) dirent = {
 export fn dirent_finish(e: *dirent) void = free(e.name);
 
 export type closefunc = fn(fs: *fs) void;
-export type removefunc = fn(fs: *fs, path: str) (void | error);
 export type iterfunc = fn(fs: *fs, path: str) (*iterator | error);
 export type mkdirfunc = fn(fs: *fs, path: str, mode: io::mode) (void | error);
 export type rmdirfunc = fn(fs: *fs, path: str) (void | error);
@@ -95,9 +94,6 @@ export type fs = struct {
 	// Frees resources associated with this filesystem.
 	close: nullable *closefunc,
 
-	// Removes a file.
-	remove: nullable *removefunc,
-
 	// Returns an iterator for a path, which yields the contents of a
 	// directory. Pass empty string to yield from the root.
 	//
@@ -107,9 +103,6 @@ export type fs = struct {
 
 	// Creates a directory.
 	mkdir: nullable *mkdirfunc,
-
-	// Removes a directory. The target directory must be empty.
-	rmdir: nullable *rmdirfunc,
 };
 
 // A function which returns the next directory from an [[iterator]].
