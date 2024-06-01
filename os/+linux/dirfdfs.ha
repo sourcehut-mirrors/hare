@@ -67,10 +67,6 @@ export fn dirfdopen(
 fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 	*filesystem = os_filesystem {
 		fs = fs::fs {
-			open = &fs_open,
-			openfile = &fs_open_file,
-			create = &fs_create,
-			createfile = &fs_create_file,
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
@@ -101,7 +97,6 @@ export fn dirfs_clone(
 	fs: *fs::fs,
 	resolve_flags: resolve_flag = resolve_flag::NORMAL,
 ) *fs::fs = {
-	assert(fs.open == &fs_open);
 	let fs = fs: *os_filesystem;
 	let new = alloc(*fs);
 	fs.resolve |= resolve_flags;
@@ -115,14 +110,12 @@ export fn dirfs_clone(
 //
 // This function is not portable.
 export fn dirfdfs_set_getdents_bufsz(fs: *fs::fs, sz: size) void = {
-	assert(fs.open == &fs_open);
 	let fs = fs: *os_filesystem;
 	fs.getdents_bufsz = sz;
 };
 
 // Returns an [[io::file]] for this filesystem. This function is not portable.
 export fn dirfile(fs: *fs::fs) io::file = {
-	assert(fs.open == &fs_open);
 	let fs = fs: *os_filesystem;
 	return fs.dirfd;
 };
@@ -146,77 +139,6 @@ fn errno_to_fs(err: rt::errno) fs::error = {
 	case =>
 		return errors::errno(err);
 	};
-};
-
-fn _fs_open(
-	fs: *fs::fs,
-	path: str,
-	oh: *rt::open_how,
-) (io::file | fs::error) = {
-	let fs = fs: *os_filesystem;
-
-	oh.resolve = fs.resolve;
-
-	let fd = match (rt::openat2(fs.dirfd, path, oh, size(rt::open_how))) {
-	case let err: rt::errno =>
-		return errno_to_fs(err);
-	case let fd: int =>
-		yield fd;
-	};
-
-	return io::fdopen(fd);
-};
-
-fn fs_open_file(
-	fs: *fs::fs,
-	path: str,
-	flags: io::flag,
-) (io::file | fs::error) = {
-	flags ^= io::flag::CTTY | io::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
-
-	if ((flags & io::flag::DIRECTORY) == io::flag::DIRECTORY) {
-		// This is arch-specific
-		flags &= ~io::flag::DIRECTORY;
-		flags |= rt::O_DIRECTORY: io::flag;
-	};
-
-	let oh = rt::open_how {
-		flags = flags: u64,
-		...
-	};
-	return _fs_open(fs, path, &oh);
-};
-
-fn fs_open(
-	fs: *fs::fs,
-	path: str,
-	flags: io::flag,
-) (io::handle | fs::error) = fs_open_file(fs, path, flags)?;
-
-fn fs_create_file(
-	fs: *fs::fs,
-	path: str,
-	mode: io::mode,
-	flags: io::flag,
-) (io::file | fs::error) = {
-	flags ^= io::flag::CTTY | io::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
-	flags |= io::flag::CREATE;
-
-	let oh = rt::open_how {
-		flags = flags: u64,
-		mode = mode: u64,
-		...
-	};
-	return _fs_open(fs, path, &oh)?;
-};
-
-fn fs_create(
-	fs: *fs::fs,
-	path: str,
-	mode: io::mode,
-	flags: io::flag,
-) (io::handle | fs::error) = {
-	return fs_create_file(fs, path, mode, flags)?;
 };
 
 fn fs_remove(fs: *fs::fs, path: str) (void | fs::error) = {

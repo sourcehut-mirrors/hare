@@ -98,32 +98,6 @@ export type readlinkfunc = fn(fs: *fs, path: str) (str | error);
 export type linkfunc = fn(fs: *fs, old: str, new: str) (void | error);
 export type symlinkfunc = fn(fs: *fs, target: str, path: str) (void | error);
 
-export type openfunc = fn(
-	fs: *fs,
-	path: str,
-	flags: io::flag,
-) (io::handle | error);
-
-export type openfilefunc = fn(
-	fs: *fs,
-	path: str,
-	flags: io::flag,
-) (io::file | error);
-
-export type createfunc = fn(
-	fs: *fs,
-	path: str,
-	mode: io::mode,
-	flags: io::flag,
-) (io::handle | error);
-
-export type createfilefunc = fn(
-	fs: *fs,
-	path: str,
-	mode: io::mode,
-	flags: io::flag,
-) (io::file | error);
-
 // An abstract implementation of a filesystem, which provides common filesystem
 // operations such as file creation and deletion, but which may be backed by any
 // underlying storage system. See [[os::cwd]] for access to the host filesystem.
@@ -134,18 +108,6 @@ export type createfilefunc = fn(
 export type fs = struct {
 	// Frees resources associated with this filesystem.
 	close: nullable *closefunc,
-
-	// Opens a file.
-	open: nullable *openfunc,
-
-	// Opens a file as an [[io::file]].
-	openfile: nullable *openfilefunc,
-
-	// Creates a new file.
-	create: nullable *createfunc,
-
-	// Creates a new file as an [[io::file]].
-	createfile: nullable *createfilefunc,
 
 	// Removes a file.
 	remove: nullable *removefunc,

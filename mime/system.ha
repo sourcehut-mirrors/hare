@@ -3,6 +3,7 @@
 
 use bufio;
 use encoding::utf8;
+use errors;
 use fmt;
 use fs;
 use io;
@@ -14,7 +15,7 @@ use strings;
 	load_systemdb(): void;
 };
 
-fn load_systemdb() (void | fs::error | io::error | utf8::invalid) = {
+fn load_systemdb() (void | errors::error | io::error | utf8::invalid) = {
 	const file = os::open(SYSTEM_DB)?;
 	defer io::close(file)!;
 

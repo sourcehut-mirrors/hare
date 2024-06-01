@@ -3,6 +3,7 @@
 
 use bufio;
 use encoding::utf8;
+use errors;
 use fs;
 use io;
 use memio;
@@ -27,7 +28,7 @@ export type invalid = !void;
 
 // All possible errors returned from this module.
 export type error = !(io::error | invalid | utf8::invalid | ip::invalid
-	| fs::error);
+	| errors::error);
 
 // Converts an [[error]] to a human-friendly representation.
 export fn strerror(err: error) const str = match (err) {
@@ -39,7 +40,7 @@ case ip::invalid =>
 	return "IP address is invalid";
 case let err: io::error =>
 	return io::strerror(err);
-case let err: fs::error =>
+case let err: errors::error =>
 	return fs::strerror(err);
 };
 

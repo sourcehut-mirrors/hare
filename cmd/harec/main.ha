@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use bufio;
+use errors;
 use fmt;
 use fs;
 use getopt;
@@ -37,8 +38,8 @@ export fn main() void = {
 			out = match (os::create(opt.1, 0o644)) {
 			case let f: io::file =>
 				yield f;
-			case let e: fs::error =>
-				fmt::fatal(fs::strerror(e));
+			case let e: errors::error =>
+				fmt::fatal(errors::strerror(e));
 			};
 		case 't' => abort(); // TODO
 		case => abort();
@@ -63,9 +64,9 @@ export fn main() void = {
 		let input = match (os::open(cmd.args[i])) {
 		case let f: io::file =>
 			yield f;
-		case let err: fs::error =>
+		case let err: errors::error =>
 			fmt::fatalf("Error opening {}: {}",
-				cmd.args[i], fs::strerror(err));
+				cmd.args[i], errors::strerror(err));
 		};
 		defer io::close(input)!;
 		static let buf: [os::BUFSZ]u8 = [0...];
