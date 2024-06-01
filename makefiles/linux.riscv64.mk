@@ -153,7 +153,7 @@ $(HARECACHE)/unix.ssa: $(unix_ha) $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HA
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix.td.tmp -N unix $(unix_ha)
 
-os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fcntl.ha os/+linux/fs.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/fsutil.ha os/os.ha
+os_ha = os/+linux/at.ha os/+linux/dirfdfs.ha os/+linux/exit.ha os/+linux/fcntl.ha os/+linux/memfd.ha os/+linux/memory.ha os/+linux/platform_environ.ha os/+linux/shm.ha os/+linux/stat.ha os/+linux/status.ha os/+linux/stdfd.ha os/environ.ha os/fsmisc.ha os/os.ha
 $(HARECACHE)/os.ssa: $(os_ha) $(HARECACHE)/bufio.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/math.td $(HARECACHE)/path.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td $(HARECACHE)/time.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -244,7 +244,7 @@ $(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/encoding_
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/shlex.td.tmp -N shlex $(shlex_ha)
 
 unix_tty_ha = unix/tty/+linux/isatty.ha unix/tty/+linux/open.ha unix/tty/+linux/pgid.ha unix/tty/+linux/pty.ha unix/tty/+linux/termios.ha unix/tty/+linux/winsize.ha unix/tty/pty_test.ha unix/tty/types.ha
-$(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/bufio.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/os_exec.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td
+$(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/bufio.td $(HARECACHE)/errors.td $(HARECACHE)/fmt.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/os_exec.td $(HARECACHE)/rt.td $(HARECACHE)/strings.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix_tty.td.tmp -N unix::tty $(unix_tty_ha)

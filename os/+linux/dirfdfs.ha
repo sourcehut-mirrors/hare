@@ -11,6 +11,11 @@ use strings;
 use time;
 use types::c;
 
+@init fn init_cwd() void = {
+	static let cwd_fs = os_filesystem { ... };
+	cwd = static_dirfdopen(rt::AT_FDCWD, &cwd_fs);
+};
+
 // Controls how symlinks are followed (or not) in a dirfd filesystem. Support
 // for this feature varies, you should gate usage of this enum behind a build
 // tag.
