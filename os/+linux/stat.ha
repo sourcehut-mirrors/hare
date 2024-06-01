@@ -41,10 +41,16 @@ export fn fstatat(
 	return st_to_filestat(&st);
 };
 
-// Returns file information for a given path. If the target is a symlink,
-// information is returned about the link, not its target.
+// Returns file information for a given path. If the path refers to a symbolic
+// link, [[stat]] returns status information about the link target.
 export fn stat(path: str) (filestat | errors::error) = {
 	return fstatat(AT_FDCWD, path, 0);
+};
+
+// Returns file information for a given path. If the path refers to a symbolic
+// link, [[lstat]] returns status information about the link itself.
+export fn lstat(path: str) (filestat | errors::error) = {
+	return fstatat(AT_FDCWD, path, AT_SYMLINK_NOFOLLOW);
 };
 
 // Returns file information for an [[io::file]].
