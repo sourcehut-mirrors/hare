@@ -30,6 +30,12 @@ export fn errno(errno: rt::errno) error = {
 		return interrupted;
 	case rt::EAGAIN =>
 		return again;
+	case rt::ENOTDIR, rt::EISDIR =>
+		return wrongtype;
+	case rt::EOPNOTSUPP, rt::ENOSYS =>
+		return unsupported;
+	case rt::EXDEV =>
+		return xdev;
 	case => void;
 	};
 
