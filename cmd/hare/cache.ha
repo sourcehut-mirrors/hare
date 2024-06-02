@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use fmt;
-use fs;
 use getopt;
 use io;
 use os;

@@ -7,7 +7,6 @@ use debug::image;
 use errors;
 use fmt;
 use format::elf;
-use fs;
 use io;
 use os;
 use time;

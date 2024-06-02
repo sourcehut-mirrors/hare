@@ -3,7 +3,6 @@
 
 use cmd::haredoc::doc;
 use errors;
-use fs;
 use hare::module;
 use hare::parse;
 use io;
@@ -14,7 +13,6 @@ use strconv;
 type error = !(
 	exec::error |
 	errors::error |
-	fs::error |
 	io::error |
 	module::error |
 	path::error |

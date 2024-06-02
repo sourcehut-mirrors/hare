@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use fmt;
-use fs;
 use hare::module;
 use io;
 use memio;

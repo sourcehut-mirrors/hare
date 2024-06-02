@@ -3,7 +3,6 @@
 
 use bytes;
 use errors;
-use fs;
 use hare::ast;
 use io;
 use os;

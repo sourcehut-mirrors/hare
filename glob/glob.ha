@@ -4,7 +4,6 @@
 use errors;
 use fmt;
 use fnmatch;
-use fs;
 use io;
 use memio;
 use os;
@@ -53,14 +52,15 @@ export type failure = !struct {
 	// The path that cannot be opened or read.
 	path: str,
 	// The actual filesystem error.
-	error: fs::error,
+	error: errors::error,
 };
 
 // Converts an error info a human-friendly string. The result is statically
 // allocated.
 export fn strerror(err: failure) str = {
 	static let buf: [path::MAX + 1024]u8 = [0...];
-	return fmt::bsprintf(buf, "{}: {}", err.path, fs::strerror(err.error));
+	return fmt::bsprintf(buf, "{}: {}", err.path,
+		errors::strerror(err.error));
 };
 
 // Returns a generator of pathnames matching a pattern. The result must be

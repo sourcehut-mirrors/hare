@@ -5,7 +5,6 @@ use crypto::sha256;
 use encoding::hex;
 use errors;
 use fmt;
-use fs;
 use hare::module;
 use hare::unparse;
 use hash;

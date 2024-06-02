@@ -5,7 +5,6 @@ use bufio;
 use cmd::haredoc::doc;
 use errors;
 use fmt;
-use fs;
 use getopt;
 use hare::ast;
 use hare::lex;
@@ -40,8 +39,6 @@ export fn main() void = {
 		fmt::fatal(exec::strerror(e));
 	case let e: errors::error =>
 		fmt::fatal(errors::strerror(e));
-	case let e: fs::error =>
-		fmt::fatal(fs::strerror(e));
 	case let e: io::error =>
 		fmt::fatal(io::strerror(e));
 	case let e: module::error =>

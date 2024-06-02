@@ -3,7 +3,6 @@
 
 use encoding::utf8;
 use errors;
-use fs;
 use hare::ast;
 use hare::parse;
 use hare::unparse;
@@ -35,7 +34,6 @@ export type errcontext = !(str, *error);
 // Tagged union of all possible error types. Must be freed with [[finish_error]]
 // unless it's passed to [[strerror]].
 export type error = !(
-	fs::error |
 	io::error |
 	errors::error |
 	path::error |
@@ -101,8 +99,6 @@ export fn strerror(e: error) str = {
 
 fn _strerror(e: error, buf: *memio::stream) void = {
 	let s = match (e) {
-	case let e: fs::error =>
-		yield fs::strerror(e);
 	case let e: io::error =>
 		yield io::strerror(e);
 	case let e: errors::error =>

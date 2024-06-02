@@ -3,7 +3,6 @@
 
 use bufio;
 use fmt;
-use fs;
 use hare::ast;
 use hare::lex;
 use hare::parse;

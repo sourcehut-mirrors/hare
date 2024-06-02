@@ -4,7 +4,6 @@
 use errors;
 use encoding::utf8;
 use fmt;
-use fs;
 use io;
 
 // All possible errors returned from this module.

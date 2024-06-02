@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use fs;
 use io;
 use os;
 use path;
@@ -10,7 +9,7 @@ use rt;
 use types::c;
 
 // Opens the executing process's binary image.
-export fn self() (image | io::error | fs::error) = {
+export fn self() (image | io::error | errors::error) = {
 	// 1: sysctl
 	let buf: [path::MAX * 2 + 1]u8 = [0...];
 	let pathsz = len(buf);

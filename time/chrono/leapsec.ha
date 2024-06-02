@@ -4,7 +4,6 @@
 use bufio;
 use encoding::utf8;
 use errors;
-use fs;
 use io;
 use os;
 use strconv;

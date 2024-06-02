@@ -5,7 +5,6 @@ use bufio;
 use encoding::utf8;
 use errors;
 use fmt;
-use fs;
 use io;
 use os;
 use strings;

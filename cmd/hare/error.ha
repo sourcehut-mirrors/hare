@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use fs;
 use hare::module;
 use hare::parse;
 use io;
@@ -13,7 +12,6 @@ use cmd::hare::build;
 
 type error = !(
 	exec::error |
-	fs::error |
 	io::error |
 	errors::error |
 	module::error |
@@ -37,6 +35,6 @@ type unknown_type = !str;
 
 type output_exists = !str;
 
-type output_failed = !(str, fs::error);
+type output_failed = !(str, errors::error);
 
 type invalid_namespace = !str;

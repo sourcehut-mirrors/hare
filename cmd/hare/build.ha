@@ -5,7 +5,6 @@ use bufio;
 use cmd::hare::build;
 use errors;
 use fmt;
-use fs;
 use getopt;
 use hare::ast;
 use hare::lex;

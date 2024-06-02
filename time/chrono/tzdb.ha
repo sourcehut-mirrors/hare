@@ -6,7 +6,6 @@ use bytes;
 use encoding::utf8;
 use endian;
 use errors;
-use fs;
 use io;
 use os;
 use path;

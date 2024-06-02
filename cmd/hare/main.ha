@@ -4,7 +4,6 @@
 use errors;
 use cmd::hare::build;
 use fmt;
-use fs;
 use getopt;
 use hare::module;
 use hare::parse;
@@ -108,8 +107,6 @@ export fn main() void = {
 			fmt::fatal("Error:", errors::strerror(e));
 		case let e: exec::error =>
 			fmt::fatal("Error:", exec::strerror(e));
-		case let e: fs::error =>
-			fmt::fatal("Error:", fs::strerror(e));
 		case let e: io::error =>
 			fmt::fatal("Error:", io::strerror(e));
 		case let e: module::error =>
@@ -133,7 +130,7 @@ export fn main() void = {
 				e);
 		case let e: output_failed =>
 			fmt::fatalf("Error: Could not open output '{}': {}",
-				e.0, fs::strerror(e.1));
+				e.0, errors::strerror(e.1));
 		case let e: invalid_namespace =>
 			fmt::fatalf("Error: Invalid namespace: {}", e);
 		};

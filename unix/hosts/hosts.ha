@@ -4,7 +4,6 @@
 use bufio;
 use encoding::utf8;
 use errors;
-use fs;
 use io;
 use memio;
 use net::ip;
@@ -41,7 +40,7 @@ case ip::invalid =>
 case let err: io::error =>
 	return io::strerror(err);
 case let err: errors::error =>
-	return fs::strerror(err);
+	return errors::strerror(err);
 };
 
 // Creates an [[iterator]] for a provided [[io::handle]] pointing to

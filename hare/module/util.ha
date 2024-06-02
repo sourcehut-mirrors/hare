@@ -3,7 +3,6 @@
 
 use ascii;
 use errors;
-use fs;
 use io;
 use os;
 use strings;

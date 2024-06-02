@@ -3,7 +3,6 @@
 
 use errors;
 use fmt;
-use fs;
 use io;
 use os;
 use path;
@@ -35,7 +34,7 @@ fn lookup(prog: str, var: str, default: str) str = {
 	match (os::mkdirs(path, 0o755)) {
 	case let err: errors::error =>
 		fmt::fatalf("Error creating {}: {}",
-			path, fs::strerror(err));
+			path, errors::strerror(err));
 	case void => void;
 	};
 	return path;
@@ -82,7 +81,7 @@ export fn state(prog: str) str = {
 // The specification requires the directory to be owned by the current user and
 // not be world-readable. No fallback is implemented in case XDG_RUNTIME_DIR is
 // unset or incorrectly set up.
-export fn runtime() (str | fs::error) = {
+export fn runtime() (str | errors::error) = {
 	let path = match (os::getenv("XDG_RUNTIME_DIR")) {
 	case let path: str =>
 		yield path;
@@ -96,7 +95,7 @@ export fn runtime() (str | fs::error) = {
 		return errors::noaccess;
 	};
 	if (!io::isdir(st.mode)) {
-		return fs::wrongtype;
+		return errors::wrongtype;
 	};
 
 	return path;
