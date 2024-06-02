@@ -144,7 +144,7 @@ export fn mkdirs(path: str, mode: io::mode) (void | errors::error) = {
 	let parent = path::dirname(path);
 	if (path != parent) {
 		match (mkdirs(parent, mode)) {
-		case errors::exists => void;
+		case (errors::exists | errors::wrongtype) => void;
 		case void => void;
 		case let err: errors::error =>
 			return err;
@@ -152,7 +152,7 @@ export fn mkdirs(path: str, mode: io::mode) (void | errors::error) = {
 	};
 
 	match (mkdir(path, mode)) {
-	case errors::exists => void;
+	case (errors::exists | errors::wrongtype) => void;
 	case void => void;
 	case let err: errors::error =>
 		return err;
