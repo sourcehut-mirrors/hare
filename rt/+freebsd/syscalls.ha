@@ -119,6 +119,33 @@ export fn open(path: str, flags: int, mode: uint) (int | errno) = {
 	return openat(AT_FDCWD, path, flags, mode);
 };
 
+export fn linkat(
+	olddirfd: int,
+	oldpath: path,
+	newdirfd: int,
+	newpath: path,
+	flags: int,
+) (void | errno) = {
+	let oldpath = kpath(oldpath)?;
+	static let newpathbuf: [PATH_MAX]u8 = [0...];
+	let newpath = copy_kpath(newpath, newpathbuf)?;
+	wrap_return(syscall5(SYS_linkat,
+		olddirfd: u64, oldpath: uintptr: u64,
+		newdirfd: u64, newpath: uintptr: u64, flags: u64))?;
+};
+
+export fn symlinkat(
+	target: path,
+	newdirfd: int,
+	linkpath: path,
+) (void | errno) = {
+	let target = kpath(target)?;
+	static let linkpathbuf: [PATH_MAX]u8 = [0...];
+	let linkpath = copy_kpath(linkpath, linkpathbuf)?;
+	wrap_return(syscall3(SYS_symlinkat, target: uintptr: u64,
+		newdirfd: u64, linkpath: uintptr: u64))?;
+};
+
 export fn unlink(path: path) (void | errno) = {
 	let path = kpath(path)?;
 	wrap_return(syscall3(SYS_unlinkat,

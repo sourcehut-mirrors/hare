@@ -46,26 +46,6 @@ export fn chroot(target: str) (void | errors::error) = {
 	};
 };
 
-// Returns true if a node exists at the given path, or false if not.
-//
-// Note that testing for file existence before using the file can often lead to
-// race conditions. If possible, prefer to simply attempt to use the file (e.g.
-// via "open"), and handle the resulting error should the file not exist.
-export fn exists(path: str) bool = {
-	match (rt::access(path, rt::F_OK)) {
-	case let b: bool =>
-		return b;
-	case let err: rt::errno =>
-		switch (err) {
-		case rt::EACCES, rt::ENOENT, rt::ENOTDIR =>
-			return false;
-		case =>
-			// Implementation error
-			abort();
-		};
-	};
-};
-
 // Access modes for [[access]].
 export type amode = enum int {
 	F_OK = rt::F_OK,

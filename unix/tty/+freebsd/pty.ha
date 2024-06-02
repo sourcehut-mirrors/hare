@@ -3,7 +3,6 @@
 
 use errors;
 use fmt;
-use fs;
 use io;
 use os;
 use rt;
@@ -11,10 +10,10 @@ use types::c;
 
 // Opens an available pseudoterminal and returns the file descriptors of the
 // master and slave.
-export fn openpty() ((io::file, io::file) | fs::error) = {
+export fn openpty() ((io::file, io::file) | errors::error) = {
 	let master = open_master()?;
 	let slave = match (get_slave(master)) {
-	case let e: fs::error =>
+	case let e: errors::error =>
 		io::close(master)!;
 		return e;
 	case let s: io::file =>
@@ -24,7 +23,7 @@ export fn openpty() ((io::file, io::file) | fs::error) = {
 };
 
 // Opens an available pseudoterminal master.
-fn open_master() (io::file | fs::error) = {
+fn open_master() (io::file | errors::error) = {
 	match (rt::posix_openpt(rt::O_RDWR | rt::O_NOCTTY)) {
 	case let e: rt::errno =>
 		return errors::errno(e);
@@ -35,7 +34,7 @@ fn open_master() (io::file | fs::error) = {
 
 // Returns a file descriptor referring to the pseudoterminal slave for a
 // pseudoterminal master.
-fn get_slave(master: io::file) (io::file | fs::error) =
+fn get_slave(master: io::file) (io::file | errors::error) =
 	os::open(ptsname(master)?, io::flag::RDWR);
 
 // Returns the filename of the pseudoterminal slave.

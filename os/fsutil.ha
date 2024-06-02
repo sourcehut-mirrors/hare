@@ -44,6 +44,24 @@ export fn realpath(path: str) (str | errors::error) = {
 	return path::string(&res);
 };
 
+// Returns true if a node exists at the given path, or false if not.
+//
+// Note that testing for file existence before using the file can often lead to
+// race conditions. If possible, prefer to simply attempt to use the file (e.g.
+// via "open"), and handle the resulting error should the file not exist.
+export fn exists(path: str) bool = {
+	match (access(path, amode::F_OK)) {
+	case let b: bool =>
+		return b;
+	case (errors::noaccess | errors::noentry | errors::wrongtype) =>
+		return false;
+	case errors::error =>
+		// Implementation error
+		abort();
+	};
+};
+
+
 // Moves a file. This will use [[rename]] if possible. Otherwise, falls back to
 // copying the file to the destination, then removing the original.
 //

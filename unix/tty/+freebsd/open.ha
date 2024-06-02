@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use fs;
 use io;
 use os;
 
@@ -12,7 +11,7 @@ export fn open() (io::file | error) = {
 	match (os::open("/dev/tty", io::flag::RDWR)) {
 	case let f: io::file =>
 		return f;
-	case fs::error =>
+	case errors::error =>
 		return errors::noentry;
 	};
 };
