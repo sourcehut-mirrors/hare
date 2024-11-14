@@ -6,24 +6,7 @@ sources:
 packages:
 - binutils
 - scdoc
-triggers:
-- action: email
-  condition: failure
-  to: "<~sircmpwn/hare-dev@lists.sr.ht>"
 tasks:
-- environment: |
-    cd hare
-    if [ "$BUILD_SUBMITTER" = "git.sr.ht" ]
-    then
-      if [ "$GIT_REF" != "refs/heads/master" ]
-      then
-          complete-build
-      fi
-      if [ "$(git remote get-url origin)" != "https://git.sr.ht/~sircmpwn/hare" ]
-      then
-        complete-build
-      fi
-    fi
 - qbe: |
     cd qbe
     make -j2 PREFIX=/usr
