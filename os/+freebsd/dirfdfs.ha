@@ -439,19 +439,14 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 		yield fd;
 	};
 
-	let buf = match (rt::malloc(fs.getdents_bufsz)) {
-	case let v: *opaque =>
-		yield v: *[*]u8;
-	case null =>
-		return errors::nomem;
-	};
+	let buf: []u8 = alloc([0...], fs.getdents_bufsz);
 	let iter = alloc(os_iterator {
 		iter = fs::iterator {
 			next = &iter_next,
 			finish = &iter_finish,
 		},
 		fd = fd,
-		buf = buf[..fs.getdents_bufsz],
+		buf = buf,
 		...
 	});
 	return &iter.iter;

@@ -1,0 +1,4 @@
+rt::malloc is not supported on +libc.
+
+A small shim module is provided here to prevent rt::malloc et al from being
+defined for +libc.

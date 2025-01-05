@@ -21,7 +21,7 @@ export fn ensure(s: *slice, membsz: size) void = {
 		};
 	};
 	s.capacity = capacity;
-	const data = realloc(s.data, s.capacity * membsz);
+	const data = realloc_glue(s.data, s.capacity * membsz);
 	assert(data != null || s.capacity * membsz == 0);
 	s.data = data;
 };
@@ -33,7 +33,7 @@ export fn unensure(s: *slice, membsz: size) void = {
 	};
 	capacity *= 2;
 	s.capacity = capacity;
-	const data = realloc(s.data, s.capacity * membsz);
+	const data = realloc_glue(s.data, s.capacity * membsz);
 	assert(data != null || s.capacity * membsz == 0);
 	s.data = data;
 };

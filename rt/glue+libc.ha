@@ -3,7 +3,7 @@
 
 // Allocates n bytes of memory and returns a pointer to them, or null if there
 // is insufficient memory.
-export fn malloc(n: size) nullable *opaque = {
+export @symbol("rt.malloc") fn malloc(n: size) nullable *opaque = {
 	if (n == 0) return null;
 	return c_malloc(n);
 };
@@ -14,7 +14,7 @@ export fn malloc(n: size) nullable *opaque = {
 // than the one given if there is insufficient space to expand the pointer
 // in-place. Returns null if there is insufficient memory to support the
 // request.
-export fn realloc(p: nullable *opaque, n: size) nullable *opaque = {
+export @symbol("rt.realloc") fn realloc(p: nullable *opaque, n: size) nullable *opaque = {
 	if (n == 0) {
 		free(p);
 		return null;
@@ -30,3 +30,7 @@ export @symbol("rt.free") fn free_(p: nullable *opaque) void = {
 @symbol("malloc") fn c_malloc(size) nullable *opaque;
 @symbol("realloc") fn c_realloc(nullable *opaque, size) nullable *opaque;
 @symbol("free") fn c_free(nullable *opaque) void;
+
+fn realloc_glue(p: nullable *opaque, n: size) nullable *opaque = {
+	return realloc(p, n);
+};

@@ -24,7 +24,7 @@ def POISON: u8 = 0x69;
 
 // Allocates n bytes of memory and returns a pointer to them, or null if there
 // is insufficient memory.
-export fn malloc(n: size) nullable *opaque = {
+export @symbol("rt.malloc") fn malloc(n: size) nullable *opaque = {
 	if (n == 0) return null;
 	if (size_islarge(n)) {
 		// Round up to PAGESZ and just use mmap directly
@@ -103,7 +103,7 @@ export @symbol("rt.free") fn free_(p: nullable *opaque) void = {
 // than the one given if there is insufficient space to expand the pointer
 // in-place. Returns null if there is insufficient memory to support the
 // request.
-export fn realloc(p: nullable *opaque, n: size) nullable *opaque = {
+export @symbol("rt.realloc") fn realloc(p: nullable *opaque, n: size) nullable *opaque = {
 	if (n == 0) {
 		free(p);
 		return null;
@@ -122,7 +122,9 @@ export fn realloc(p: nullable *opaque, n: size) nullable *opaque = {
 	case let new: *opaque =>
 		yield new;
 	};
-	memcpy(new, &m.user, if (n < m.sz) n else m.sz);
+
+	const copy = if (n < m.sz) n else m.sz;
+	(new: *[*]u8)[..copy] = m.user[..copy];
 	free(p);
 	return new;
 };
@@ -136,7 +138,6 @@ export fn getmeta(p: *opaque) *meta = {
 		"tried to get metadata for already-freed pointer (double free?)");
 	return m;
 };
-
 
 // Find the maximum allocation size for a given bin.
 fn bin_getsize(bin: size) size = {
