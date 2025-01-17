@@ -48,8 +48,9 @@ export fn tryenv(name: const str, default: str) str = {
 	};
 };
 
-// Sets an environment variable, overwriting it if it's already set. The name
-// may not contain '=' or '\0', and the value may not contain '\0'.
+// Sets an environment variable, overwriting it if it's already set.
+// [[errors::invalid]] is returned if the key contains '=' or '\0', or if the
+// value contains '\0'.
 export fn setenv(
 	name: const str,
 	value: const str
@@ -63,8 +64,8 @@ export fn setenv(
 	};
 };
 
-// Unsets an environment variable. Does nothing if the variable isn't set. The
-// name may not contain '=' or '\0'.
+// Unsets an environment variable. Does nothing if the variable isn't set.
+// [[errors::invalid]] is returned if the name contains '=' or '\0'.
 export fn unsetenv(name: const str) (void | errors::invalid) = {
 	if (strings::contains(name, '=', '\0')) return errors::invalid;
 	getenvs(); // populate envp
