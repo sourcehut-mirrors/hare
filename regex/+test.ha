@@ -436,9 +436,9 @@ fn run_rawreplace_case(
 		(`^a\\b$`, "a\\b", matchres::MATCH, 0, -1),
 		(`^x(abc)\{,2\}$`, "xabc{,2}", matchres::MATCH, 0, -1),
 		(`^x(abc)\{,2\}$`, "xabcabc{,2}", matchres::NOMATCH, 0, -1),
-		(`^[\\]+$`, "\\", matchres::MATCH, 0, -1),
-		(`^[\]]+$`, "]", matchres::MATCH, 0, -1),
-		(`^[A-Za-z\[\]]+$`, "foo[bar]baz", matchres::MATCH, 0, -1),
+		(`^[\]$`, "\\", matchres::MATCH, 0, -1),
+		(`^[\]]$`, "\\]", matchres::MATCH, 0, -1),
+		(`^[]A-Za-z[]+$`, "foo[bar]baz", matchres::MATCH, 0, -1),
 		// {m,n}
 		(`^x(abc){2}$`, "xabcabc", matchres::MATCH, 0, -1),
 		(`^x(abc){3}$`, "xabcabc", matchres::NOMATCH, 0, -1),
@@ -666,14 +666,11 @@ fn run_rawreplace_case(
 		(`(a+|b){0,1}`, "ab", matchres::MATCH, 0, 1),
 		// NOTE: character sequences not currently supported
 		// (`\0`, "\0", matchres::MATCH, 0, -1),
-		// (`[\0a]`, "\0", matchres::MATCH, 0, -1),
-		// (`[a\0]`, "\0", matchres::MATCH, 0, -1),
-		// (`[^a\0]`, "\0", matchres::NOMATCH, 0, 0),
+		// (`[\0]`, "0", matchres::MATCH, 0, -1),
 		// NOTE: octal sequences not currently supported
-		// (`[\1]`, "\1", matchres::MATCH, 0, -1),
-		// (`\09`, "\0(separate-me)9", matchres::MATCH, 0, -1),
+		// (`[\1]`, "\x01\\1", matchres::MATCH, 1, -1),
+		// (`\09`, "\09", matchres::MATCH, 0, -1),
 		// (`\141`, "a", matchres::MATCH, 0, -1),
-		// (`[\41]`, "!", matchres::MATCH, 0, -1),
 		// NOTE: hex sequences not currently supported
 		// (`\xff`, "\377", matchres::MATCH, 0, -1),
 		// NOTE: non-greedy matching not currently supported

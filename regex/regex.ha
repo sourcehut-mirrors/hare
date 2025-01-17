@@ -176,16 +176,7 @@ fn handle_bracket(
 	const is_first_char = *bracket_idx == 0 || *bracket_idx == 1
 		&& !*is_charset_positive;
 
-	if (r == '\\') {
-		if (peek1 is done) {
-			return `Trailing backslash '\'`: error;
-		} else {
-			append(charsets[len(charsets) - 1],
-				peek1: charset_lit_item)?;
-			strings::next(iter);
-			*r_idx += 1;
-		};
-	} else if (r == ']' && !is_first_char) {
+	if (r == ']' && !is_first_char) {
 		const newinst = inst_charset {
 			idx = len(charsets) - 1,
 			is_positive = *is_charset_positive,
