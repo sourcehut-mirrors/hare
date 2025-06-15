@@ -124,7 +124,7 @@ $(HARECACHE)/linux.ssa: $(linux_ha) $(HARECACHE)/format_elf.td $(HARECACHE)/rt.t
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/linux.td.tmp -N linux $(linux_ha)
 
 types_c_ha = types/c/arch+riscv64.ha types/c/strings.ha types/c/types.ha
-$(HARECACHE)/types_c.ssa: $(types_c_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/types.td
+$(HARECACHE)/types_c.ssa: $(types_c_ha) $(HARECACHE)/encoding_utf8.td $(HARECACHE)/sort_cmp.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/types_c.td.tmp -N types::c $(types_c_ha)
