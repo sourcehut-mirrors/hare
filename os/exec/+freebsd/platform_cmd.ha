@@ -13,8 +13,8 @@ export type platform_cmd = io::file;
 export type strlist = []nullable *const c::char;
 
 fn free_strlist(l: strlist) void = {
-	for (let i = 0z; i < len(l) - 1; i += 1) {
-		free(l[i]: *const c::char);
+	for (let s .. l) {
+		free(s);
 	};
 	free(l);
 };
