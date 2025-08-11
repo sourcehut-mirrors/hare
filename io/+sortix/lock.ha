@@ -5,12 +5,13 @@ use rt;
 
 // Lock operation to use with [[lock]].
 export type lockop = enum int {
+	// XXX SORTIX: These constants are made up
 	// shared file lock
-	SHARED    = rt::LOCK_SH,
+	SHARED    = 1,
 	// exclusive file lock
-	EXCLUSIVE = rt::LOCK_EX,
+	EXCLUSIVE = 2,
 	// unlock file
-	UNLOCK    = rt::LOCK_UN,
+	UNLOCK    = 8,
 };
 
 // Apply or remove an advisory lock on an open file. If block is true, the
