@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+
 // /include/errno.h: #define errno (*libk_get_errno_location())
 @symbol("libk_get_errno_location") fn __errno() *int;
 
