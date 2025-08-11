@@ -137,25 +137,23 @@ export def RLIMIT_FSIZE = 4;
 export def RLIMIT_NOFILE = 5;
 export def RLIMIT_STACK = 6;
 
-@symbol("getpriority") fn libc_getpriority(which: int, who: id_t) int;
+export def FD_CLOEXEC = (1<<0);
+export def FD_CLOFORK = (1<<1);
 
-export fn getpriority(which: int, who: id_t) (int | errno) = {
-	let res = libc_getpriority(which, who);
-	if (res == -1) {
-		return *__errno(): errno;
-	};
-	return res;
-};
+export def F_TYPE_EXP = 3;
+export def F_TYPE_VOID = 0;
+export def F_TYPE_INT = 1;
+export def F_TYPE_LONG = 2;
+export def F_TYPE_PTR = 3;
 
-@symbol("setpriority") fn libc_setpriority(
-	which: int,
-	who: id_t,
-	prio: int
-) int;
+export def F_SETFD = 0 << F_TYPE_EXP | F_TYPE_INT;
+export def F_GETFD = 1 << F_TYPE_EXP | F_TYPE_VOID;
+export def F_SETFL = 3 << F_TYPE_EXP | F_TYPE_INT;
+export def F_GETFL = 3 << F_TYPE_EXP | F_TYPE_VOID;
+export def F_DUPFD = (4 | (0 << 16)) << F_TYPE_EXP | F_TYPE_INT;
+export def F_DUPFD_CLOEXEC = (4 | (FD_CLOEXEC << 16)) << F_TYPE_EXP | F_TYPE_INT;
+export def F_DUPFD_CLOFORK = (4 | (FD_CLOFORK << 16)) << F_TYPE_EXP | F_TYPE_INT;
 
-export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
-	let res = libc_setpriority(which, who, prio);
-	if (res == -1) {
-		return *__errno(): errno;
-	};
-};
+export def WCONTINUED = 1<<0;
+export def WNOHANG = 1<<1;
+export def WUNTRACED = 1<<2;

@@ -567,3 +567,73 @@ export fn umask(mode: mode_t) (mode_t | errno) = {
 	// Always successful on Sortix.
 	return libc_umask(mode);
 };
+
+@symbol("getpriority") fn libc_getpriority(which: int, who: id_t) int;
+
+export fn getpriority(which: int, who: id_t) (int | errno) = {
+	let res = libc_getpriority(which, who);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
+@symbol("setpriority") fn libc_setpriority(
+	which: int,
+	who: id_t,
+	prio: int
+) int;
+
+export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
+	let res = libc_setpriority(which, who, prio);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("fcntl") fn libc_fcntl(fd: int, cmd: int, arg: u64) int;
+
+export type fcntl_arg = (void | int | *u64);
+
+export fn fcntl(fd: int, cmd: int, arg: fcntl_arg) (int | errno) = {
+	let res = match (arg) {
+	case void =>
+		yield libc_fcntl(fd, cmd, 0);
+	case let i: int =>
+		yield libc_fcntl(fd, cmd, i: u64);
+	case let u: *u64 =>
+		yield libc_fcntl(fd, cmd, u: uintptr: u64);
+	};
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
+@symbol("dup2") fn libc_dup2(oldd: int, newd: int) int;
+
+export fn dup2(oldfd: int, newfd: int) (int | errno) = {
+	let res = libc_dup2(oldfd, newfd);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
+@symbol("waitpid") fn libc_waitpid(
+	wpid: pid_t,
+	status: nullable *int,
+	options: int,
+) pid_t;
+
+export fn waitpid(
+	pid: pid_t,
+	wstatus: nullable *int,
+	options: int,
+) (pid_t | errno) = {
+	let res = libc_waitpid(pid, wstatus, options);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
