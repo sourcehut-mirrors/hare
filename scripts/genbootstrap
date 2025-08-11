@@ -3,12 +3,18 @@
 cd "$(dirname "$0")/.."
 mkdir -p "${BINOUT:-.bin}" makefiles/
 "${HARE:-hare}" build -o "${BINOUT:-.bin}"/genbootstrap cmd/genbootstrap
-for platform in linux freebsd openbsd netbsd; do
+for platform in linux freebsd openbsd netbsd sortix; do
 	platformtags=
-	if [ $platform = "openbsd" ]; then
+	if [ $platform = "openbsd" ] || [ $platform = "sortix" ]
+	then
 		platformtags=libc
 	fi
 	for arch in x86_64 aarch64 riscv64; do
+		if [ $platform = "sortix" ] && [ $arch != "x86_64" ]
+		then
+			# Sortix only supports x86_64
+			continue
+		fi
 		echo makefiles/$platform.$arch.mk
 		"${BINOUT:-.bin}"/genbootstrap $platform $arch $platformtags \
 			>makefiles/$platform.$arch.mk
