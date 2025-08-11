@@ -1,0 +1,514 @@
+// SPDX-License-Identifier: MPL-2.0
+// (c) Hare authors <https://harelang.org>
+
+use errors;
+use fs;
+use rt;
+use strings;
+use io;
+use types::c;
+use time;
+use path;
+
+type os_filesystem = struct {
+	fs: fs::fs,
+	dirfd: int,
+	getdents_bufsz: size,
+};
+
+fn fsflags_to_sortix(flags: fs::flag) (int | errors::unsupported) = {
+	let out = rt::O_CLOEXEC;
+	switch (flags & 0b11) {
+	case fs::flag::RDONLY =>
+		out |= rt::O_READ;
+	case fs::flag::WRONLY =>
+		out |= rt::O_WRITE;
+	case fs::flag::RDWR =>
+		out |= rt::O_READ | rt::O_WRITE;
+	case => abort();
+	};
+
+	if (flags & fs::flag::CREATE == fs::flag::CREATE) {
+		out |= rt::O_CREATE;
+	};
+	if (flags & fs::flag::EXCL == fs::flag::EXCL) {
+		out |= rt::O_EXCL;
+	};
+	if (flags & fs::flag::TRUNC == fs::flag::TRUNC) {
+		out |= rt::O_TRUNC;
+	};
+	if (flags & fs::flag::APPEND == fs::flag::APPEND) {
+		out |= rt::O_APPEND;
+	};
+	if (flags & fs::flag::NONBLOCK == fs::flag::NONBLOCK) {
+		out |= rt::O_NONBLOCK;
+	};
+	if (flags & fs::flag::DIRECTORY == fs::flag::DIRECTORY) {
+		out |= rt::O_DIRECTORY;
+	};
+	if (flags & fs::flag::NOFOLLOW == fs::flag::NOFOLLOW) {
+		out |= rt::O_NOFOLLOW;
+	};
+	if (flags & fs::flag::NOCLOEXEC == fs::flag::NOCLOEXEC) {
+		out &= ~rt::O_CLOEXEC;
+	};
+	if (flags & fs::flag::CTTY == fs::flag::CTTY) {
+		out &= ~rt::O_NOCTTY;
+	};
+	if (flags & fs::flag::PATH == fs::flag::PATH
+			|| flags & fs::flag::NOATIME == fs::flag::NOATIME
+			|| flags & fs::flag::TMPFILE == fs::flag::TMPFILE
+			|| flags & fs::flag::TMPFILE == fs::flag::SYNC
+			|| flags & fs::flag::TMPFILE == fs::flag::DSYNC
+			|| flags & fs::flag::TMPFILE == fs::flag::RSYNC) {
+		return errors::unsupported;
+	};
+	return out;
+};
+
+fn sortix_to_fsflags(flags: int) fs::flag = {
+	let out: fs::flag = 0;
+	if (flags & rt::O_READ != 0 && flags & rt::O_WRITE != 0) {
+		out |= fs::flag::RDWR;
+	} else if (flags & rt::O_READ != 0) {
+		out |= fs::flag::RDONLY;
+	} else {
+		out |= fs::flag::WRONLY;
+	};
+
+	if (flags & rt::O_CREATE == rt::O_CREATE) {
+		out |= fs::flag::CREATE;
+	};
+	if (flags & rt::O_EXCL == rt::O_EXCL) {
+		out |= fs::flag::EXCL;
+	};
+	if (flags & rt::O_TRUNC == rt::O_TRUNC) {
+		out |= fs::flag::TRUNC;
+	};
+	if (flags & rt::O_APPEND == rt::O_APPEND) {
+		out |= fs::flag::APPEND;
+	};
+	if (flags & rt::O_NONBLOCK == rt::O_NONBLOCK) {
+		out |= fs::flag::NONBLOCK;
+	};
+	if (flags & rt::O_DIRECTORY == rt::O_DIRECTORY) {
+		out |= fs::flag::DIRECTORY;
+	};
+	if (flags & rt::O_NOFOLLOW == rt::O_NOFOLLOW) {
+		out |= fs::flag::NOFOLLOW;
+	};
+	if (flags & rt::O_CLOEXEC == 0) {
+		out |= fs::flag::NOCLOEXEC;
+	};
+	if (flags & rt::O_NOCTTY == 0) {
+		out |= fs::flag::CTTY;
+	};
+	return out;
+};
+
+fn _fs_open(
+	fs: *fs::fs,
+	path: str,
+	flags: int,
+	mode: uint,
+) (io::file | fs::error) = {
+	let fs = fs: *os_filesystem;
+
+	let fd = match (rt::openat(fs.dirfd, path, flags, mode)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case let fd: int =>
+		yield fd;
+	};
+
+	return io::fdopen(fd);
+};
+
+fn fs_open_file(
+	fs: *fs::fs,
+	path: str,
+	flags: fs::flag,
+) (io::file | fs::error) = {
+	return _fs_open(fs, path, fsflags_to_sortix(flags)?, 0);
+};
+
+fn fs_open(
+	fs: *fs::fs,
+	path: str,
+	flags: fs::flag,
+) (io::handle | fs::error) = fs_open_file(fs, path, flags)?;
+
+fn fs_readlink(fs: *fs::fs, path: str) (str | fs::error) = {
+	let fs = fs: *os_filesystem;
+	static let buf: [rt::PATH_MAX]u8 = [0...];
+	let sz = match (rt::readlinkat(fs.dirfd, path, buf[..])) {
+	case let err: rt::errno =>
+		switch (err) {
+		case rt::EINVAL =>
+			return fs::wrongtype;
+		case =>
+			return errno_to_fs(err);
+		};
+	case let sz: size =>
+		yield sz;
+	};
+	return strings::fromutf8(buf[..sz])!;
+};
+
+fn fs_create_file(
+	fs: *fs::fs,
+	path: str,
+	mode: fs::mode,
+	flags: fs::flag,
+) (io::file | fs::error) = {
+	flags |= fs::flag::CREATE;
+	return _fs_open(fs, path, fsflags_to_sortix(flags)?, mode)?;
+};
+
+fn fs_create(
+	fs: *fs::fs,
+	path: str,
+	mode: fs::mode,
+	flags: fs::flag,
+) (io::handle | fs::error) = fs_create_file(fs, path, mode, flags)?;
+
+fn fs_remove(fs: *fs::fs, path: str) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::unlinkat(fs.dirfd, path, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::renameat(fs.dirfd, oldpath, fs.dirfd, newpath)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+type os_iterator = struct {
+	iter: fs::iterator,
+	dir: *rt::DIR,
+};
+
+fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
+	let iter = iter: *os_iterator;
+
+	for (true) {
+		const ent = match (rt::readdir(iter.dir)) {
+		case let ent: nullable *rt::dirent =>
+			yield ent;
+		case let err: rt::errno =>
+			return errno_to_fs(err);
+		};
+		const ent = match (ent) {
+		case let ent: *rt::dirent =>
+			yield ent;
+		case null =>
+			return done;
+		};
+
+		let name = c::tostr(&ent.d_name: *const c::char)?;
+		if (name == "." || name == "..") {
+			continue;
+		};
+
+		let ftype: fs::mode = switch (ent.d_type) {
+		case rt::DT_UNKNOWN =>
+			yield fs::mode::UNKNOWN;
+		case rt::DT_FIFO =>
+			yield fs::mode::FIFO;
+		case rt::DT_CHR =>
+			yield fs::mode::CHR;
+		case rt::DT_DIR =>
+			yield fs::mode::DIR;
+		case rt::DT_BLK =>
+			yield fs::mode::BLK;
+		case rt::DT_REG =>
+			yield fs::mode::REG;
+		case rt::DT_LNK =>
+			yield fs::mode::LINK;
+		case rt::DT_SOCK =>
+			yield fs::mode::SOCK;
+		case =>
+			yield fs::mode::UNKNOWN;
+		};
+
+		return fs::dirent {
+			name = name,
+			ftype = ftype,
+		};
+	};
+};
+
+fn iter_finish(iter: *fs::iterator) void = {
+	let iter = iter: *os_iterator;
+	rt::closedir(iter.dir)!;
+	free(iter);
+};
+
+fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
+	let fs = fs: *os_filesystem;
+	const flags = rt::O_READ | rt::O_CLOEXEC | rt::O_DIRECTORY;
+	const fd = match (rt::openat(fs.dirfd, path, flags, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case let fd: int =>
+		yield fd;
+	};
+
+	const dir = match (rt::fdopendir(fd)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case let d: *rt::DIR =>
+		yield d;
+	};
+
+	return alloc(os_iterator {
+		iter = fs::iterator {
+			next = &iter_next,
+			finish = &iter_finish,
+		},
+		dir = dir,
+	})!;
+};
+
+fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
+	let fs = fs: *os_filesystem;
+	let stat = rt::stat { ... };
+	match (rt::fstatat(fs.dirfd, path, &stat, rt::AT_SYMLINK_NOFOLLOW)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+	return fs::filestat {
+		mask = fs::stat_mask::UID
+			| fs::stat_mask::GID
+			| fs::stat_mask::SIZE
+			| fs::stat_mask::INODE
+			| fs::stat_mask::ATIME
+			| fs::stat_mask::MTIME
+			| fs::stat_mask::CTIME,
+		mode = stat.st_mode: fs::mode,
+		uid = stat.st_uid: uint, // XXX SORTIX: This is truncated
+		gid = stat.st_gid: uint,
+		sz = stat.st_size: size,
+		inode = stat.st_ino,
+		atime = time::instant {
+			sec = stat.st_atim.tv_sec,
+			nsec = stat.st_atim.tv_nsec,
+		},
+		mtime = time::instant {
+			sec = stat.st_mtim.tv_sec,
+			nsec = stat.st_mtim.tv_nsec,
+		},
+		ctime = time::instant {
+			sec = stat.st_ctim.tv_sec,
+			nsec = stat.st_ctim.tv_nsec,
+		},
+	};
+};
+
+fn fs_mkdir(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::mkdirat(fs.dirfd, path, mode: uint)) {
+	case let err: rt::errno =>
+		switch (err) {
+		case rt::EISDIR =>
+			return errors::exists;
+		case =>
+			return errno_to_fs(err);
+		};
+	case void => void;
+	};
+};
+
+fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::unlinkat(fs.dirfd, path, rt::AT_REMOVEDIR)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+
+};
+
+fn fs_chmod(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::fchmodat(fs.dirfd, path, mode: uint, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_fchmod(fd: io::file, mode: fs::mode) (void | fs::error) = {
+	match (rt::fchmod(fd, mode: uint)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_chown(fs: *fs::fs, path: str, uid: uint, gid: uint) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::fchownat(fs.dirfd, path, uid, gid, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_fchown(fd: io::file, uid: uint, gid: uint) (void | fs::error) = {
+	match (rt::fchown(fd, uid, gid)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn instant_to_timespec(time: (time::instant | void)) rt::timespec = {
+	match (time) {
+	case let t: time::instant =>
+		return time::instant_to_timespec(t);
+	case void =>
+		return rt::timespec{
+			tv_sec = rt::UTIME_OMIT,
+			tv_nsec = rt::UTIME_OMIT
+		};
+	};
+};
+
+fn fs_chtimes(fs: *fs::fs, path: str, atime: (time::instant | void),
+		mtime: (time::instant | void)) (void | fs::error) = {
+	let utimes: [2]rt::timespec = [
+		instant_to_timespec(atime),
+		instant_to_timespec(mtime),
+	];
+	let fs = fs: *os_filesystem;
+	match (rt::utimensat(fs.dirfd, path, &utimes, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_fchtimes(fd: io::file, atime: (time::instant | void),
+		mtime: (time::instant | void)) (void | fs::error) = {
+	let utimes: [2]rt::timespec = [
+		instant_to_timespec(atime),
+		instant_to_timespec(mtime),
+	];
+	match (rt::futimens(fd, &utimes)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+// TODO: cannot handle errors, i.e. path too long or cannot resolve.
+fn fs_resolve(fs: *fs::fs, path: str) str = {
+	let fs = fs: *os_filesystem;
+	static let buf = path::buffer { ... };
+
+	if (path::abs(path)) {
+		return path;
+	};
+
+	if (fs.dirfd == rt::AT_FDCWD) {
+		path::set(&buf, getcwd(), path)!;
+	} else {
+		// XXX: this is the best we can for now. we should probably
+		// return an error
+		path::set(&buf, "<unknown>", path)!;
+	};
+
+	return path::string(&buf);
+};
+
+fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::linkat(fs.dirfd, old, fs.dirfd, new, 0)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_symlink(fs: *fs::fs, target: str, path: str) (void | fs::error) = {
+	let fs = fs: *os_filesystem;
+	match (rt::symlinkat(target, fs.dirfd, path)) {
+	case let err: rt::errno =>
+		return errno_to_fs(err);
+	case void => void;
+	};
+};
+
+fn fs_close(fs: *fs::fs) void = {
+	let fs = fs: *os_filesystem;
+	rt::close(fs.dirfd)!;
+};
+
+// Opens a file descriptor as an [[fs::fs]]. This file descriptor must be a
+// directory file. The file will be closed when the fs is closed.
+export fn dirfdopen(fd: io::file) *fs::fs = {
+	let ofs = alloc(os_filesystem { ... })!;
+	let fs = static_dirfdopen(fd, ofs);
+	fs.close = &fs_close;
+	return fs;
+};
+
+fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
+	*filesystem = os_filesystem {
+		fs = fs::fs {
+			open = &fs_open,
+			openfile = &fs_open_file,
+			create = &fs_create,
+			createfile = &fs_create_file,
+			remove = &fs_remove,
+			rename = &fs_rename,
+			iter = &fs_iter,
+			stat = &fs_stat,
+			readlink = &fs_readlink,
+			mkdir = &fs_mkdir,
+			rmdir = &fs_rmdir,
+			chmod = &fs_chmod,
+			chown = &fs_chown,
+			chtimes = &fs_chtimes,
+			fchtimes = &fs_fchtimes,
+			resolve = &fs_resolve,
+			link = &fs_link,
+			symlink = &fs_symlink,
+			...
+		},
+		dirfd = fd,
+		getdents_bufsz = 32768, // 32 KiB
+		...
+	};
+	return &filesystem.fs;
+};
+
+fn errno_to_fs(err: rt::errno) fs::error = {
+	switch (err) {
+	case rt::ENOENT =>
+		return errors::noentry;
+	case rt::EEXIST =>
+		return errors::exists;
+	case rt::EACCES =>
+		return errors::noaccess;
+	case rt::EBUSY =>
+		return errors::busy;
+	case rt::ENOTDIR =>
+		return fs::wrongtype;
+	case rt::EOPNOTSUPP, rt::ENOSYS =>
+		return errors::unsupported;
+	case rt::EXDEV =>
+		return fs::cannotrename;
+	case =>
+		return errors::errno(err);
+	};
+};

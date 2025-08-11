@@ -6,6 +6,14 @@ export type time_t = i64;
 export type suseconds_t = i64;
 export type clock_t = i64;
 export type clockid_t = i32;
+export type uid_t = u64;
+export type gid_t = u64;
+export type mode_t = uint;
+export type ino_t = u64;
+export type dev_t = uintptr;
+export type nlink_t = uint;
+export type blksize_t = i64;
+export type blkcnt_t = i64;
 
 // Maximum length of a file path including the NUL terminator.
 //
@@ -39,3 +47,67 @@ export def CLOCK_CHILD_CPUTIME_ID: clockid_t = 6;
 export def CLOCK_CHILD_SYSTIME_ID: clockid_t = 7;
 export def CLOCK_THREAD_CPUTIME_ID: clockid_t = 8;
 export def CLOCK_THREAD_SYSTIME_ID: clockid_t = 9;
+
+export def _UTSNAME_LENGTH = 65z;
+
+export type utsname = struct {
+	sysname: [_UTSNAME_LENGTH]u8,
+	nodename: [_UTSNAME_LENGTH]u8,
+	release: [_UTSNAME_LENGTH]u8,
+	version: [_UTSNAME_LENGTH]u8,
+	tagline: [_UTSNAME_LENGTH]u8,
+	machine: [_UTSNAME_LENGTH]u8,
+	processor: [_UTSNAME_LENGTH]u8,
+};
+
+export def O_READ = 1<<0;
+export def O_WRITE = 1<<1;
+export def O_EXEC = 1<<2;
+export def O_APPEND = 1<<3;
+export def O_CLOEXEC = 1<<4;
+export def O_CREATE = 1<<5;
+export def O_DIRECTORY = 1<<6;
+export def O_EXCL = 1<<7;
+export def O_TRUNC = 1<<8;
+export def O_CLOFORK = 1<<9;
+export def O_SEARCH = 1<<10;
+export def O_NONBLOCK = 1<<11;
+export def O_NOFOLLOW = 1<<12;
+export def O_SYMLINK_NOFOLLOW = 1<<13;
+export def O_NOCTTY = 1<<14;
+export def O_TTY_INIT = 1<<15;
+
+export type stat = struct {
+	st_dev: dev_t,
+	st_rdev: dev_t,
+	st_ino: ino_t,
+	st_mode: mode_t,
+	st_nlink: nlink_t,
+	st_uid: uid_t,
+	st_gid: gid_t,
+	st_size: off_t,
+	st_atim: timespec,
+	st_mtim: timespec,
+	st_ctim: timespec,
+	st_blksize: blksize_t,
+	st_blkcnt: blkcnt_t,
+};
+
+export def UTIME_NOW = 0x3FFFFFFF;
+export def UTIME_OMIT = 0x3FFFFFFE;
+
+export def R_OK = 4;
+export def W_OK = 2;
+export def X_OK = 1;
+export def F_OK = 0;
+
+export def AT_FDCWD = -100;
+export def AT_REMOVEDIR = 1<<0;
+export def AT_EACCESS = 1<<1;
+export def AT_SYMLINK_NOFOLLOW = 1<<2;
+export def AT_REMOVEFILE = 1<<3;
+export def AT_SYMLINK_FOLLOW = 1<<4;
+
+export def STDIN_FILENO = 0;
+export def STDOUT_FILENO = 1;
+export def STDERR_FILENO = 2;
