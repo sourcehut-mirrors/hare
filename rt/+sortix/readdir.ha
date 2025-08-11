@@ -12,7 +12,7 @@ export fn fdopendir(dirfd: int) (*DIR | errno) = {
 	case let d: *DIR =>
 		return d;
 	case null =>
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -21,7 +21,7 @@ export fn fdopendir(dirfd: int) (*DIR | errno) = {
 export fn closedir(dir: *DIR) (int | errno) = {
 	let res = libc_closedir(dir);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -33,7 +33,7 @@ export fn readdir(dir: *DIR) (nullable *dirent | errno) = {
 	case let d: *dirent =>
 		return d;
 	case null =>
-		let err = *__errno(): errno;
+		let err = __errno();
 		if (err != 0) {
 			return err;
 		};

@@ -1,4 +1,6 @@
-.section ".preinit_array"
-.balign 8
-.init.initfunc.0:
-	.quad preinit_hare+0
+.text
+.globl main
+.type main, @function
+.extern rt.main
+main:
+	jmp rt.main

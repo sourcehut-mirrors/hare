@@ -12,6 +12,7 @@ use os;
 use os::exec;
 use path;
 use strconv;
+use rt; // XXX TEMP
 
 def VERSION: str = "unknown";
 def HAREPATH: str = ".";

@@ -33,6 +33,7 @@ export fn handle(
 			_: *rt::siginfo, _: *opaque) void,
 		sa_mask = mask,
 		sa_flags = flags,
+		sa_cookie = null,
 	};
 	let old = rt::sigact {
 		sa_sigaction = null: *fn(_: int,
@@ -72,7 +73,6 @@ export fn resetall() void = {
 	reset(sig::ILL);
 	reset(sig::TRAP);
 	reset(sig::ABRT);
-	reset(sig::EMT);
 	reset(sig::FPE);
 	reset(sig::BUS);
 	reset(sig::SEGV);
@@ -86,13 +86,11 @@ export fn resetall() void = {
 	reset(sig::CHLD);
 	reset(sig::TTIN);
 	reset(sig::TTOU);
-	reset(sig::IO);
 	reset(sig::XCPU);
 	reset(sig::XFSZ);
 	reset(sig::VTALRM);
-	reset(sig::PROF);
+	reset(sig::PWR);
 	reset(sig::WINCH);
-	reset(sig::INFO);
 	reset(sig::USR1);
 	reset(sig::USR2);
 };
@@ -121,14 +119,14 @@ export fn unblock(signals: sig...) sigset = {
 
 // Sets the process's signal mask, returning the previous mask.
 export fn setprocmask(how: how, mask: *sigset) sigset = {
-	let old: sigset = 0;
+	let old = sigset { ... };
 	rt::sigprocmask(how, mask: *rt::sigset, &old)!;
 	return old;
 };
 
 // Gets the current process's signal mask.
 export fn getprocmask() sigset = {
-	let old: sigset = 0;
+	let old = sigset { ... };
 	rt::sigprocmask(how::SETMASK, null, &old)!;
 	return old;
 };
@@ -149,15 +147,15 @@ export type sigset = rt::sigset;
 // Creates a new signal set filled in with the provided signals (or empty if
 // none are provided).
 export fn newsigset(items: sig...) sigset = {
-	let set: sigset = 0;
-	rt::sigemptyset(&set);
+	let set = sigset { ... };
+	rt::sigemptyset(&set)!;
 	sigset_add(&set, items...);
 	return set;
 };
 
 // Sets a [[sigset]] to empty.
 export fn sigset_empty(set: *sigset) void = {
-	rt::sigemptyset(set: *rt::sigset);
+	rt::sigemptyset(set: *rt::sigset)!;
 };
 
 // Adds signals to a [[sigset]].
@@ -182,24 +180,6 @@ export fn sigset_fill(set: *sigset) void = {
 // Returns true if the given signal is a member of this [[sigset]].
 export fn sigset_member(set: *sigset, item: sig) bool = {
 	return rt::sigismember(set: *rt::sigset, item)!;
-};
-
-// Waits for a signal among the given [[sigset]] to be delivered, then returns
-// the signal number.
-//
-// If a signal is received while waiting, [[errors::interrupted]] is returned.
-// Most consumers of this function will likely wish to block all signals and
-// handle them exclusively through [[wait]] et al, in which case this error
-// cannot occur.
-export fn wait(set: *sigset) (sig | errors::interrupted) = {
-	let signal = 0i;
-	match (rt::sigwait(set: *rt::sigset, &signal)) {
-	case let err: rt::errno =>
-		assert(err == rt::EINTR);
-		return errors::interrupted;
-	case void =>
-		return signal: sig;
-	};
 };
 
 // Provides additional information about signal deliveries. Only the members
@@ -232,9 +212,7 @@ export type siginfo = struct {
 };
 
 export type code = enum int {
-	NOINFO = rt::SI_NOINFO, // no signal information
 	USER = rt::SI_USER, // user generated signal via kill()
-	LWP = rt::SI_LWP, // user generated signal via lwp_kill()
 	QUEUE = rt::SI_QUEUE, // user generated signal via sigqueue()
 	TIMER = rt::SI_TIMER, // from timer expiration
 
@@ -307,7 +285,6 @@ export type sig = enum int {
 	ILL = rt::SIGILL, // Illegal instruction.
 	TRAP = rt::SIGTRAP, // Trace/breakpoint trap.
 	ABRT = rt::SIGABRT, // Process abort.
-	EMT = rt::SIGEMT, // Emulate instruction executed.
 	FPE = rt::SIGFPE, // Erroneous arithmetic operation.
 	KILL = rt::SIGKILL, // Kill (cannot be caught or ignored).
 	BUS = rt::SIGBUS, // Access to an undefined portion of a memory object.
@@ -323,13 +300,11 @@ export type sig = enum int {
 	CHLD = rt::SIGCHLD, // Child process terminated, stopped, or continued.
 	TTIN = rt::SIGTTIN, // Background process attempting read.
 	TTOU = rt::SIGTTOU, // Background process attempting write.
-	IO = rt::SIGIO, // I/O now possible.
 	XCPU = rt::SIGXCPU, // CPU time limit exceeded.
 	XFSZ = rt::SIGXFSZ, // File size limit exceeded.
 	VTALRM = rt::SIGVTALRM, // Virtual timer expired.
-	PROF = rt::SIGPROF, // Profiling timer expired.
+	PWR = rt::SIGPWR, // Power failure.
 	WINCH = rt::SIGWINCH, // Window resize.
-	INFO = rt::SIGINFO, // Status request from keyboard.
 	USR1 = rt::SIGUSR1, // User-defined signal 1.
 	USR2 = rt::SIGUSR2, // User-defined signal 2.
 };
@@ -349,8 +324,6 @@ export fn signame(sig: sig) const str = {
 		return "SIGTRAP";
 	case sig::ABRT =>
 		return "SIGABRT";
-	case sig::EMT =>
-		return "SIGEMT";
 	case sig::FPE =>
 		return "SIGFPE";
 	case sig::KILL =>
@@ -381,20 +354,16 @@ export fn signame(sig: sig) const str = {
 		return "SIGTTIN";
 	case sig::TTOU =>
 		return "SIGTTOU";
-	case sig::IO =>
-		return "SIGIO";
 	case sig::XCPU =>
 		return "SIGXCPU";
 	case sig::XFSZ =>
 		return "SIGXFSZ";
 	case sig::VTALRM =>
 		return "SIGVTALRM";
-	case sig::PROF =>
-		return "SIGPROF";
+	case sig::PWR =>
+		return "SIGPWR";
 	case sig::WINCH =>
 		return "SIGWINCH";
-	case sig::INFO =>
-		return "SIGINFO";
 	case sig::USR1 =>
 		return "SIGUSR1";
 	case sig::USR2 =>

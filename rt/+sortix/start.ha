@@ -2,25 +2,27 @@
 // (c) Hare authors <https://harelang.org>
 
 // The real main function.
-@symbol(".main") fn main() void;
+@symbol(".main") fn user_main() void;
 
-// The setup of envp and args is done here. This is called by crt0 before
-// normal init functions are called.
-export @symbol("preinit_hare") fn preinit_hare(
-	c_argc: int,
-	c_argv: *[*]*u8,
-	c_envp: *[*]nullable *u8
-) void = {
-	argc = c_argc: size;
-	argv = c_argv;
-	envp = c_envp;
-};
+let @symbol("environ") environ: *[*]nullable *u8;
+
+// XXX: Sortix libc does not run init/fini, but maybe someday it will?
+const @symbol("__init_array_start") init_start: [*]*fn() void;
+const @symbol("__init_array_end") init_end: [*]*fn() void;
+const @symbol("__fini_array_start") fini_start: [*]*fn() void;
+const @symbol("__fini_array_end") fini_end: [*]*fn() void;
 
 // The purpose of this "fake" main function is to make sure we exit with the
 // correct exit code in the case that rt::exit() is not called from within the
 // program. The intilization and finilization functions are not run from here,
 // they are ran by crt0.
-export @symbol("main") fn _main() void = {
-	main();
-	exit(0);
+export fn main(c_argc: int, c_argv: *[*]*u8) int = {
+	argc = c_argc: size;
+	argv = c_argv;
+	envp = environ;
+
+	init();
+	user_main();
+	fini();
+	return 0;
 };

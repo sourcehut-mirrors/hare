@@ -148,6 +148,7 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 	case let pid: int =>
 		rt::close(pipe[1])!;
 		defer rt::close(pipe[0])!;
+
 		let errno: int = 0;
 		match (rt::read(pipe[0], &errno, size(int))) {
 		case let err: rt::errno =>
@@ -157,7 +158,7 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 			case size(int) =>
 				return errors::errno(errno);
 			case 0 =>
-				return pid;
+				return pid: process;
 			case =>
 				abort("Unexpected rt::read result");
 			};

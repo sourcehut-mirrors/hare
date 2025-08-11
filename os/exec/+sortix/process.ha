@@ -22,7 +22,7 @@ export type status = int;
 // Waits for a process to complete, then returns its status information.
 export fn wait(proc: *process) (status | error) = {
 	let st: status = 0;
-	match (rt::waitpid(*proc, &st, 0, &ru)) {
+	match (rt::waitpid(*proc, &st, 0)) {
 	case let err: rt::errno =>
 		return errors::errno(err);
 	case let pid: rt::pid_t =>
@@ -47,7 +47,7 @@ export fn waitany() ((process, status) | error) = {
 // with a nonzero status, returns its process info and exit status immediately,
 // not waiting for the remaining children.
 export fn waitall() (uint | error | !(process, exit_status)) = {
-	let st = status { ... };
+	let st: status = 0;
 	for (let i = 0u; true; i += 1) {
 		match (rt::waitpid(-1, &st, 0)) {
 		case let err: rt::errno =>
@@ -131,11 +131,11 @@ export fn exitstr(status: exit_status) const str = {
 
 // Returns the exit status of a completed process.
 export fn exit(stat: *status) exit_status = {
-	if (rt::wifexited(stat)) {
-		return rt::wexitstatus(stat): exited;
+	if (rt::wifexited(*stat)) {
+		return rt::wexitstatus(*stat): exited;
 	};
-	if (rt::wifsignaled(stat)) {
-		return rt::wtermsig(stat): signaled;
+	if (rt::wifsignaled(*stat)) {
+		return rt::wtermsig(*stat): signaled;
 	};
 	abort("Unexpected exit status");
 };
@@ -143,7 +143,7 @@ export fn exit(stat: *status) exit_status = {
 // Checks the exit status of a completed process, returning void if successful,
 // or its status code as an error type if not.
 export fn check(stat: *status) (void | !exit_status) = {
-	if (rt::wifexited(stat) && rt::wexitstatus(stat) == 0) {
+	if (rt::wifexited(*stat) && rt::wexitstatus(*stat) == 0) {
 		return;
 	};
 	return exit(stat);

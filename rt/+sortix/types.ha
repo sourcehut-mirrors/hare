@@ -158,3 +158,13 @@ export def WCONTINUED = 1<<0;
 export def WNOHANG = 1<<1;
 export def WUNTRACED = 1<<2;
 
+export fn wtermsig(status: int) int = status & 0x7F;
+export fn wexitstatus(status: int) int = (status >> 8) & 0xff;
+export fn wifexited(status: int) bool = wtermsig(status) == 0;
+export fn wifsignaled(status: int) bool =
+	wtermsig(status) != 0o177 && wtermsig(status) != 0;
+
+export type iovec = struct {
+	iov_base: nullable *opaque,
+	iov_len: size,
+};

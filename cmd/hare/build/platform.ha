@@ -44,6 +44,12 @@ const platforms: [_]platform = [
 			["-z", "nobtcfi"],
 		],
 	},
+	platform {
+		name = "Sortix",
+		need_libc = true,
+		debug_supported = false,
+		...
+	},
 ];
 
 export fn get_platform(name: str) (*platform | unknown_platform) = {

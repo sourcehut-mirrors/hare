@@ -29,9 +29,9 @@ export def SIGWINCH = 28;
 export def SIGRTMIN = 64;
 export def SIGRTMAX = 12;
 
-export def SIG_ERR = -1;
-export def SIG_DFL = 0;
-export def SIG_IGN = 1;
+export def SIG_ERR: uintptr = -1;
+export def SIG_DFL: uintptr = 0;
+export def SIG_IGN: uintptr = 1;
 
 export def __SIGSET_NUM_SIGNALS = 128;
 
@@ -49,7 +49,7 @@ export def SA_NODEFER = 1<<6;
 export def SA_COOKIE = 1<<7;
 
 export type sigact = struct {
-	mask: sigset,
+	sa_mask: sigset,
 	union {
 		sa_handler: nullable *fn (_: int) void,
 		sa_sigaction: nullable *fn (_: int, _: *siginfo, _: *opaque) void,
@@ -120,3 +120,7 @@ export type stack_t = struct {
 	ss_size: size,
 	ss_flags: int,
 };
+
+export def SIG_BLOCK = 0;
+export def SIG_UNBLOCK = 1;
+export def SIG_SETMASK = 2;

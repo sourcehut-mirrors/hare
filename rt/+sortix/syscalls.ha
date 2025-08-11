@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+let @symbol("errno") @threadlocal _errno: int;
+
+fn __errno() errno = {
+	let e = _errno;
+	_errno = 0;
+	return e: errno;
+};
+
 let pathbuf: [PATH_MAX]u8 = [0...];
 
 // For functions that need more than one path, i.e. unveil, linkat, renameat, etc.
@@ -36,9 +44,6 @@ fn cpath(path: path) (*const u8 | errno) = {
 	return copy_cpath(path, pathbuf);
 };
 
-// /include/errno.h: #define errno (*libk_get_errno_location())
-@symbol("libk_get_errno_location") fn __errno() *int;
-
 export @symbol("exit") fn exit(status: int) never;
 
 @symbol("read") fn libc_read(d: int, buf: *opaque, nbytes: size) size;
@@ -46,7 +51,7 @@ export @symbol("exit") fn exit(status: int) never;
 export fn read(fd: int, buf: *opaque, count: size) (size | errno) = {
 	let res: u64 = libc_read(fd, buf, count);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -56,7 +61,29 @@ export fn read(fd: int, buf: *opaque, count: size) (size | errno) = {
 export fn write(fd: int, buf: *const opaque, count: size) (size | errno) = {
 	let res: u64 = libc_write(fd, buf, count);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
+	};
+	return res;
+};
+
+@symbol("readv") fn libc_readv(d: int, iov: const *[*]iovec, iovcnt: int) size;
+
+export fn readv(fd: int, iov: const *[*]iovec, iovcnt: int) (size | errno) = {
+	let res: u64 = libc_readv(fd, iov, iovcnt);
+
+	if (res == -1) {
+		return __errno();
+	};
+	return res;
+};
+
+@symbol("writev") fn libc_writev(d: int, iov: const *[*]iovec, iovcnt: int) size;
+
+export fn writev(fd: int, iov: const *[*]iovec, iovcnt: int) (size | errno) = {
+	let res: u64 = libc_writev(fd, iov, iovcnt);
+
+	if (res == -1) {
+		return __errno();
 	};
 	return res;
 };
@@ -66,7 +93,7 @@ export fn write(fd: int, buf: *const opaque, count: size) (size | errno) = {
 export fn close(fd: int) (void | errno) = {
 	let res = libc_close(fd);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -75,7 +102,7 @@ export fn close(fd: int) (void | errno) = {
 export fn lseek(fd: int, off: i64, whence: int) (i64 | errno) = {
 	let res = libc_lseek(fd, off, whence);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -85,7 +112,7 @@ export fn lseek(fd: int, off: i64, whence: int) (i64 | errno) = {
 export fn ftruncate(fd: int, length: i64) (void | errno) = {
 	let res = libc_ftruncate(fd, length);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -100,7 +127,7 @@ export fn nanosleep(
 ) (void | errno) = {
 	let res = libc_nanosleep(timeout, remainder);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -109,7 +136,7 @@ export fn nanosleep(
 export fn clock_gettime(clock: int, now: *timespec) (void | errno) = {
 	let res = libc_clock_gettime(clock, now);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -118,7 +145,7 @@ export fn clock_gettime(clock: int, now: *timespec) (void | errno) = {
 export fn clock_settime(clock: int, now: *const timespec) (void | errno) = {
 	let res = libc_clock_settime(clock, now);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -127,7 +154,7 @@ export fn clock_settime(clock: int, now: *const timespec) (void | errno) = {
 export fn uname(uts: *utsname) (void | errno) = {
 	let res = libc_uname(uts);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -146,7 +173,7 @@ export fn openat(
 ) (int | errno) = {
 	let res = libc_openat(dirfd, cpath(path)?, flags, mode);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -165,7 +192,7 @@ export fn readlinkat(
 ) (size | errno) = {
 	let res = libc_readlinkat(dirfd, cpath(path)?, buf: *[*]u8: *u8, len(buf));
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res: size;
 };
@@ -175,7 +202,7 @@ export fn readlinkat(
 export fn unlinkat(dirfd: int, path: path, flags: int) (void | errno) = {
 	let res = libc_unlinkat(dirfd, cpath(path)?, flags);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -189,7 +216,7 @@ export fn fstatat(
 ) (void | errno) = {
 	let res = libc_fstatat(dirfd, cpath(path)?, stat, flag);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -198,7 +225,7 @@ export fn fstatat(
 export fn mkdirat(dirfd: int, path: path, mode: mode_t) (void | errno) = {
 	let res = libc_mkdirat(dirfd, cpath(path)?, mode);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -217,7 +244,7 @@ export fn fchmodat(
 ) (void | errno) = {
 	let res = libc_fchmodat(dirfd, cpath(path)?, mode, flag);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -229,7 +256,7 @@ export fn fchmodat(
 export fn fchmod(fd: int, mode: uint) (void | errno) = {
 	let res = libc_fchmod(fd, mode);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -250,7 +277,7 @@ export fn fchownat(
 ) (void | errno) = {
 	let res = libc_fchownat(dirfd, cpath(path)?, uid, gid, flag);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -263,7 +290,7 @@ export fn fchownat(
 export fn fchown(fd: int, uid: uid_t, gid: gid_t) (void | errno) = {
 	let res = libc_fchown(fd, uid, gid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -287,7 +314,7 @@ export fn linkat(
 
 	let res = libc_linkat(olddirfd, oldpath, newdirfd, newpath, flags);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -306,7 +333,7 @@ export fn utimensat(
 ) (void | errno) = {
 	let res = libc_utimensat(dirfd, cpath(path)?, ts, flags);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -318,7 +345,7 @@ export fn utimensat(
 export fn futimens(fd: int, ts: *[2]timespec) (void | errno) = {
 	let res = libc_futimens(fd, ts);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -338,7 +365,7 @@ export fn symlinkat(
 
 	let res = libc_symlinkat(target, newdirfd, linkpath);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -360,7 +387,7 @@ export fn renameat(
 	let res = libc_renameat(olddirfd, cpath(oldpath)?, newdirfd,
 			newpath);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -371,7 +398,7 @@ export fn getcwd() (*const u8 | errno) = {
 
 	let res = libc_getcwd(&pathbuf: *u8, len(pathbuf));
 	if (res == null) {
-		return *__errno(): errno;
+		return __errno();
 	};
 
 	return res;
@@ -382,7 +409,7 @@ export fn getcwd() (*const u8 | errno) = {
 export fn access(path: path, amode: int) (bool | errno) = {
 	let res = libc_access(cpath(path)?, amode);
 	if (res == -1) {
-		let err = *__errno(): errno;
+		let err = __errno();
 
 		switch (res) {
 		case EACCES =>
@@ -401,7 +428,7 @@ export fn chdir(path: path) (void | errno) = {
 	let res = libc_chdir(cpath(path)?);
 
 	if (res == -1)  {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -411,7 +438,7 @@ export fn fchdir(fd: int) (void | errno) = {
 	let res = libc_fchdir(fd);
 
 	if (res == -1)  {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -420,7 +447,7 @@ export fn fchdir(fd: int) (void | errno) = {
 export fn chroot(path: path) (void | errno) = {
 	let res = libc_chroot(cpath(path)?);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -429,7 +456,7 @@ export fn chroot(path: path) (void | errno) = {
 export fn fork() (int | void | errno) = {
 	let res = libc_fork();
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	if (res == 0) {
 		return;
@@ -443,7 +470,7 @@ export fn fork() (int | void | errno) = {
 export fn execve(path: path, argv: *[*]nullable *const u8,
 		envp: *[*]nullable *const u8) errno = {
 	let res = libc_execve(cpath(path)?, argv, envp);
-	return *__errno(): errno;
+	return __errno();
 };
 
 export @symbol("getuid") fn getuid() uid_t;
@@ -458,7 +485,7 @@ export @symbol("getppid") fn getppid() pid_t;
 export fn getsid(pid: pid_t) (pid_t | errno) = {
 	let res = libc_getsid(pid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -468,7 +495,7 @@ export fn getsid(pid: pid_t) (pid_t | errno) = {
 export fn getpgid(pid: pid_t) (pid_t | errno) = {
 	let res = libc_getpgid(pid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 
 	return res;
@@ -479,7 +506,7 @@ export fn getpgid(pid: pid_t) (pid_t | errno) = {
 export fn setuid(uid: uid_t) (void | errno) = {
 	let res = libc_setuid(uid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -488,7 +515,7 @@ export fn setuid(uid: uid_t) (void | errno) = {
 export fn setgid(gid: gid_t) (void | errno) = {
 	let res = libc_setgid(gid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -497,7 +524,7 @@ export fn setgid(gid: gid_t) (void | errno) = {
 export fn seteuid(uid: uid_t) (void | errno) = {
 	let res = libc_seteuid(uid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -506,7 +533,7 @@ export fn seteuid(uid: uid_t) (void | errno) = {
 export fn setegid(gid: gid_t) (void | errno) = {
 	let res = libc_setegid(gid);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -515,7 +542,7 @@ export fn setegid(gid: gid_t) (void | errno) = {
 export fn setpgid(pid: pid_t, pgrp: pid_t) (void | errno) = {
 	let res = libc_setpgid(pid, pgrp);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -524,7 +551,7 @@ export fn setpgid(pid: pid_t, pgrp: pid_t) (void | errno) = {
 export fn setsid() (void | errno) = {
 	let res = libc_setsid();
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -533,7 +560,7 @@ export fn setsid() (void | errno) = {
 export fn pipe2(pipefd: *[2]int, flags: int) (void | errno) = {
 	let res = libc_pipe2(pipefd, flags);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -545,7 +572,7 @@ export fn pipe2(pipefd: *[2]int, flags: int) (void | errno) = {
 export fn getrlimit(resource: int, rlp: *rlimit) (void | errno) = {
 	let res = libc_getrlimit(resource, rlp);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -557,7 +584,7 @@ export fn getrlimit(resource: int, rlp: *rlimit) (void | errno) = {
 export fn setrlimit(resource: int, rlp: const *rlimit) (void | errno) = {
 	let res = libc_setrlimit(resource, rlp);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -573,7 +600,7 @@ export fn umask(mode: mode_t) (mode_t | errno) = {
 export fn getpriority(which: int, who: id_t) (int | errno) = {
 	let res = libc_getpriority(which, who);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -587,7 +614,7 @@ export fn getpriority(which: int, who: id_t) (int | errno) = {
 export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
 	let res = libc_setpriority(which, who, prio);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -605,7 +632,7 @@ export fn fcntl(fd: int, cmd: int, arg: fcntl_arg) (int | errno) = {
 		yield libc_fcntl(fd, cmd, u: uintptr: u64);
 	};
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -615,7 +642,7 @@ export fn fcntl(fd: int, cmd: int, arg: fcntl_arg) (int | errno) = {
 export fn dup2(oldfd: int, newfd: int) (int | errno) = {
 	let res = libc_dup2(oldfd, newfd);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -633,7 +660,7 @@ export fn waitpid(
 ) (pid_t | errno) = {
 	let res = libc_waitpid(pid, wstatus, options);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 	return res;
 };
@@ -653,7 +680,7 @@ export fn sigaction(
 ) (void | errno) = {
 	let res = libc_sigaction(signum, act, old);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
 	};
 };
 
@@ -667,6 +694,78 @@ export fn sigaltstack(
 ) (void | errno) = {
 	let res = libc_sigaltstack(ss, oss);
 	if (res == -1) {
-		return *__errno(): errno;
+		return __errno();
+	};
+};
+
+@symbol("sigemptyset") fn libc_sigemptyset(set: *sigset) int;
+
+export fn sigemptyset(set: *sigset) (void | errno) = {
+	let res = libc_sigemptyset(set);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("sigfillset") fn libc_sigfillset(set: *sigset) int;
+
+export fn sigfillset(set: *sigset) (void | errno) = {
+	let res = libc_sigfillset(set);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("sigaddset") fn libc_sigaddset(set: *sigset, signum: int) int;
+
+export fn sigaddset(set: *sigset, signum: int) (void | errno) = {
+	let res = libc_sigaddset(set, signum);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("sigdelset") fn libc_sigdelset(set: *sigset, signum: int) int;
+
+export fn sigdelset(set: *sigset, signum: int) (void | errno) = {
+	let res = libc_sigdelset(set, signum);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("sigismember") fn libc_sigismember(set: *sigset, signum: int) int;
+
+export fn sigismember(set: *sigset, signum: int) (bool | errno) = {
+	let res = libc_sigismember(set, signum);
+	if (res == -1) {
+		return __errno();
+	};
+	return res == 1;
+};
+
+@symbol("sigprocmask") fn libc_sigprocmask(
+	how: int,
+	set: nullable *const sigset,
+	old: nullable *sigset
+) int;
+
+export fn sigprocmask(
+	how: int,
+	set: nullable *const sigset,
+	old: nullable *sigset
+) (void | errno) = {
+	let res = libc_sigprocmask(how, set, old);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("kill") fn libc_kill(pid: pid_t, signal: int) int;
+
+export fn kill(pid: pid_t, signal: int) (void | errno) = {
+	let res = libc_kill(pid, signal);
+	if (res == -1) {
+		return __errno();
 	};
 };
