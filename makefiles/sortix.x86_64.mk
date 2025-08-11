@@ -4,7 +4,7 @@ TDENV = env HARE_TD_rt=$(HARECACHE)/rt.td HARE_TD_types=$(HARECACHE)/types.td HA
 RTSCRIPT = rt/+sortix/hare.sc
 OBJS = $(HARECACHE)/rt.o $(HARECACHE)/types.o $(HARECACHE)/bytes.o $(HARECACHE)/encoding_utf8.o $(HARECACHE)/sort_cmp.o $(HARECACHE)/strings.o $(HARECACHE)/ascii.o $(HARECACHE)/errors.o $(HARECACHE)/io.o $(HARECACHE)/bufio.o $(HARECACHE)/crypto_math.o $(HARECACHE)/endian.o $(HARECACHE)/hash.o $(HARECACHE)/crypto_sha256.o $(HARECACHE)/math.o $(HARECACHE)/memio.o $(HARECACHE)/path.o $(HARECACHE)/time.o $(HARECACHE)/fs.o $(HARECACHE)/os.o $(HARECACHE)/strconv.o $(HARECACHE)/fmt.o $(HARECACHE)/encoding_hex.o $(HARECACHE)/math_random.o $(HARECACHE)/sort.o $(HARECACHE)/hare_lex.o $(HARECACHE)/hare_ast.o $(HARECACHE)/hare_parse.o $(HARECACHE)/hare_unparse.o $(HARECACHE)/hare_module.o $(HARECACHE)/os_exec.o $(HARECACHE)/shlex.o $(HARECACHE)/unix_tty.o $(HARECACHE)/cmd_hare_build.o $(HARECACHE)/unix.o $(HARECACHE)/dirs.o $(HARECACHE)/getopt.o $(HARECACHE)/cmd_hare.o
 
-rt_ha = rt/+sortix/env.ha rt/+sortix/errno.ha rt/+sortix/platform_abort.ha rt/+sortix/start.ha rt/+sortix/syscalls.ha rt/+x86_64/arch_jmp.ha rt/+x86_64/cpuid.ha rt/abort.ha rt/ensure.ha rt/fenv_defs.ha rt/jmp.ha rt/malloc+libc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha rt/unknown_errno.ha
+rt_ha = rt/+sortix/env.ha rt/+sortix/errno.ha rt/+sortix/platform_abort.ha rt/+sortix/start.ha rt/+sortix/syscalls.ha rt/+sortix/types.ha rt/+x86_64/arch_jmp.ha rt/+x86_64/cpuid.ha rt/abort.ha rt/ensure.ha rt/fenv_defs.ha rt/jmp.ha rt/malloc+libc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha rt/unknown_errno.ha
 $(HARECACHE)/rt.ssa: $(rt_ha)
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -57,8 +57,8 @@ $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/rt.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/errors.td.tmp -N errors $(errors_ha)
 
-io_ha = io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/trunc.ha io/types.ha io/util.ha io/zero.ha
-$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td
+io_ha = io/+sortix/lock.ha io/+sortix/platform_file.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/trunc.ha io/types.ha io/util.ha io/zero.ha
+$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/rt.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/io.td.tmp -N io $(io_ha)
