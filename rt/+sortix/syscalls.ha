@@ -423,3 +423,25 @@ export fn chroot(path: path) (void | errno) = {
 		return *__errno(): errno;
 	};
 };
+
+@symbol("fork") fn libc_fork() int;
+
+export fn fork() (int | void | errno) = {
+	let res = libc_fork();
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	if (res == 0) {
+		return;
+	};
+	return res;
+};
+
+@symbol("execve") fn libc_execve(path: *const u8, argv: *[*]nullable *const u8,
+		envp: *[*]nullable *const u8) int;
+
+export fn execve(path: path, argv: *[*]nullable *const u8,
+		envp: *[*]nullable *const u8) errno = {
+	let res = libc_execve(cpath(path)?, argv, envp);
+	return *__errno(): errno;
+};
