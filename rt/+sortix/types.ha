@@ -14,6 +14,9 @@ export type dev_t = uintptr;
 export type nlink_t = uint;
 export type blksize_t = i64;
 export type blkcnt_t = i64;
+export type pid_t = uintptr;
+export type rlim_t = u64;
+export type id_t = u64;
 
 // Maximum length of a file path including the NUL terminator.
 //
@@ -111,3 +114,48 @@ export def AT_SYMLINK_FOLLOW = 1<<4;
 export def STDIN_FILENO = 0;
 export def STDOUT_FILENO = 1;
 export def STDERR_FILENO = 2;
+
+export type rusage = struct {
+	ru_utime: timeval,
+	ru_stime: timeval,
+};
+
+export def RLIM_INFINITY = ~0;
+export def RLIM_SAVED_CUR = RLIM_INFINITY;
+export def RLIM_SAVED_MAX = RLIM_INFINITY;
+
+export type rlimit = struct {
+	rlim_cur: rlim_t,
+	rlim_max: rlim_t,
+};
+
+export def RLIMIT_AS = 0;
+export def RLIMIT_CORE = 1;
+export def RLIMIT_CPU = 2;
+export def RLIMIT_DATA = 3;
+export def RLIMIT_FSIZE = 4;
+export def RLIMIT_NOFILE = 5;
+export def RLIMIT_STACK = 6;
+
+@symbol("getpriority") fn libc_getpriority(which: int, who: id_t) int;
+
+export fn getpriority(which: int, who: id_t) (int | errno) = {
+	let res = libc_getpriority(which, who);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
+@symbol("setpriority") fn libc_setpriority(
+	which: int,
+	who: id_t,
+	prio: int
+) int;
+
+export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
+	let res = libc_setpriority(which, who, prio);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};

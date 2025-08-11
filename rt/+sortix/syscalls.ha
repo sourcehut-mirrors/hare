@@ -445,3 +445,125 @@ export fn execve(path: path, argv: *[*]nullable *const u8,
 	let res = libc_execve(cpath(path)?, argv, envp);
 	return *__errno(): errno;
 };
+
+export @symbol("getuid") fn getuid() uid_t;
+export @symbol("geteuid") fn geteuid() uid_t;
+export @symbol("getgid") fn getgid() gid_t;
+export @symbol("getegid") fn getegid() gid_t;
+export @symbol("getpid") fn getpid() pid_t;
+export @symbol("getppid") fn getppid() pid_t;
+
+@symbol("getsid") fn libc_getsid(pid: pid_t) pid_t;
+
+export fn getsid(pid: pid_t) (pid_t | errno) = {
+	let res = libc_getsid(pid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
+@symbol("getpgid") fn libc_getpgid(pid: pid_t) pid_t;
+
+export fn getpgid(pid: pid_t) (pid_t | errno) = {
+	let res = libc_getpgid(pid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+
+	return res;
+};
+
+@symbol("setuid") fn libc_setuid(uid: uid_t) int;
+
+export fn setuid(uid: uid_t) (void | errno) = {
+	let res = libc_setuid(uid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("setgid") fn libc_setgid(gid: gid_t) int;
+
+export fn setgid(gid: gid_t) (void | errno) = {
+	let res = libc_setgid(gid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("seteuid") fn libc_seteuid(uid: uid_t) int;
+
+export fn seteuid(uid: uid_t) (void | errno) = {
+	let res = libc_seteuid(uid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("setegid") fn libc_setegid(gid: gid_t) int;
+
+export fn setegid(gid: gid_t) (void | errno) = {
+	let res = libc_setegid(gid);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("setpgid") fn libc_setpgid(pid: pid_t, pgrp: pid_t) int;
+
+export fn setpgid(pid: pid_t, pgrp: pid_t) (void | errno) = {
+	let res = libc_setpgid(pid, pgrp);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("setsid") fn libc_setsid() pid_t;
+
+export fn setsid() (void | errno) = {
+	let res = libc_setsid();
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("pipe2") fn libc_pipe2(pipefd: *[2]int, flags: int) int;
+
+export fn pipe2(pipefd: *[2]int, flags: int) (void | errno) = {
+	let res = libc_pipe2(pipefd, flags);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("getrlimit") fn libc_getrlimit(
+	resource: int,
+	rlp: *rlimit,
+) int;
+
+export fn getrlimit(resource: int, rlp: *rlimit) (void | errno) = {
+	let res = libc_getrlimit(resource, rlp);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("setrlimit") fn libc_setrlimit(
+	resource: int,
+	rlp: const *rlimit,
+) int;
+
+export fn setrlimit(resource: int, rlp: const *rlimit) (void | errno) = {
+	let res = libc_setrlimit(resource, rlp);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("umask") fn libc_umask(numask: mode_t) mode_t;
+
+export fn umask(mode: mode_t) (mode_t | errno) = {
+	// Always successful on Sortix.
+	return libc_umask(mode);
+};
