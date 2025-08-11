@@ -20,6 +20,3 @@ export fn lock(fd: file, block: bool, op: lockop) (bool | error) = {
 	if (!block) flags |= rt::LOCK_NB;
 	return fd_lock(fd, flags);
 };
-
-// Truncate a file to a specified length. The file must be open for writing.
-export fn trunc(fd: file, ln: size) (void | error) = fd_trunc(fd, ln);
