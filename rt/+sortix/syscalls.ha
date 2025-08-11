@@ -65,3 +65,41 @@ export fn ftruncate(fd: int, length: i64) (void | errno) = {
 		return *__errno(): errno;
 	};
 };
+
+// nanosleep
+
+@symbol("nanosleep") fn libc_nanosleep(
+	timeout: *const timespec,
+	remainder: *timespec
+) int;
+
+export fn nanosleep(
+	timeout: *const timespec,
+	remainder: *timespec
+) (void | errno) = {
+	let res = libc_nanosleep(timeout, remainder);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+// clock_gettime
+// clock_settime
+
+@symbol("clock_gettime") fn libc_clock_gettime(clock: int, now: *timespec) int;
+
+export fn clock_gettime(clock: int, now: *timespec) (void | errno) = {
+	let res = libc_clock_gettime(clock, now);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
+@symbol("clock_settime") fn libc_clock_settime(clock: int, now: *const timespec) int;
+
+export fn clock_settime(clock: int, now: *const timespec) (void | errno) = {
+	let res = libc_clock_settime(clock, now);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
