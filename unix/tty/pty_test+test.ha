@@ -8,22 +8,22 @@ use io;
 use os;
 
 @test fn pty() void = {
-	let pty = openpty()!;
-	defer io::close(pty.1)!;
-	defer io::close(pty.0)!;
+	let (master, slave) = openpty()!;
+	defer io::close(slave)!;
+	defer io::close(master)!;
 
-	assert(fs::exists(os::cwd, ptsname(pty.0)!));
+	assert(fs::exists(os::cwd, ptsname(slave)!));
 
 	for (let i: u16 = 5; i < 100; i += 1) {
 		let sz1 = ttysize { rows = i, columns = i };
-		set_winsize(pty.1, sz1)!;
-		let sz2 = winsize(pty.1)!;
+		set_winsize(master, sz1)!;
+		let sz2 = winsize(slave)!;
 		assert(sz2.rows == sz1.rows);
 		assert(sz2.columns == sz1.columns);
 	};
 
-	fmt::fprintln(pty.0, "hello, world")!;
-	const scan = bufio::newscanner(pty.1);
+	fmt::fprintln(master, "hello, world")!;
+	const scan = bufio::newscanner(slave);
 	defer bufio::finish(&scan);
 
 	const s = bufio::scan_line(&scan) as const str;
