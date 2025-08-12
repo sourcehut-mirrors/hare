@@ -47,7 +47,7 @@ const platforms: [_]platform = [
 	platform {
 		name = "Sortix",
 		need_libc = true,
-		debug_supported = false,
+		debug_supported = true,
 		...
 	},
 ];
