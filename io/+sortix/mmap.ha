@@ -11,7 +11,6 @@ export type prot = enum int {
 	READ = rt::PROT_READ,
 	WRITE = rt::PROT_WRITE,
 	EXEC = rt::PROT_EXEC,
-	FORK = rt::PROT_FORK,
 };
 
 // Values for the [[mmap]] flags parameter. Only the SHARED, PRIVATE, and FIXED
