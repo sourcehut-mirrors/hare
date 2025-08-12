@@ -49,10 +49,9 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 		merge_tags(&ctx.ctx.tags, "+test")?;
 	};
 
-	// TODO SORTIX
-	//if (!tty::isatty(os::stderr_file)) {
-	//	ctx.mode = build::output::SILENT;
-	//};
+	if (!tty::isatty(os::stderr_file)) {
+		ctx.mode = build::output::SILENT;
+	};
 
 	for (let opt .. cmd.opts) {
 		switch (opt.0) {

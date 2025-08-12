@@ -187,3 +187,114 @@ export type pollfd = struct {
 	events: i16,
 	revents: i16,
 };
+
+export type wincurpos = struct {
+	wcp_row: size,
+	wcp_col: size,
+};
+
+export type winsize = struct {
+	ws_row: size,
+	ws_col: size,
+	ws_xpixel: size,
+	ws_ypixel: size,
+};
+
+export type cc_t = u8;
+export type speed_t = uint;
+export type tcflag_t = uint;
+
+export type termios = struct {
+	c_iflag: tcflag_t,
+	c_oflag: tcflag_t,
+	c_cflag: tcflag_t,
+	c_lflag: tcflag_t,
+	c_ispeed: speed_t,
+	c_ospeed: speed_t,
+	c_cc: [NCCS]cc_t,
+};
+
+export def VEOF = 0;
+export def VEOL = 1;
+export def VERASE = 2;
+export def VINTR = 3;
+export def VKILL = 4;
+export def VMIN = 5;
+export def VQUIT = 6;
+export def VSTART = 7;
+export def VSTOP = 8;
+export def VSUSP = 9;
+export def VTIME = 10;
+export def VWERASE = 11;
+export def NCCS = 24;
+
+export def BRKINT = (1 << 0);
+export def ICRNL = (1 << 1);
+export def IGNBRK = (1 << 2);
+export def IGNCR = (1 << 3);
+export def IGNPAR = (1 << 4);
+export def INLCR = (1 << 5);
+export def INPCK = (1 << 6);
+export def ISTRIP = (1 << 7);
+export def IXANY = (1 << 8);
+export def IXOFF = (1 << 9);
+export def IXON = (1 << 10);
+export def PARMRK = (1 << 11);
+
+export def OPOST = (1 << 0);
+export def ONLCR = (1 << 1);
+export def OCRNL = (1 << 2);
+
+export def B0 = 0;
+export def B50 = 50;
+export def B75 = 75;
+export def B110 = 110;
+export def B134 = 134;
+export def B150 = 150;
+export def B200 = 200;
+export def B300 = 300;
+export def B600 = 600;
+export def B1200 = 1200;
+export def B1800 = 1800;
+export def B2400 = 2400;
+export def B4800 = 4800;
+export def B9600 = 9600;
+export def B19200 = 19200;
+export def B38400 = 38400;
+
+export def CS5 = (0 << 0);
+export def CS6 = (1 << 0);
+export def CS7 = (2 << 0);
+export def CS8 = (3 << 0);
+export def CSIZE = (CS5 | CS6 | CS7 | CS8);
+export def CSTOPB = (1 << 2);
+export def CREAD = (1 << 3);
+export def PARENB = (1 << 4);
+export def PARODD = (1 << 5);
+export def HUPCL = (1 << 6);
+export def CLOCAL = (1 << 7);
+
+export def ECHO = (1 << 0);
+export def ECHOE = (1 << 1);
+export def ECHOK = (1 << 2);
+export def ECHONL = (1 << 3);
+export def ICANON = (1 << 4);
+export def IEXTEN = (1 << 5);
+export def ISIG = (1 << 6);
+export def NOFLSH = (1 << 7);
+export def TOSTOP = (1 << 8);
+export def ISORTIX_KBKEY = (1 << 11);
+export def ISORTIX_32BIT = (1 << 12);
+
+export def TCSANOW = 0;
+export def TCSADRAIN = 1;
+export def TCSAFLUSH = 2;
+
+export def TCIFLUSH = (1 << 0);
+export def TCOFLUSH = (1 << 1);
+export def TCIOFLUSH = (TCIFLUSH | TCOFLUSH);
+
+export def TCIOFF = 0;
+export def TCION = 1;
+export def TCOOFF = 2;
+export def TCOON = 3;

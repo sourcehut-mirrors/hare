@@ -1019,3 +1019,78 @@ export fn ppoll(
 	};
 	return ret;
 };
+
+@symbol("ptsname") fn libc_ptsname(flides: int) *u8;
+
+export fn ptsname(flides: int) (*u8 | errno) = {
+	let res = libc_ptsname(flides);
+
+	if (res == null) {
+		return __errno();
+	};
+	return res;
+};
+
+@symbol("isatty") fn libc_isatty(fd: int) int;
+
+export fn isatty(fd: int) (bool | errno) = {
+	let res = libc_isatty(fd);
+
+	if (res == 0) {
+		const err = __errno();
+		if (err == ENOTTY) {
+			return false;
+		};
+		return err;
+	};
+
+	return true;
+};
+
+@symbol("tcsetpgrp") fn libc_tcsetpgrp(fd: int, pid: pid_t) int;
+
+export fn tcsetpgrp(fd: int, pid: pid_t) (void | errno) = {
+	let res = libc_tcsetpgrp(fd, pid);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("openpty") fn libc_openpty(
+	masterfd: *int,
+	slavefd: *int,
+	name: nullable *u8,
+	tio: nullable *termios,
+	ws: nullable *winsize,
+) int;
+
+export fn openpty(
+	masterfd: *int,
+	slavefd: *int,
+	name: nullable *u8,
+	tio: nullable *termios,
+	ws: nullable *winsize,
+) (void | errno) = {
+	let res = libc_openpty(masterfd, slavefd, name, tio, ws);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("tcgetattr") fn libc_tcgetattr(fd: int, p: *termios) int;
+
+export fn tcgetattr(fd: int, p: *termios) (void | errno) = {
+	let res = libc_tcgetattr(fd, p);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("tcsetattr") fn libc_tcsetattr(fd: int, opt: int, p: const *termios) int;
+
+export fn tcsetattr(fd: int, opts: int, p: *termios) (void | errno) = {
+	let res = libc_tcsetattr(fd, opts, p);
+	if (res == -1) {
+		return __errno();
+	};
+};

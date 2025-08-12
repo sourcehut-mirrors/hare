@@ -47,8 +47,7 @@ export fn execute(ctx: *context) (str | error) = {
 
 	if (len(os::tryenv("NO_COLOR", "")) == 0
 			&& os::getenv("HAREC_COLOR") is void
-			) {
-			// && tty::isatty(os::stderr_file)) { TODO SORTIX
+			&& tty::isatty(os::stderr_file)) {
 		os::setenv("HAREC_COLOR", "1")!;
 	};
 
@@ -161,13 +160,12 @@ fn run_task(ctx: *context, jobs: *[]job, t: *task) (bool | error) = {
 	switch (ctx.mode) {
 	case output::DEFAULT, output::SILENT => void;
 	case output::VERBOSE =>
-		// TODO SORTIX
-		//if (tty::isatty(os::stderr_file)) {
+		if (tty::isatty(os::stderr_file)) {
 			fmt::errorfln("\x1b[1m{}\x1b[0m\t{}",
 				ctx.cmds[t.kind], mod.name)?;
-		//} else {
-		//	fmt::errorfln("{}\t{}", ctx.cmds[t.kind], mod.name)?;
-		//};
+		} else {
+			fmt::errorfln("{}\t{}", ctx.cmds[t.kind], mod.name)?;
+		};
 	case output::VVERBOSE =>
 		fmt::error(ctx.cmds[t.kind])?;
 		for (let arg .. args) {
