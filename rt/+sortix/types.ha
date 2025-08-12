@@ -298,3 +298,19 @@ export def TCIOFF = 0;
 export def TCION = 1;
 export def TCOOFF = 2;
 export def TCOON = 3;
+
+export def PROT_NONE = 0;
+
+export def PROT_EXEC = 1<<0;
+export def PROT_WRITE = 1<<1;
+export def PROT_READ = 1<<2;
+export def PROT_USER = PROT_EXEC | PROT_WRITE | PROT_READ;
+export def PROT_FORK = 1<<6;
+
+export def MAP_SHARED = 1<<0;
+export def MAP_PRIVATE = 1<<1;
+export def MAP_ANONYMOUS = 1<<2;
+export def MAP_ANON = MAP_ANONYMOUS;
+export def MAP_FIXED = 1<<3;
+
+export def MAP_FAILED = -1: uintptr: *opaque;

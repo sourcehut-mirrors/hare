@@ -1094,3 +1094,36 @@ export fn tcsetattr(fd: int, opts: int, p: *termios) (void | errno) = {
 		return __errno();
 	};
 };
+
+@symbol("mmap") fn libc_mmap(
+	addr: nullable *opaque,
+	len_: size,
+	prot: int,
+	flags: int,
+	fd: int,
+	pos: i64
+) *opaque;
+
+export fn mmap(
+	addr: nullable *opaque,
+	len_: size,
+	prot: int,
+	flags: int,
+	fd: int,
+	pos: i64
+) (*opaque | errno) = {
+	let res = libc_mmap(addr, len_, prot, flags, fd, pos);
+	if (res == MAP_FAILED) {
+		return __errno();
+	};
+	return res;
+};
+
+@symbol("munmap") fn libc_munmap(addr: *opaque, len_: size) int;
+
+export fn munmap(addr: *opaque, len_: size) (void | errno) = {
+	let res = libc_munmap(addr, len_);
+	if (res == -1) {
+		return __errno();
+	};
+};
