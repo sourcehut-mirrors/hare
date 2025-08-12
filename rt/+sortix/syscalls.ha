@@ -896,3 +896,8 @@ export fn socketpair(
 		return __errno();
 	};
 };
+
+export @symbol("arc4random_buf") fn arc4random_buf(
+	buf: *opaque,
+	nbytes: size
+) void;
