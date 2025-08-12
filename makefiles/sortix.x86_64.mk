@@ -57,7 +57,7 @@ $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/rt.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/errors.td.tmp -N errors $(errors_ha)
 
-io_ha = io/+sortix/lock.ha io/+sortix/mmap.ha io/+sortix/platform_file.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/trunc.ha io/types.ha io/util.ha io/zero.ha
+io_ha = io/+sortix/dup.ha io/+sortix/lock.ha io/+sortix/mmap.ha io/+sortix/platform_file.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/trunc.ha io/types.ha io/util.ha io/zero.ha
 $(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/rt.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
