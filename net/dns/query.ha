@@ -29,22 +29,46 @@ export fn query(query: *message, servers: ip::addr...) (*message | error | nomem
 		servers = [ip::LOCAL_V6, ip::LOCAL_V4];
 	};
 
-	let socket4 = udp::listen(ip::ANY_V4, 0)?;
-	defer net::close(socket4)!;
-	let socket6 = udp::listen(ip::ANY_V6, 0)?;
-	defer net::close(socket6)!;
-	const pollfd: [_]poll::pollfd = [
-		poll::pollfd {
-			fd = socket4,
-			events = poll::event::POLLIN,
-			...
-		},
-		poll::pollfd {
-			fd = socket6,
-			events = poll::event::POLLIN,
-			...
-		},
+	let last_err: net::error = errors::invalid;
+	let sock4: io::file = -1, sock6: io::file = -1;
+	let npoll = 0z;
+
+	const pollfd: [2]poll::pollfd = [
+		poll::pollfd { ... },
+		poll::pollfd { ... },
 	];
+
+	match (udp::listen(ip::ANY_V4, 0)) {
+	case let sock: net::socket =>
+		sock4 = sock;
+		pollfd[npoll] = poll::pollfd {
+			fd = sock4,
+			events = poll::event::POLLIN,
+			...
+		};
+		npoll += 1;
+	case let err: net::error =>
+		last_err = err;
+	};
+	defer if (sock4 != -1) net::close(sock4)!;
+
+	match (udp::listen(ip::ANY_V6, 0)) {
+	case let sock: net::socket =>
+		sock6 = sock;
+		pollfd[npoll] = poll::pollfd {
+			fd = sock6,
+			events = poll::event::POLLIN,
+			...
+		};
+		npoll += 1;
+	case let err: net::error =>
+		last_err = err;
+	};
+	defer if (sock6 != -1) net::close(sock6)!;
+
+	if (npoll == 0) {
+		return last_err;
+	};
 
 	let buf: [512]u8 = [0...];
 	let z = encode(buf, query)?;
@@ -53,15 +77,17 @@ export fn query(query: *message, servers: ip::addr...) (*message | error | nomem
 	// first one which sends us a reasonable answer.
 	for (let i = 0z; i < len(servers); i += 1) match (servers[i]) {
 	case ip::addr4 =>
-		udp::sendto(socket4, buf[..z], servers[i], 53)?;
+		if (sock4 == -1) continue;
+		udp::sendto(sock4, buf[..z], servers[i], 53)?;
 	case ip::addr6 =>
-		udp::sendto(socket6, buf[..z], servers[i], 53)?;
+		if (sock6 == -1) continue;
+		udp::sendto(sock6, buf[..z], servers[i], 53)?;
 	};
 
 	let header = header { ... };
 	let src: ip::addr = ip::ANY_V4;
 	for (true) {
-		let nevent = match (poll::poll(pollfd, timeout)) {
+		let nevent = match (poll::poll(pollfd[..npoll], timeout)) {
 		case let nevent: uint =>
 			yield nevent;
 		case let e: poll::error =>
@@ -71,11 +97,10 @@ export fn query(query: *message, servers: ip::addr...) (*message | error | nomem
 			return errors::timeout;
 		};
 
-		if (pollfd[0].revents & poll::event::POLLIN != 0) {
-			z = udp::recvfrom(socket4, buf, &src, null)?;
-		};
-		if (pollfd[1].revents & poll::event::POLLIN != 0) {
-			z = udp::recvfrom(socket6, buf, &src, null)?;
+		for (let f &.. pollfd[..npoll]) {
+			if (f.revents & poll::event::POLLIN != 0) {
+				z = udp::recvfrom(f.fd, buf, &src, null)?;
+			};
 		};
 
 		let expected = false;
