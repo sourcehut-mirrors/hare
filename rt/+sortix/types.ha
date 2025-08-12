@@ -17,6 +17,7 @@ export type blkcnt_t = i64;
 export type pid_t = uintptr;
 export type rlim_t = u64;
 export type id_t = u64;
+export type nfds_t = size;
 
 // Maximum length of a file path including the NUL terminator.
 //
@@ -167,4 +168,22 @@ export fn wifsignaled(status: int) bool =
 export type iovec = struct {
 	iov_base: nullable *opaque,
 	iov_len: size,
+};
+
+export def POLLERR = (1<<0);
+export def POLLHUP = (1<<1);
+export def POLLNVAL = (1<<2);
+
+export def POLLIN = (1<<3);
+export def POLLRDNORM = (1<<4);
+export def POLLRDBAND = (1<<5);
+export def POLLPRI = (1<<6);
+export def POLLOUT = (1<<7);
+export def POLLWRNORM = (1<<8);
+export def POLLWRBAND = (1<<9);
+
+export type pollfd = struct {
+	fd: int,
+	events: i16,
+	revents: i16,
 };

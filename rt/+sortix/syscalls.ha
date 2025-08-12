@@ -901,3 +901,23 @@ export @symbol("arc4random_buf") fn arc4random_buf(
 	buf: *opaque,
 	nbytes: size
 ) void;
+
+@symbol("ppoll") fn libc_ppoll(
+	fds: *[*]pollfd,
+	nfds: nfds_t,
+	timeout: const nullable *timespec,
+	mask: const nullable *sigset,
+) int;
+
+export fn ppoll(
+	fds: *[*]pollfd,
+	nfds: nfds_t,
+	timeout: const nullable *timespec,
+	sigmask: const nullable *sigset,
+) (int | errno) = {
+	let ret = libc_ppoll(fds, nfds, timeout, sigmask);
+	if (ret == -1) {
+		return __errno();
+	};
+	return ret;
+};
