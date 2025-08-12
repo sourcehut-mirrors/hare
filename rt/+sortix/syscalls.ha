@@ -811,6 +811,30 @@ export fn recvmsg(fd: int, msg: *const msghdr, flags: int) (int | errno) = {
 	return res: int;
 };
 
+@symbol("sendto") fn libc_sendto(
+	s: int,
+	msg: *opaque,
+	length: size,
+	flags: int,
+	to: nullable *sockaddr,
+	tolen: socklen_t
+) i64;
+
+export fn sendto(
+	sockfd: int,
+	buf: *opaque,
+	length: size,
+	flags: int,
+	dest_addr: nullable *sockaddr,
+	addrlen: u32
+) (size | errno) = {
+	let res = libc_sendto(sockfd, buf, length, flags, dest_addr, addrlen);
+	if (res == -1) {
+		return __errno();
+	};
+	return res: size;
+};
+
 @symbol("recvfrom") fn libc_recvfrom(
 	s: int,
 	buf: *opaque,
@@ -901,6 +925,80 @@ export @symbol("arc4random_buf") fn arc4random_buf(
 	buf: *opaque,
 	nbytes: size
 ) void;
+
+@symbol("socket") fn libc_socket(domain: int, t: int, protocol: int) int;
+
+export fn socket(domain: int, t: int, protocol: int) (int | errno) = {
+	let res = libc_socket(domain, t, protocol);
+	if (res == -1) {
+		return __errno();
+	};
+	return res;
+};
+
+@symbol("connect") fn libc_connect(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) int;
+
+export fn connect(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) (void | errno) = {
+	let res = libc_connect(sockfd, addr, addrlen);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("bind") fn libc_bind(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) int;
+
+export fn bind(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) (void | errno) = {
+	let res = libc_bind(sockfd, addr, addrlen);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("setsockopt") fn libc_setsockopt(
+	s: int,
+	level: int,
+	optname: int,
+	optval: *opaque,
+	optlen: u32
+) int;
+
+export fn setsockopt(
+	sockfd: int,
+	level: int,
+	optname: int,
+	optval: *opaque,
+	optlen: u32
+) (void | errno) = {
+	let res = libc_setsockopt(sockfd, level, optname, optval, optlen);
+	if (res == -1) {
+		return __errno();
+	};
+};
+
+@symbol("listen") fn libc_listen(s: int, backlog: int) int;
+
+export fn listen(sockfd: int, backlog: u32) (void | errno) = {
+	let res = libc_listen(sockfd, backlog: int);
+	if (res == -1) {
+		return __errno();
+	};
+};
 
 @symbol("ppoll") fn libc_ppoll(
 	fds: *[*]pollfd,
