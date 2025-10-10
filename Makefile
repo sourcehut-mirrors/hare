@@ -115,7 +115,7 @@ install-cmd: all $(BINOUT)/hare-install
 install-mods:
 	rm -rf -- '$(DESTDIR)$(STDLIB)'
 	mkdir -p -- '$(DESTDIR)$(STDLIB)'
-	cp -R -- $$(scripts/moddirs) '$(DESTDIR)$(STDLIB)'
+	cp -R -- $$(scripts/moddirs) README '$(DESTDIR)$(STDLIB)'
 
 uninstall:
 	rm -- '$(DESTDIR)$(BINDIR)/hare'
