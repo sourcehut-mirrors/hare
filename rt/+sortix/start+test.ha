@@ -5,9 +5,8 @@
 
 let @symbol("environ") environ: *[*]nullable *u8;
 
-// XXX: Sortix libc does not run init/fini, but maybe someday it will?
-const @symbol("__init_array_start") init_start: [*]*fn() void;
-const @symbol("__init_array_end") init_end: [*]*fn() void;
+const @symbol("__libc_init_array_start") init_start: [*]*fn() void;
+const @symbol("__libc_init_array_end") init_end: [*]*fn() void;
 const @symbol("__fini_array_start") fini_start: [*]*fn() void;
 const @symbol("__fini_array_end") fini_end: [*]*fn() void;
 
@@ -20,8 +19,10 @@ export fn main(c_argc: int, c_argv: *[*]*u8) int = {
 	argv = c_argv;
 	envp = environ;
 
+	// we deliberately prevent libc from running @init for us, in order to
+	// be able to initialize argc/argv/envp beforehand. we can still get
+	// away with just using libc for @fini though
 	init();
-	const ret = if (test_main() > 0) 1 else 0;
-	fini();
-	exit(ret);
+	const nfail = test_main();
+	return if (nfail > 0) 1 else 0;
 };
