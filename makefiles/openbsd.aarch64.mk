@@ -10,7 +10,7 @@ $(HARECACHE)/sys.ssa: $(sys_ha)
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/sys.td.tmp -N sys $(sys_ha)
 
-rt_ha = rt/+openbsd/env.ha rt/+openbsd/platform_abort.ha rt/+openbsd/start.ha rt/abort.ha rt/ensure.ha rt/malloc+libc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
+rt_ha = rt/+openbsd/env.ha rt/+openbsd/platform_abort.ha rt/+openbsd/platform_halt.ha rt/+openbsd/start.ha rt/abort.ha rt/ensure.ha rt/malloc+libc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
 $(HARECACHE)/rt.ssa: $(rt_ha) $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
