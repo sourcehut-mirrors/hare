@@ -27,7 +27,5 @@ fn platform_abort(path: *str, line: u64, col: u64, msg: str) never = {
 	];
 	_ = sys::writev(sys::STDERR_FILENO, &iov, len(iov): int);
 
-	for (true) {
-		_ = sys::kill(sys::getpid(), sys::SIGABRT);
-	};
+	halt();
 };
