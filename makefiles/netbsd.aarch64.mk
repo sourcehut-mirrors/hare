@@ -10,7 +10,7 @@ $(HARECACHE)/sys.ssa: $(sys_ha)
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/sys.td.tmp -N sys $(sys_ha)
 
-rt_ha = rt/+aarch64/arch_jmp.ha rt/+netbsd/env.ha rt/+netbsd/initfini.ha rt/+netbsd/platform_abort.ha rt/+netbsd/platformstart-libc.ha rt/+netbsd/segmalloc.ha rt/+netbsd/start.ha rt/abort.ha rt/ensure.ha rt/heap-libc.ha rt/jmp.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
+rt_ha = rt/+aarch64/arch_jmp.ha rt/+netbsd/env.ha rt/+netbsd/initfini.ha rt/+netbsd/platform_abort.ha rt/+netbsd/platform_halt.ha rt/+netbsd/platformstart-libc.ha rt/+netbsd/segmalloc.ha rt/+netbsd/start.ha rt/abort.ha rt/ensure.ha rt/heap-libc.ha rt/jmp.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
 $(HARECACHE)/rt.ssa: $(rt_ha) $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

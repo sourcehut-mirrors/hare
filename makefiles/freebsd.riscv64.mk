@@ -15,7 +15,7 @@ $(HARECACHE)/sys.o: $(sys_s)
 	@printf 'AS\t%s\n' "$@"
 	@$(AS) $(ASFLAGS) -o $@ $(sys_s)
 
-rt_ha = rt/+freebsd/env.ha rt/+freebsd/initfini.ha rt/+freebsd/platform_abort.ha rt/+freebsd/platformstart-libc.ha rt/+freebsd/segmalloc.ha rt/+freebsd/start.ha rt/+riscv64/arch_jmp.ha rt/abort.ha rt/ensure.ha rt/heap-libc.ha rt/jmp.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
+rt_ha = rt/+freebsd/env.ha rt/+freebsd/initfini.ha rt/+freebsd/platform_abort.ha rt/+freebsd/platform_halt.ha rt/+freebsd/platformstart-libc.ha rt/+freebsd/segmalloc.ha rt/+freebsd/start.ha rt/+riscv64/arch_jmp.ha rt/abort.ha rt/ensure.ha rt/heap-libc.ha rt/jmp.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/strcmp.ha rt/u64tos.ha
 $(HARECACHE)/rt.ssa: $(rt_ha) $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
