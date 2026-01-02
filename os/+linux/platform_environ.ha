@@ -28,7 +28,6 @@ let args_static: [32]str = [""...];
 			append(args, c::tostr(rt::argv[i]: *const c::char)!)!;
 		};
 	};
-
 };
 
 @fini fn args() void = {
