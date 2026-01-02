@@ -81,3 +81,21 @@ fn fd_trunc(fd: file, ln: size) (void | error) = {
 	case let e: sys::errno => return errors::errno(e);
 	};
 };
+
+// Lock operation to use with [[lock]].
+export type lockop = enum int {
+	// shared file lock
+	SHARED    = sys::LOCK_SH,
+	// exclusive file lock
+	EXCLUSIVE = sys::LOCK_EX,
+	// unlock file
+	UNLOCK    = sys::LOCK_UN,
+};
+
+// Apply or remove an advisory lock on an open file. If block is true, the
+// request will block while waiting for the lock.
+export fn lock(fd: file, block: bool, op: lockop) (bool | error) = {
+	let flags = op: int;
+	if (!block) flags |= sys::LOCK_NB;
+	return fd_lock(fd, flags);
+}
