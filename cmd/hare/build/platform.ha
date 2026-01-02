@@ -50,6 +50,11 @@ const platforms: [_]platform = [
 			["-z", "nobtcfi"],
 		],
 	},
+	platform {
+		name = "Hermes",
+		debug_supported = false,
+		...
+	},
 ];
 
 export fn get_platform(name: str) (*platform | unknown_platform) = {
