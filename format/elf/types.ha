@@ -946,6 +946,9 @@ export type at = enum u64 {
 
 	// Stack needed for signal delivery (AArch64).
 	MINSIGSTKSZ = 51,
+
+	// Address of bootinfo structure (Hermes)
+	BOOTINFO = 128,
 };
 
 // Version definition section
