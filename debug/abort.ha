@@ -28,7 +28,10 @@ fn debug_abort(
 		yield img;
 	case =>
 		_ = fmt::errorfln("Abort: {}:{}:{}: {}", *path, line, col, msg);
-		halt();
+		let frame = walk();
+		skip_frames(&frame, 2);
+		simple_backtrace(frame);
+		rt::halt();
 	};
 	defer image::close(&self);
 
@@ -43,20 +46,17 @@ fn debug_abort(
 	print_context(*path, line, col, st.mtime);
 
 	let frame = walk();
-	// Skip sys::abort and debug::debug_abort
-	for (let skip = 2; skip > 0; skip -= 1) {
-		match (next(frame)) {
-		case let next: stackframe =>
-			frame = next;
-		case done => halt();
-		};
-	};
-
+	skip_frames(&frame, 2);
 	backtrace(&self, frame);
-	halt();
+	rt::halt();
 };
 
-fn halt() never = {
-	_ = sys::kill(sys::getpid(), sys::SIGABRT);
-	for (true) void;
+fn skip_frames(frame: *stackframe, n: uint) void = {
+	for (n > 0; n -= 1) {
+		match (next(*frame)) {
+		case let next: stackframe =>
+			*frame = next;
+		case done => rt::halt();
+		};
+	};
 };

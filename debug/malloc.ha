@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use rt;
-use unix::signal;
 
 let heap = rt::EMPTY_HEAP;
 
@@ -11,7 +10,7 @@ let heap = rt::EMPTY_HEAP;
 // configures the runtime to use the debug heap (in case of heap overflow or
 // similar faults in the user program).
 fn begin_fatal() void = {
-	signal::resetall();
+	fault_reset();
 	rt::setheap(&heap);
 	rt::onabort(default_abort);
 };
