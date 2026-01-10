@@ -2,10 +2,11 @@
 // (c) Hare authors <https://harelang.org>
 
 use debug::image;
+use fmt;
+use rt;
 use sys;
 use unix::signal;
 use unix::signal::{sig};
-use fmt;
 
 // altstack.s
 let altstack: [ALTSTACK_SIZE]uintptr;
@@ -55,14 +56,14 @@ fn signal_handler(sig: sig, info: *signal::siginfo, uctx: *opaque) void = {
 	const self = match (image::self()) {
 	case let img: image::image =>
 		yield img;
-	case => halt();
+	case => rt::halt();
 	};
 	defer image::close(&self);
 
 	_ = fmt::errorln("Backtrace:");
 	backtrace(&self, frame);
 
-	halt();
+	rt::halt();
 };
 
 fn errcode_str(sig: sig, code: signal::code) const str = {
@@ -110,4 +111,8 @@ fn errcode_str(sig: sig, code: signal::code) const str = {
 	};
 
 	return "unknown reason";
+};
+
+fn fault_reset() void = {
+	signal::resetall();
 };

@@ -2,6 +2,23 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
+use format::elf;
+use rt;
+
+fn read_ticks() u64;
+
+let clock_rate = 0u64;
+
+@init fn init() void = {
+	for (let i = 0z; rt::auxv[i].a_type != elf::at::NULL; i += 1) {
+		const aux = &rt::auxv[i];
+		switch (aux.a_type) {
+		case elf::at::CLKTCK =>
+			clock_rate = aux.a_val;
+		case => void;
+		};
+	};
+};
 
 // An enumeration of clocks available on this system. Different clocks represent
 // times from different epochs, and have different characteristics with regards
@@ -32,7 +49,15 @@ export fn sleep_until(i: instant, c: clock = clock::MONOTONIC) void = {
 
 // Returns the current time for a given clock.
 export fn now(clock: clock) instant = {
-	abort("TODO: Hermes");
+	// TODO: Implement different clocks
+	const now = read_ticks();
+	const sec = now / clock_rate;
+	const remain = now % clock_rate;
+	const nsec = 10e11 / clock_rate * remain / 10e2;
+	return instant {
+		sec = sec: i64,
+		nsec = nsec: i64,
+	};
 };
 
 // Sets system clock to given time.
