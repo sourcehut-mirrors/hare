@@ -139,14 +139,13 @@ fn tup_to_import(tup: import_tuple) ast::import = ast::import {
 };
 
 @test fn want() void = {
-	// Hint: missing semicolon.
-	let in = "fn f() void = { const x = 1\ny(); };";
+	let in = "fn ; { }";
 	let stream = memio::fixed(strings::toutf8(in));
 	let scanner = bufio::newscanner(&stream);
 	defer bufio::finish(&scanner);
 
 	let lexer = lex::init(&scanner, "<test>");
-	let got = subunit(&lexer);
-
-	assert(got is lex::error);
+	assert(want(&lexer, lex::ltok::FN) is lex::token);
+	assert(want(&lexer, lex::ltok::SEMICOLON) is lex::token);
+	assert(want(&lexer, lex::ltok::SEMICOLON) is lex::error);
 };
