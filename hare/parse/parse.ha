@@ -40,6 +40,7 @@ export fn want(lexer: *lex::lexer, want: lex::ltok...) (lex::token | error) = {
 
 	let buf = memio::dynamic();
 	defer io::close(&buf)!;
+	lex::unlex(lexer, tok);
 	for (let i = 0z; i < len(want); i += 1) {
 		const tstr = if (want[i] == ltok::NAME) "name"
 			else lex::tokstr((want[i], void, mkloc(lexer)));
@@ -48,7 +49,6 @@ export fn want(lexer: *lex::lexer, want: lex::ltok...) (lex::token | error) = {
 			fmt::fprint(&buf, ", ")!;
 		};
 	};
-	lex::unlex(lexer, tok);
 	return syntaxerr(mkloc(lexer), "Unexpected '{}', was expecting {}",
 		lex::tokstr(tok), memio::string(&buf)!);
 };

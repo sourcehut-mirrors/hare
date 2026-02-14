@@ -137,3 +137,16 @@ fn tup_to_import(tup: import_tuple) ast::import = ast::import {
 		"// humans think is impossible.\n"
 		"export fn main() void = void;\n");
 };
+
+@test fn want() void = {
+	// Hint: missing semicolon.
+	let in = "fn f() void = { const x = 1\ny(); };";
+	let stream = memio::fixed(strings::toutf8(in));
+	let scanner = bufio::newscanner(&stream);
+	defer bufio::finish(&scanner);
+
+	let lexer = lex::init(&scanner, "<test>");
+	let got = subunit(&lexer);
+
+	assert(got is lex::error);
+};
