@@ -5,30 +5,30 @@ use errors;
 use fs;
 use io;
 use path;
-use rt;
+use sys;
 use strings;
 
 fn shm_check_fs() bool = {
-	match (open(rt::SHMFS_DIR_PATH,
+	match (open(sys::SHMFS_DIR_PATH,
 			fs::flag::DIRECTORY | fs::flag::RDONLY)) {
 	case fs::error =>
 		return false;
 	case let fd: io::file =>
 		defer io::close(fd)!;
 
-		let sv = rt::statvfs{...};
-		let st = rt::st{...};
+		let sv = sys::statvfs{...};
+		let st = sys::st{...};
 
-		if (rt::fstatvfs1(fd, &sv, rt::MNT_NOWAIT) is rt::errno)
+		if (sys::fstatvfs1(fd, &sv, sys::MNT_NOWAIT) is sys::errno)
 			return false;
 
-		if (strings::fromutf8(sv.f_fstypename)! == rt::MOUNT_SHMFS)
+		if (strings::fromutf8(sv.f_fstypename)! == sys::MOUNT_SHMFS)
 			return false;
 
-		if (rt::fstat(fd, &st) is rt::errno)
+		if (sys::fstat(fd, &st) is sys::errno)
 			return false;
 
-		if ((st.mode & rt::SHMFS_DIR_MODE) != rt::SHMFS_DIR_MODE)
+		if ((st.mode & sys::SHMFS_DIR_MODE) != sys::SHMFS_DIR_MODE)
 			return false;
 
 		return true;
@@ -37,7 +37,7 @@ fn shm_check_fs() bool = {
 
 fn shm_get_path(name: const str) (str | fs::error) = {
 	if (!shm_check_fs())
-		return errors::errno(rt::ENOTSUP): fs::error;
+		return errors::errno(sys::ENOTSUP): fs::error;
 
 	// The name may start with a slash character.
 	if (strings::hasprefix(name, '/')) {
@@ -46,13 +46,13 @@ fn shm_get_path(name: const str) (str | fs::error) = {
 
 	// We may disallow other slashes (implementation-defined behaviour).
 	if (strings::contains(name, '/'))
-		return errors::errno(rt::EINVAL): fs::error;
+		return errors::errno(sys::EINVAL): fs::error;
 
 	const _path = strings::concat(
-		rt::SHMFS_DIR_PATH, "/", rt::SHMFS_OBJ_PREFIX, name)!;
+		sys::SHMFS_DIR_PATH, "/", sys::SHMFS_OBJ_PREFIX, name)!;
 
 	if (len(_path) > path::MAX)
-		return errors::errno(rt::ENAMETOOLONG): fs::error;
+		return errors::errno(sys::ENAMETOOLONG): fs::error;
 
 	return _path;
 };
@@ -83,12 +83,12 @@ export fn shm_open(
 ) (io::file | fs::error) = {
 	const _path = shm_get_path(name)?;
 
-	const oflag = fsflags_to_bsd(oflag)? | rt::O_CLOEXEC | rt::O_NOFOLLOW;
+	const oflag = fsflags_to_bsd(oflag)? | sys::O_CLOEXEC | sys::O_NOFOLLOW;
 
-	match (rt::open(_path, oflag, mode)) {
+	match (sys::open(_path, oflag, mode)) {
 	case let fd: int =>
 		return fd: io::file;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err): fs::error;
 	};
 };
@@ -100,10 +100,10 @@ export fn shm_open(
 export fn shm_unlink(name: str) (void | fs::error) = {
 	const _path = shm_get_path(name)?;
 
-	match (rt::unlink(_path)) {
+	match (sys::unlink(_path)) {
 	case void =>
 		void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err): fs::error;
 	};
 };

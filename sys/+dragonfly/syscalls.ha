@@ -46,7 +46,7 @@ fn copy_kpath(path: path, buf: []u8) (*const u8 | errno) = {
 	if (len(path) + 1 >= len(pathbuf)) {
 		return ENAMETOOLONG;
 	};
-	memcpy(buf: *[*]u8, path: *[*]u8, len(path));
+	buf[..len(path)] = path;
 	buf[len(path)] = 0;
 	return buf: *[*]u8: *const u8;
 };

@@ -3,17 +3,17 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // Flags for [[memfd]].
 export type memfd_flag = enum uint {
 	NONE = 0,
 	// Unsets the close-on-exec flag when creating a memfd.
-	NOCLOEXEC = rt::MFD_CLOEXEC,
+	NOCLOEXEC = sys::MFD_CLOEXEC,
 	// Allows sealing operations on this file.
-	ALLOW_SEALING = rt::MFD_ALLOW_SEALING,
+	ALLOW_SEALING = sys::MFD_ALLOW_SEALING,
 	// Create the memfd with huge pages using hugetlbfs. Linux-only.
-	HUGETLB = rt::MFD_HUGETLB,
+	HUGETLB = sys::MFD_HUGETLB,
 };
 
 // Creates a new anonymous [[io::file]] backed by memory.
@@ -27,10 +27,10 @@ export fn memfd(
 	flags: memfd_flag = memfd_flag::NONE,
 ) (io::file | errors::error) = {
 	flags ^= memfd_flag::NOCLOEXEC;
-	match (rt::memfd_create(name, flags: uint)) {
+	match (sys::memfd_create(name, flags: uint)) {
 	case let i: int =>
 		return i: io::file;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

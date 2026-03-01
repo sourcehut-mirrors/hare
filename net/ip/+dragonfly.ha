@@ -2,18 +2,18 @@
 // (c) Hare authors <https://harelang.org>
 
 use endian;
-use rt;
+use sys;
 
-export fn to_native(a: addr, port: u16) rt::sockaddr = {
+export fn to_native(a: addr, port: u16) sys::sockaddr = {
 	match (a) {
 	case let v4: addr4 =>
-		const addr = rt::in_addr {
+		const addr = sys::in_addr {
 			s_addr = endian::host.getu32(v4),
 		};
-		return rt::sockaddr {
-			in = rt::sockaddr_in {
-				sin_len = size(rt::in_addr): u8,
-				sin_family = rt::AF_INET,
+		return sys::sockaddr {
+			in = sys::sockaddr_in {
+				sin_len = size(sys::in_addr): u8,
+				sin_family = sys::AF_INET,
 				sin_port = endian::htonu16(port),
 				sin_addr = addr,
 				...
@@ -21,12 +21,12 @@ export fn to_native(a: addr, port: u16) rt::sockaddr = {
 			...
 		};
 	case let v6: addr6 =>
-		return rt::sockaddr {
-			in6 = rt::sockaddr_in6 {
-				sin6_len = size(rt::in6_addr): u8,
-				sin6_family = rt::AF_INET6,
+		return sys::sockaddr {
+			in6 = sys::sockaddr_in6 {
+				sin6_len = size(sys::in6_addr): u8,
+				sin6_family = sys::AF_INET6,
 				sin6_port = endian::htonu16(port),
-				sin6_addr = rt::in6_addr { s6_addr = v6 },
+				sin6_addr = sys::in6_addr { s6_addr = v6 },
 				...
 			},
 			...
@@ -34,17 +34,17 @@ export fn to_native(a: addr, port: u16) rt::sockaddr = {
 	};
 };
 
-export fn from_native(a: rt::sockaddr) (addr, u16)  = {
+export fn from_native(a: sys::sockaddr) (addr, u16)  = {
 	let family = a.in.sin_family;
 	switch (family) {
-	case rt::AF_INET =>
+	case sys::AF_INET =>
 		let addr = a.in.sin_addr.s_addr;
 		return (
 			[addr: u8, (addr >> 8): u8, (addr >> 16): u8,
 				(addr >> 24):  u8]: addr4,
 			endian::ntohu16(a.in.sin_port)
 		);
-	case rt::AF_INET6 =>
+	case sys::AF_INET6 =>
 		return (
 			a.in6.sin6_addr.s6_addr: addr6,
 			endian::ntohu16(a.in6.sin6_port)
@@ -57,8 +57,8 @@ export fn from_native(a: rt::sockaddr) (addr, u16)  = {
 export fn native_addrlen(a: addr) u32 = {
 	match (a) {
 	case addr4 =>
-		return size(rt::sockaddr_in): u32;
+		return size(sys::sockaddr_in): u32;
 	case addr6 =>
-		return size(rt::sockaddr_in6): u32;
+		return size(sys::sockaddr_in6): u32;
 	};
 };

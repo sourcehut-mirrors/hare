@@ -3,7 +3,7 @@
 
 use errors;
 use fmt;
-use rt;
+use sys;
 use time;
 use unix;
 use unix::signal;
@@ -41,7 +41,7 @@ export type status = struct {
 	},
 };
 
-fn rusage(st: *status, ru: *rt::rusage) void = {
+fn rusage(st: *status, ru: *sys::rusage) void = {
 	st.rusage.utime = time::instant {
 		sec = ru.ru_utime.tv_sec,
 		nsec = ru.ru_utime.tv_usec * time::MICROSECOND: i64,
@@ -69,8 +69,8 @@ fn rusage(st: *status, ru: *rt::rusage) void = {
 // Flags accepted by the [[wait]] family of functions.
 export type wait_flag = enum int {
 	NONE = 0,
-	CONTINUED = rt::WCONTINUED,
-	UNTRACED = rt::WUNTRACED,
+	CONTINUED = sys::WCONTINUED,
+	UNTRACED = sys::WUNTRACED,
 };
 
 // Waits for a process to complete, then returns its status information.
@@ -78,13 +78,13 @@ export fn wait(
 	proc: *process,
 	flags: wait_flag = wait_flag::NONE,
 ) (status | error) = {
-	let ru = rt::rusage { ... };
+	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (rt::wait4(*proc, &st.status, flags, &ru)) {
-	case let err: rt::errno =>
+	match (sys::wait4(*proc, &st.status, flags, &ru)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
-	case let pid: rt::pid_t =>
-		assert(pid == *proc: rt::pid_t);
+	case let pid: sys::pid_t =>
+		assert(pid == *proc: sys::pid_t);
 	};
 	rusage(&st, &ru);
 	return st;
@@ -95,12 +95,12 @@ export fn wait(
 export fn waitany(
 	flags: wait_flag = wait_flag::NONE,
 ) ((process, status) | error) = {
-	let ru = rt::rusage { ... };
+	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (rt::wait4(rt::WAIT_ANY, &st.status, flags, &ru)) {
-	case let err: rt::errno =>
+	match (sys::wait4(sys::WAIT_ANY, &st.status, flags, &ru)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
-	case let pid: rt::pid_t =>
+	case let pid: sys::pid_t =>
 		rusage(&st, &ru);
 		return (pid: process, st);
 	};
@@ -111,16 +111,16 @@ export fn waitany(
 // not waiting for the remaining children.
 export fn waitall() (uint | error | !(process, exit_status)) = {
 	let st = status { ... };
-	let ru = rt::rusage { ... };
+	let ru = sys::rusage { ... };
 	for (let i = 0u; true; i += 1) {
-		match (rt::wait4(rt::WAIT_ANY, &st.status, 0, &ru)) {
-		case let err: rt::errno =>
-			if (err == rt::ECHILD) {
+		match (sys::wait4(sys::WAIT_ANY, &st.status, 0, &ru)) {
+		case let err: sys::errno =>
+			if (err == sys::ECHILD) {
 				return i;
 			} else {
 				return errors::errno(err);
 			};
-		case let pid: rt::pid_t =>
+		case let pid: sys::pid_t =>
 			match (check(&st)) {
 			case void => void;
 			case let es: !exit_status =>
@@ -136,17 +136,17 @@ export fn peek(
 	proc: *process,
 	flags: wait_flag = wait_flag::NONE,
 ) (status | void | error) = {
-	let ru = rt::rusage { ... };
+	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (rt::wait4(*proc, &st.status, rt::WNOHANG | flags, &ru)) {
-	case let err: rt::errno =>
+	match (sys::wait4(*proc, &st.status, sys::WNOHANG | flags, &ru)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
-	case let pid: rt::pid_t =>
+	case let pid: sys::pid_t =>
 		switch (pid) {
 		case 0 =>
 			return;
 		case =>
-			assert(pid == *proc: rt::pid_t);
+			assert(pid == *proc: sys::pid_t);
 		};
 	};
 	rusage(&st, &ru);
@@ -158,12 +158,12 @@ export fn peek(
 export fn peekany(
 	flags: wait_flag = wait_flag::NONE,
 ) ((process, status) | void | error) = {
-	let ru = rt::rusage { ... };
+	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (rt::wait4(rt::WAIT_ANY, &st.status, rt::WNOHANG | flags, &ru)) {
-	case let err: rt::errno =>
+	match (sys::wait4(sys::WAIT_ANY, &st.status, sys::WNOHANG | flags, &ru)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
-	case let pid: rt::pid_t =>
+	case let pid: sys::pid_t =>
 		switch (pid) {
 		case 0 =>
 			return;
@@ -203,11 +203,11 @@ export fn exitstr(status: exit_status) const str = {
 
 // Returns the exit status of a completed process.
 export fn exit(stat: *status) exit_status = {
-	if (rt::wifexited(stat.status)) {
-		return rt::wexitstatus(stat.status): exited;
+	if (sys::wifexited(stat.status)) {
+		return sys::wexitstatus(stat.status): exited;
 	};
-	if (rt::wifsignaled(stat.status)) {
-		return rt::wtermsig(stat.status): signaled;
+	if (sys::wifsignaled(stat.status)) {
+		return sys::wtermsig(stat.status): signaled;
 	};
 	abort("Unexpected exit status");
 };
@@ -215,7 +215,7 @@ export fn exit(stat: *status) exit_status = {
 // Checks the exit status of a completed process, returning void if successful,
 // or its status code as an error type if not.
 export fn check(stat: *status) (void | !exit_status) = {
-	if (rt::wifexited(stat.status) && rt::wexitstatus(stat.status) == 0) {
+	if (sys::wifexited(stat.status) && sys::wexitstatus(stat.status) == 0) {
 		return;
 	};
 	return exit(stat);
@@ -230,8 +230,8 @@ export fn kill(proc: process) (void | errors::error) = {
 // Sends a signal to a child process. This function is only supported on
 // Unix-like systems.
 export fn sig(proc: process, sig: signal::sig) (void | errors::error) = {
-	match (rt::kill(proc, sig)) {
-	case let errno: rt::errno =>
+	match (sys::kill(proc, sig)) {
+	case let errno: sys::errno =>
 		return errors::errno(errno);
 	case void =>
 		return;

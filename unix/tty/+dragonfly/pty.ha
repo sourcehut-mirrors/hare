@@ -6,7 +6,7 @@ use fmt;
 use fs;
 use io;
 use os;
-use rt;
+use sys;
 use types::c;
 
 // Opens an available pseudoterminal and returns the file descriptors of the
@@ -25,8 +25,8 @@ export fn openpty() ((io::file, io::file) | fs::error) = {
 
 // Opens an available pseudoterminal master.
 fn open_master() (io::file | fs::error) = {
-	match (rt::open("/dev/ptmx", rt::O_RDWR | rt::O_NOCTTY, 0)) {
-	case let e: rt::errno =>
+	match (sys::open("/dev/ptmx", sys::O_RDWR | sys::O_NOCTTY, 0)) {
+	case let e: sys::errno =>
 		return errors::errno(e);
 	case let i: int =>
 		return io::fdopen(i);
@@ -43,31 +43,31 @@ fn get_slave(master: io::file) (io::file | fs::error) =
 // function.
 export fn ptsname(master: io::file) (str | error) = {
 	// Ensure that the file descriptor refers to a master
-	match (rt::ioctl(master, rt::TIOCISPTMASTER, null)) {
-	case let e: rt::errno =>
-		if (e == rt::EBADF) return errors::invalid
+	match (sys::ioctl(master, sys::TIOCISPTMASTER, null)) {
+	case let e: sys::errno =>
+		if (e == sys::EBADF) return errors::invalid
 		else return errors::unsupported;
 	case => void;
 	};
 
-	let name: [rt::NAME_MAX + 1]u8 = [0...];
-	let fiodgname_arg = rt::fiodname_args {
+	let name: [sys::NAME_MAX + 1]u8 = [0...];
+	let fiodgname_arg = sys::fiodname_args {
 		name = &name,
 		length = len(name): uint
 	};
-	match (rt::ioctl(master, rt::FIODNAME, &fiodgname_arg)) {
-	case let e: rt::errno =>
+	match (sys::ioctl(master, sys::FIODNAME, &fiodgname_arg)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF =>
+		case sys::EBADF =>
 			return errors::invalid;
-		case rt::EINVAL, rt::ENOTTY =>
+		case sys::EINVAL, sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");
 		};
 	case =>
 		name[2] = 's'; // ptm -> pts
-		static let path_buf: [len("/dev/")+rt::NAME_MAX+1]u8 = [0...];
+		static let path_buf: [len("/dev/")+sys::NAME_MAX+1]u8 = [0...];
 		return fmt::bsprintf(path_buf,
 			"/dev/{}", c::tostr(&name: *const c::char)!)!;
 	};
@@ -75,13 +75,13 @@ export fn ptsname(master: io::file) (str | error) = {
 
 // Sets the dimensions of the underlying pseudoterminal for an [[io::file]].
 export fn set_winsize(pty: io::file, sz: ttysize) (void | error) = {
-	let wsz = rt::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
-	match (rt::ioctl(pty, rt::TIOCSWINSZ, &wsz)) {
-	case let e: rt::errno =>
+	let wsz = sys::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
+	match (sys::ioctl(pty, sys::TIOCSWINSZ, &wsz)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF, rt::EINVAL =>
+		case sys::EBADF, sys::EINVAL =>
 			return errors::invalid;
-		case rt::ENOTTY =>
+		case sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");

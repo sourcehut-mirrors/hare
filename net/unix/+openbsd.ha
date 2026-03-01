@@ -4,7 +4,7 @@
 use errors;
 use io;
 use net;
-use rt;
+use sys;
 use types::c;
 
 // Opens a UNIX socket connection to the path. Blocks until the connection is
@@ -14,7 +14,7 @@ export fn connect(
 	options: connect_option...
 ) (net::socket | net::error) = {
 	let sockaddr = match (to_native(addr)) {
-	case let a: rt::sockaddr =>
+	case let a: sys::sockaddr =>
 		yield a;
 	case invalid =>
 		return errors::unsupported; // path too long
@@ -24,17 +24,17 @@ export fn connect(
 		// Only sockflag for now
 		flags |= options[i];
 	};
-	flags ^= rt::SOCK_CLOEXEC; // invert CLOEXEC
-	const sockfd = match (rt::socket(rt::AF_UNIX: int, rt::SOCK_STREAM | flags, 0)) {
-	case let err: rt::errno =>
+	flags ^= sys::SOCK_CLOEXEC; // invert CLOEXEC
+	const sockfd = match (sys::socket(sys::AF_UNIX: int, sys::SOCK_STREAM | flags, 0)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let fd: int =>
 		yield fd;
 	};
 
-	const sz = size(rt::sockaddr_un): u32;
-	match (rt::connect(sockfd, &sockaddr, sz)) {
-	case let err: rt::errno =>
+	const sz = size(sys::sockaddr_un): u32;
+	match (sys::connect(sockfd, &sockaddr, sz)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void => void;
 	};
@@ -47,7 +47,7 @@ export fn listen(
 	options: listen_option...
 ) (net::socket | net::error) = {
 	let sockaddr = match (to_native(addr)) {
-	case let a: rt::sockaddr =>
+	case let a: sys::sockaddr =>
 		yield a;
 	case invalid =>
 		return errors::unsupported; // path too long
@@ -60,9 +60,9 @@ export fn listen(
 		case => void;
 		};
 	};
-	f ^= rt::SOCK_CLOEXEC; // invert CLOEXEC
-	const sockfd = match (rt::socket(rt::AF_UNIX: int, rt::SOCK_STREAM | f, 0)) {
-	case let err: rt::errno =>
+	f ^= sys::SOCK_CLOEXEC; // invert CLOEXEC
+	const sockfd = match (sys::socket(sys::AF_UNIX: int, sys::SOCK_STREAM | f, 0)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let fd: int =>
 		yield fd;
@@ -77,13 +77,13 @@ export fn listen(
 		};
 	};
 
-	match (rt::bind(sockfd, &sockaddr, size(rt::sockaddr_un): u32)) {
-	case let err: rt::errno =>
+	match (sys::bind(sockfd, &sockaddr, size(sys::sockaddr_un): u32)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void => void;
 	};
-	match (rt::listen(sockfd, bk)) {
-	case let err: rt::errno =>
+	match (sys::listen(sockfd, bk)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void => void;
 	};
@@ -92,15 +92,15 @@ export fn listen(
 };
 
 // Converts a UNIX socket address to a native sockaddr.
-fn to_native(addr: addr) (rt::sockaddr | invalid) = {
-	// sun_path should be NUL-terminated and fit into rt::UNIX_PATH_MAX
-	if (len(addr) > rt::UNIX_PATH_MAX - 1) {
+fn to_native(addr: addr) (sys::sockaddr | invalid) = {
+	// sun_path should be NUL-terminated and fit into sys::UNIX_PATH_MAX
+	if (len(addr) > sys::UNIX_PATH_MAX - 1) {
 		return invalid;
 	};
-	let ret = rt::sockaddr {
-		un = rt::sockaddr_un {
-			sun_len = size(rt::sockaddr_un): u8,
-			sun_family = rt::AF_UNIX,
+	let ret = sys::sockaddr {
+		un = sys::sockaddr_un {
+			sun_len = size(sys::sockaddr_un): u8,
+			sun_family = sys::AF_UNIX,
 			...
 		}
 	};

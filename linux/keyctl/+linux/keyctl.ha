@@ -2,12 +2,12 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 use types::c;
 
-fn errno(errno: rt::errno) error = {
+fn errno(errno: sys::errno) error = {
 	switch (errno) {
-	case rt::ENOKEY =>
+	case sys::ENOKEY =>
 		return nokey;
 	case =>
 		return errors::errno(errno);
@@ -25,9 +25,9 @@ export fn add_key(
 	defer free(keytype);
 	const name = c::fromstr(name)?;
 	defer free(name);
-	match (rt::add_key(keytype: *const u8, name: *const u8,
+	match (sys::add_key(keytype: *const u8, name: *const u8,
 			payload: *[*]u8: *opaque, len(payload), keyring)) {
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errno(err);
 	case let n: int =>
 		return n: serial;
@@ -41,8 +41,8 @@ fn keyctl(
 	arg4: u64,
 	arg5: u64,
 ) (int | error) = {
-	match (rt::keyctl(cmd, arg2, arg3, arg4, arg5)) {
-	case let err: rt::errno =>
+	match (sys::keyctl(cmd, arg2, arg3, arg4, arg5)) {
+	case let err: sys::errno =>
 		return errno(err);
 	case let n: int =>
 		return n;

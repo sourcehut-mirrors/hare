@@ -6,6 +6,7 @@ use fs;
 use io;
 use path;
 use rt;
+use sys;
 use strings;
 use time;
 use types::c;
@@ -23,20 +24,20 @@ export type resolve_flag = enum u64 {
 	// would refer to any anscestor of the fd directory. This disables all
 	// absolute symlinks, and any call to open or create with an absolute
 	// path.
-	BENEATH = rt::RESOLVE_BENEATH | rt::RESOLVE_NO_MAGICLINKS,
+	BENEATH = sys::RESOLVE_BENEATH | sys::RESOLVE_NO_MAGICLINKS,
 
 	// Treat the directory fd as the root directory. This affects
 	// open/create for absolute paths, as well as absolute path resolution
 	// of symlinks. The effects are similar to chroot.
-	IN_ROOT = rt::RESOLVE_IN_ROOT | rt::RESOLVE_NO_MAGICLINKS,
+	IN_ROOT = sys::RESOLVE_IN_ROOT | sys::RESOLVE_NO_MAGICLINKS,
 
 	// Disables symlink resolution entirely.
-	NO_SYMLINKS = rt::RESOLVE_NO_SYMLINKS,
+	NO_SYMLINKS = sys::RESOLVE_NO_SYMLINKS,
 
 	// Disallows traversal of mountpoints during path resolution. This is
 	// not recommended for general use, as bind mounts are extensively used
 	// on many systems.
-	NO_XDEV = rt::RESOLVE_NO_XDEV,
+	NO_XDEV = sys::RESOLVE_NO_XDEV,
 };
 
 type os_filesystem = struct {
@@ -123,21 +124,21 @@ export fn dirfile(fs: *fs::fs) io::file = {
 	return fs.dirfd;
 };
 
-fn errno_to_fs(err: rt::errno) fs::error = {
+fn errno_to_fs(err: sys::errno) fs::error = {
 	switch (err) {
-	case rt::ENOENT =>
+	case sys::ENOENT =>
 		return errors::noentry;
-	case rt::EEXIST =>
+	case sys::EEXIST =>
 		return errors::exists;
-	case rt::EACCES =>
+	case sys::EACCES =>
 		return errors::noaccess;
-	case rt::EBUSY =>
+	case sys::EBUSY =>
 		return errors::busy;
-	case rt::ENOTDIR =>
+	case sys::ENOTDIR =>
 		return fs::wrongtype;
-	case rt::EOPNOTSUPP, rt::ENOSYS =>
+	case sys::EOPNOTSUPP, sys::ENOSYS =>
 		return errors::unsupported;
-	case rt::EXDEV =>
+	case sys::EXDEV =>
 		return fs::cannotrename;
 	case =>
 		return errors::errno(err);
@@ -147,13 +148,13 @@ fn errno_to_fs(err: rt::errno) fs::error = {
 fn _fs_open(
 	fs: *fs::fs,
 	path: str,
-	oh: *rt::open_how,
+	oh: *sys::open_how,
 ) (io::file | fs::error) = {
 	let fs = fs: *os_filesystem;
 	oh.resolve = fs.resolve;
 
-	let fd = match (rt::openat2(fs.dirfd, path, oh, size(rt::open_how))) {
-	case let err: rt::errno =>
+	let fd = match (sys::openat2(fs.dirfd, path, oh, size(sys::open_how))) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case let fd: int =>
 		yield fd;
@@ -173,10 +174,10 @@ fn fs_open_file(
 	if ((flags & fs::flag::DIRECTORY) == fs::flag::DIRECTORY) {
 		// This is arch-specific
 		flags &= ~fs::flag::DIRECTORY;
-		flags |= rt::O_DIRECTORY: fs::flag;
+		flags |= sys::O_DIRECTORY: fs::flag;
 	};
 
-	let oh = rt::open_how {
+	let oh = sys::open_how {
 		flags = flags: u64,
 		...
 	};
@@ -198,7 +199,7 @@ fn fs_create_file(
 	flags ^= fs::flag::CTTY | fs::flag::NOCLOEXEC; // invert NOCTTY/CLOEXEC
 	flags |= fs::flag::CREATE;
 
-	let oh = rt::open_how {
+	let oh = sys::open_how {
 		flags = flags: u64,
 		mode = mode: u64,
 		...
@@ -217,8 +218,8 @@ fn fs_create(
 
 fn fs_remove(fs: *fs::fs, path: str) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::unlinkat(fs.dirfd, path, 0)) {
-	case let err: rt::errno =>
+	match (sys::unlinkat(fs.dirfd, path, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -226,8 +227,8 @@ fn fs_remove(fs: *fs::fs, path: str) (void | fs::error) = {
 
 fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::renameat(fs.dirfd, oldpath, fs.dirfd, newpath, 0)) {
-	case let err: rt::errno =>
+	match (sys::renameat(fs.dirfd, oldpath, fs.dirfd, newpath, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -235,9 +236,9 @@ fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 
 fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
 	let fs = fs: *os_filesystem;
-	let st = rt::st { ... };
-	match (rt::fstatat(fs.dirfd, path, &st, rt::AT_SYMLINK_NOFOLLOW)) {
-	case let err: rt::errno =>
+	let st = sys::st { ... };
+	match (sys::fstatat(fs.dirfd, path, &st, sys::AT_SYMLINK_NOFOLLOW)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -246,16 +247,16 @@ fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
 
 fn fs_fstat(fs: *fs::fs, fd: io::file) (fs::filestat | fs::error) = {
 	let fs = fs: *os_filesystem;
-	let st = rt::st { ... };
-	match (rt::fstatat(fd, "", &st, rt::AT_EMPTY_PATH)) {
-	case let err: rt::errno =>
+	let st = sys::st { ... };
+	match (sys::fstatat(fd, "", &st, sys::AT_EMPTY_PATH)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
 	return st_to_filestat(&st);
 };
 
-fn st_to_filestat(st: *rt::st) fs::filestat = {
+fn st_to_filestat(st: *sys::st) fs::filestat = {
 	return fs::filestat {
 		mask = fs::stat_mask::UID
 			| fs::stat_mask::GID
@@ -286,11 +287,11 @@ fn st_to_filestat(st: *rt::st) fs::filestat = {
 
 fn fs_readlink(fs: *fs::fs, path: str) (str | fs::error) = {
 	let fs = fs: *os_filesystem;
-	static let buf: [rt::PATH_MAX]u8 = [0...];
-	let z = match (rt::readlinkat(fs.dirfd, path, buf[..])) {
-	case let err: rt::errno =>
+	static let buf: [sys::PATH_MAX]u8 = [0...];
+	let z = match (sys::readlinkat(fs.dirfd, path, buf[..])) {
+	case let err: sys::errno =>
 		switch (err) {
-		case rt::EINVAL =>
+		case sys::EINVAL =>
 			return fs::wrongtype;
 		case =>
 			return errno_to_fs(err);
@@ -303,8 +304,8 @@ fn fs_readlink(fs: *fs::fs, path: str) (str | fs::error) = {
 
 fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::unlinkat(fs.dirfd, path, rt::AT_REMOVEDIR)) {
-	case let err: rt::errno =>
+	match (sys::unlinkat(fs.dirfd, path, sys::AT_REMOVEDIR)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -312,8 +313,8 @@ fn fs_rmdir(fs: *fs::fs, path: str) (void | fs::error) = {
 
 fn fs_mkdir(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::mkdirat(fs.dirfd, path, mode: uint)) {
-	case let err: rt::errno =>
+	match (sys::mkdirat(fs.dirfd, path, mode: uint)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -321,16 +322,16 @@ fn fs_mkdir(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
 
 fn fs_chmod(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::fchmodat(fs.dirfd, path, mode: uint, 0)) {
-	case let err: rt::errno =>
+	match (sys::fchmodat(fs.dirfd, path, mode: uint, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
 };
 
 fn fs_fchmod(fd: io::file, mode: fs::mode) (void | fs::error) = {
-	match (rt::fchmod(fd, mode: uint)) {
-	case let err: rt::errno =>
+	match (sys::fchmod(fd, mode: uint)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -338,42 +339,42 @@ fn fs_fchmod(fd: io::file, mode: fs::mode) (void | fs::error) = {
 
 fn fs_chown(fs: *fs::fs, path: str, uid: uint, gid: uint) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::fchownat(fs.dirfd, path, uid, gid, 0)) {
-	case let err: rt::errno =>
+	match (sys::fchownat(fs.dirfd, path, uid, gid, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
 };
 
 fn fs_fchown(fd: io::file, uid: uint, gid: uint) (void | fs::error) = {
-	match (rt::fchown(fd, uid, gid)) {
-	case let err: rt::errno =>
+	match (sys::fchown(fd, uid, gid)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
 };
 
-fn instant_to_timespec(time: (time::instant | void)) rt::timespec = {
+fn instant_to_timespec(time: (time::instant | void)) sys::timespec = {
 	match (time) {
 	case let t: time::instant =>
 		return time::instant_to_timespec(t);
 	case void =>
-		return rt::timespec{
-			tv_sec = rt::UTIME_OMIT,
-			tv_nsec = rt::UTIME_OMIT
+		return sys::timespec{
+			tv_sec = sys::UTIME_OMIT,
+			tv_nsec = sys::UTIME_OMIT
 		};
 	};
 };
 
 fn fs_chtimes(fs: *fs::fs, path: str, atime: (time::instant | void),
 		mtime: (time::instant | void)) (void | fs::error) = {
-	let utimes: [2]rt::timespec = [
+	let utimes: [2]sys::timespec = [
 		instant_to_timespec(atime),
 		instant_to_timespec(mtime),
 	];
 	let fs = fs: *os_filesystem;
-	match (rt::utimensat(fs.dirfd, path, &utimes, 0)) {
-	case let err: rt::errno =>
+	match (sys::utimensat(fs.dirfd, path, &utimes, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -381,12 +382,12 @@ fn fs_chtimes(fs: *fs::fs, path: str, atime: (time::instant | void),
 
 fn fs_fchtimes(fd: io::file, atime: (time::instant | void),
 		mtime: (time::instant | void)) (void | fs::error) = {
-	let utimes: [2]rt::timespec = [
+	let utimes: [2]sys::timespec = [
 		instant_to_timespec(atime),
 		instant_to_timespec(mtime),
 	];
-	match (rt::futimens(fd, &utimes)) {
-	case let err: rt::errno =>
+	match (sys::futimens(fd, &utimes)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -404,8 +405,8 @@ fn fs_resolve(fs: *fs::fs, path: str) str = {
 
 fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::linkat(fs.dirfd, old, fs.dirfd, new, 0)) {
-	case let err: rt::errno =>
+	match (sys::linkat(fs.dirfd, old, fs.dirfd, new, 0)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -413,8 +414,8 @@ fn fs_link(fs: *fs::fs, old: str, new: str) (void | fs::error) = {
 
 fn fs_symlink(fs: *fs::fs, target: str, path: str) (void | fs::error) = {
 	let fs = fs: *os_filesystem;
-	match (rt::symlinkat(target, fs.dirfd, path)) {
-	case let err: rt::errno =>
+	match (sys::symlinkat(target, fs.dirfd, path)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -422,7 +423,7 @@ fn fs_symlink(fs: *fs::fs, target: str, path: str) (void | fs::error) = {
 
 fn fs_close(fs: *fs::fs) void = {
 	let fs = fs: *os_filesystem;
-	rt::close(fs.dirfd)!;
+	sys::close(fs.dirfd)!;
 	free(fs);
 };
 
@@ -437,13 +438,13 @@ type os_iterator = struct {
 
 fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 	let fs = fs: *os_filesystem;
-	let oh = rt::open_how {
-		flags = (rt::O_RDONLY | rt::O_CLOEXEC | rt::O_DIRECTORY): u64,
+	let oh = sys::open_how {
+		flags = (sys::O_RDONLY | sys::O_CLOEXEC | sys::O_DIRECTORY): u64,
 		...
 	};
-	let fd: int = match (rt::openat2(fs.dirfd, path,
-			&oh, size(rt::open_how))) {
-	case let err: rt::errno =>
+	let fd: int = match (sys::openat2(fs.dirfd, path,
+			&oh, size(sys::open_how))) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case let fd: int =>
 		yield fd;
@@ -471,9 +472,9 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 	let iter = iter: *os_iterator;
 	if (iter.buf_pos >= iter.buf_end) {
-		let n = match (rt::getdents64(iter.fd,
+		let n = match (sys::getdents64(iter.fd,
 			iter.buf: *[*]u8, len(iter.buf))) {
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			return errno_to_fs(err);
 		case let n: size =>
 			yield n;
@@ -484,7 +485,7 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 		iter.buf_end = n;
 		iter.buf_pos = 0;
 	};
-	let de = &iter.buf[iter.buf_pos]: *rt::dirent64;
+	let de = &iter.buf[iter.buf_pos]: *sys::dirent64;
 	iter.buf_pos += de.d_reclen;
 	let name = c::tostr(&de.d_name: *const c::char)?;
 	if (name == "." || name == "..") {
@@ -492,21 +493,21 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 	};
 
 	let ftype: fs::mode = switch (de.d_type) {
-	case rt::DT_UNKNOWN =>
+	case sys::DT_UNKNOWN =>
 		yield fs::mode::UNKNOWN;
-	case rt::DT_FIFO =>
+	case sys::DT_FIFO =>
 		yield fs::mode::FIFO;
-	case rt::DT_CHR =>
+	case sys::DT_CHR =>
 		yield fs::mode::CHR;
-	case rt::DT_DIR =>
+	case sys::DT_DIR =>
 		yield fs::mode::DIR;
-	case rt::DT_BLK =>
+	case sys::DT_BLK =>
 		yield fs::mode::BLK;
-	case rt::DT_REG =>
+	case sys::DT_REG =>
 		yield fs::mode::REG;
-	case rt::DT_LNK =>
+	case sys::DT_LNK =>
 		yield fs::mode::LINK;
-	case rt::DT_SOCK =>
+	case sys::DT_SOCK =>
 		yield fs::mode::SOCK;
 	case =>
 		yield fs::mode::UNKNOWN;
@@ -519,7 +520,7 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 
 fn iter_finish(iter: *fs::iterator) void = {
 	let iter = iter: *os_iterator;
-	rt::close(iter.fd)!;
+	sys::close(iter.fd)!;
 	free(iter.buf);
 	free(iter);
 };

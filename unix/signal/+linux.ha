@@ -3,7 +3,7 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 use time;
 use unix;
 
@@ -11,7 +11,7 @@ use unix;
 // "sec" seconds. Returns the number of seconds until the previously scheduled
 // alarm, or zero if none was scheduled.
 export fn alarm(sec: uint) uint = {
-	return rt::alarm(sec);
+	return sys::alarm(sec);
 };
 
 // Configures a new signal handler, returning the old details (which can be
@@ -22,7 +22,7 @@ export fn handle(
 	flags: flag = flag::NONE,
 	mask: nullable *sigset = null,
 ) sigaction = {
-	flags |= rt::SA_SIGINFO: flag;
+	flags |= sys::SA_SIGINFO: flag;
 	let mask = match (mask) {
 	case null =>
 		yield newsigset();
@@ -30,17 +30,17 @@ export fn handle(
 		yield *set;
 	};
 
-	let new = rt::sigact {
+	let new = sys::sigact {
 		sa_sigaction = handler: *fn(_: int,
-			_: *rt::siginfo, _: *opaque) void,
+			_: *sys::siginfo, _: *opaque) void,
 		sa_mask = mask,
 		sa_flags = flags,
 		// Filled in by rt
 		sa_restorer = @undefined,
 	};
-	let old = rt::sigact { @undefined... };
-	match (rt::sigaction(signum, &new, &old)) {
-	case rt::errno =>
+	let old = sys::sigact { @undefined... };
+	match (sys::sigaction(signum, &new, &old)) {
+	case sys::errno =>
 		abort("sigaction failed (invalid signal?)");
 	case int => void;
 	};
@@ -49,8 +49,8 @@ export fn handle(
 
 // Restores previous signal behavior following [[handle]].
 export fn restore(signum: sig, action: *sigaction) void = {
-	match (rt::sigaction(signum, action: *rt::sigact, null)) {
-	case rt::errno =>
+	match (sys::sigaction(signum, action: *sys::sigact, null)) {
+	case sys::errno =>
 		abort("sigaction failed (invalid signal?)");
 	case int => void;
 	};
@@ -58,7 +58,7 @@ export fn restore(signum: sig, action: *sigaction) void = {
 
 // Unregisters signal handlers for the specified signal.
 export fn reset(signum: sig) void = {
-	handle(signum, rt::SIG_DFL: *handler);
+	handle(signum, sys::SIG_DFL: *handler);
 };
 
 // Unregisters all signal handlers.
@@ -97,7 +97,7 @@ export fn resetall() void = {
 // Prevents given signal from arriving to the current process.
 // One common use case is to ignore SIGCHLD to avoid zombie child processes.
 export fn ignore(signum: sig) void = {
-	handle(signum, rt::SIG_IGN: *handler);
+	handle(signum, sys::SIG_IGN: *handler);
 };
 
 // Adds the given list of signals to the process's current signal mask,
@@ -119,67 +119,67 @@ export fn unblock(signals: sig...) sigset = {
 // Sets the process's signal mask, returning the previous mask.
 export fn setprocmask(how: how, mask: *sigset) sigset = {
 	let old = sigset { ... };
-	rt::sigprocmask(how, mask: *rt::sigset, &old)!;
+	sys::sigprocmask(how, mask: *sys::sigset, &old)!;
 	return old;
 };
 
 // Gets the current process's signal mask.
 export fn getprocmask() sigset = {
 	let old = sigset { ... };
-	rt::sigprocmask(how::SETMASK, null, &old)!;
+	sys::sigprocmask(how::SETMASK, null, &old)!;
 	return old;
 };
 
 // Defines the modes of operation for [[setprocmask]].
 export type how = enum int {
 	// Adds the given set of signals to the current mask.
-	BLOCK = rt::SIG_BLOCK,
+	BLOCK = sys::SIG_BLOCK,
 	// Removes the given set of signals from the current mask.
-	UNBLOCK = rt::SIG_UNBLOCK,
+	UNBLOCK = sys::SIG_UNBLOCK,
 	// Sets the process mask to the given set.
-	SETMASK = rt::SIG_SETMASK,
+	SETMASK = sys::SIG_SETMASK,
 };
 
-export type sigaction = rt::sigact;
+export type sigaction = sys::sigact;
 
-export type sigset = rt::sigset;
+export type sigset = sys::sigset;
 
 // Creates a new signal set filled in with the provided signals (or empty if
 // none are provided).
 export fn newsigset(items: sig...) sigset = {
 	let set = sigset { ... };
-	rt::sigemptyset(&set);
+	sys::sigemptyset(&set);
 	sigset_add(&set, items...);
 	return set;
 };
 
 // Sets a [[sigset]] to empty.
 export fn sigset_empty(set: *sigset) void = {
-	rt::sigemptyset(set: *rt::sigset);
+	sys::sigemptyset(set: *sys::sigset);
 };
 
 // Adds signals to a [[sigset]].
 export fn sigset_add(set: *sigset, items: sig...) void = {
 	for (let i = 0z; i < len(items); i += 1) {
-		rt::sigaddset(set: *rt::sigset, items[i])!;
+		sys::sigaddset(set: *sys::sigset, items[i])!;
 	};
 };
 
 // Removes signals from a [[sigset]].
 export fn sigset_del(set: *sigset, items: sig...) void = {
 	for (let i = 0z; i < len(items); i += 1) {
-		rt::sigdelset(set: *rt::sigset, items[i])!;
+		sys::sigdelset(set: *sys::sigset, items[i])!;
 	};
 };
 
 // Adds all platform-defined signals to a [[sigset]].
 export fn sigset_fill(set: *sigset) void = {
-	rt::sigfillset(set: *rt::sigset);
+	sys::sigfillset(set: *sys::sigset);
 };
 
 // Returns true if the given signal is a member of this [[sigset]].
 export fn sigset_member(set: *sigset, item: sig) bool = {
-	return rt::sigismember(set: *rt::sigset, item)!;
+	return sys::sigismember(set: *sys::sigset, item)!;
 };
 
 // Waits for a signal among the given [[sigset]] to be delivered, then returns
@@ -193,9 +193,9 @@ export fn sigset_member(set: *sigset, item: sig) bool = {
 // See also [[waitinfo]] and [[timedwait]].
 export fn wait(set: *sigset) (sig | errors::interrupted) = {
 	let signal = 0i;
-	match (rt::sigwait(set: *rt::sigset, &signal)) {
-	case let err: rt::errno =>
-		assert(err == rt::EINTR);
+	match (sys::sigwait(set: *sys::sigset, &signal)) {
+	case let err: sys::errno =>
+		assert(err == sys::EINTR);
 		return errors::interrupted;
 	case void =>
 		return signal: sig;
@@ -209,15 +209,15 @@ export fn wait(set: *sigset) (sig | errors::interrupted) = {
 //
 // This function is designed to provide the portable subset of the semantics of
 // sigwaitinfo(3) as defined by POSIX.1-2008. To access the complete siginfo_t
-// structure provided by the underlying platform, use [[rt::sigwaitinfo]] and
-// [[rt::siginfo_t]] directly.
+// structure provided by the underlying platform, use [[sys::sigwaitinfo]] and
+// [[sys::siginfo_t]] directly.
 //
 // Note that this function is not supported on OpenBSD.
 export fn waitinfo(set: *sigset) (siginfo | errors::interrupted) = {
-	let info = rt::siginfo { ... };
-	match (rt::sigwaitinfo(set: *rt::sigset, &info)) {
-	case let err: rt::errno =>
-		assert(err == rt::EINTR);
+	let info = sys::siginfo { ... };
+	match (sys::sigwaitinfo(set: *sys::sigset, &info)) {
+	case let err: sys::errno =>
+		assert(err == sys::EINTR);
 		return errors::interrupted;
 	case int =>
 		return *(&info: *siginfo);
@@ -233,22 +233,22 @@ export fn waitinfo(set: *sigset) (siginfo | errors::interrupted) = {
 //
 // This function is designed to provide the portable subset of the semantics of
 // sigtimedwait(3) as defined by POSIX.1-2008. To access the complete siginfo_t
-// structure provided by the underlying platform, use [[rt::sigtimedwait]] and
-// [[rt::siginfo_t]] directly.
+// structure provided by the underlying platform, use [[sys::sigtimedwait]] and
+// [[sys::siginfo_t]] directly.
 //
 // Note that this function is not supported on OpenBSD.
 export fn timedwait(
 	set: *sigset,
 	timeout: time::duration,
 ) (siginfo | errors::interrupted | errors::again) = {
-	let info = rt::siginfo { ... };
+	let info = sys::siginfo { ... };
 	let to = time::duration_to_timeval(timeout);
-	match (rt::sigwaitinfo(set: *rt::sigset, &info)) {
-	case let err: rt::errno =>
+	match (sys::sigwaitinfo(set: *sys::sigset, &info)) {
+	case let err: sys::errno =>
 		switch (err) {
-		case rt::EINTR =>
+		case sys::EINTR =>
 			return errors::interrupted;
-		case rt::EAGAIN =>
+		case sys::EAGAIN =>
 			return errors::again;
 		case => abort();
 		};
@@ -258,7 +258,7 @@ export fn timedwait(
 };
 
 // Provides additional information about signal deliveries. Only the members
-// defined by POSIX are available here; cast to [[rt::siginfo]] to access
+// defined by POSIX are available here; cast to [[sys::siginfo]] to access
 // non-portable members.
 export type siginfo = union {
 	struct {
@@ -266,7 +266,7 @@ export type siginfo = union {
 		signo: sig,
 		// The errno, if any, associated with this signal. See
 		// [[errors::errno]] to convert to a Hare-native error.
-		errno: rt::errno,
+		errno: sys::errno,
 		// The signal code, if any.
 		code: code,
 
@@ -357,69 +357,69 @@ export type flag = enum u64 {
 	NONE = 0,
 	// For use with sig::CHLD. Prevents notifications when child processes
 	// stop (e.g. via sig::STOP) or resume (i.e. sig::CONT).
-	NOCLDSTOP = rt::SA_NOCLDSTOP,
+	NOCLDSTOP = sys::SA_NOCLDSTOP,
 	// For use with sig::CHLD. Do not transform children into zombies when
 	// they terminate. Note that POSIX leaves the delivery of sig::CHLD
 	// unspecified when this flag is present; some systems will still
 	// deliver a signal and others may not.
-	NOCLDWAIT = rt::SA_NOCLDWAIT,
+	NOCLDWAIT = sys::SA_NOCLDWAIT,
 	// Uses an alternate stack when handling this signal. See
 	// [[setaltstack]] and [[getaltstack]] for details.
-	ONSTACK = rt::SA_ONSTACK,
+	ONSTACK = sys::SA_ONSTACK,
 	// Makes certain system calls restartable across signals. See signal(7)
 	// or similar documentation for your local system for details.
-	RESTART = rt::SA_RESTART,
+	RESTART = sys::SA_RESTART,
 	// Do not add the signal to the signal mask while executing the signal
 	// handler. This can cause the same signal to be delivered again during
 	// the execution of the signal handler.
-	NODEFER = rt::SA_NODEFER,
+	NODEFER = sys::SA_NODEFER,
 	// Restore the signal handler to the default behavior upon entering the
 	// signal handler.
-	RESETHAND = rt::SA_RESETHAND,
+	RESETHAND = sys::SA_RESETHAND,
 };
 
 // All possible signals.
 export type sig = enum int {
-	HUP = rt::SIGHUP, // Hangup.
-	INT = rt::SIGINT, // Terminal interrupt.
-	QUIT = rt::SIGQUIT, // Terminal quit.
-	ILL = rt::SIGILL, // Illegal instruction.
-	TRAP = rt::SIGTRAP, // Trace/breakpoint trap.
-	ABRT = rt::SIGABRT, // Process abort.
-	BUS = rt::SIGBUS, // Access to an undefined portion of a memory object.
-	FPE = rt::SIGFPE, // Erroneous arithmetic operation.
-	KILL = rt::SIGKILL, // Kill (cannot be caught or ignored).
-	USR1 = rt::SIGUSR1, // User-defined signal 1.
-	SEGV = rt::SIGSEGV, // Invalid memory reference.
-	USR2 = rt::SIGUSR2, // User-defined signal 2.
-	PIPE = rt::SIGPIPE, // Write on a pipe with no one to read it.
-	ALRM = rt::SIGALRM, // Alarm clock.
-	TERM = rt::SIGTERM, // Termination.
-	CHLD = rt::SIGCHLD, // Child process terminated, stopped, or continued.
-	CONT = rt::SIGCONT, // Continue executing if stopped.
-	STOP = rt::SIGSTOP, // Stop executing (cannot be caught or ignored).
-	TSTP = rt::SIGTSTP, // Terminal stop.
-	TTIN = rt::SIGTTIN, // Background process attempting read.
-	TTOU = rt::SIGTTOU, // Background process attempting write.
-	URG = rt::SIGURG, // High bandwidth data is available at a socket.
-	XCPU = rt::SIGXCPU, // CPU time limit exceeded.
-	XFSZ = rt::SIGXFSZ, // File size limit exceeded.
-	VTALRM = rt::SIGVTALRM, // Virtual timer expired.
-	PROF = rt::SIGPROF, // Profiling timer expired.
-	WINCH = rt::SIGWINCH, // Window resize signal.
-	IO = rt::SIGIO, // I/O now possible (synonymous with sig::POLL).
-	POLL = rt::SIGPOLL, // Pollable event.
-	PWR = rt::SIGPWR, // Power failure.
-	SYS = rt::SIGSYS, // Bad system call.
+	HUP = sys::SIGHUP, // Hangup.
+	INT = sys::SIGINT, // Terminal interrupt.
+	QUIT = sys::SIGQUIT, // Terminal quit.
+	ILL = sys::SIGILL, // Illegal instruction.
+	TRAP = sys::SIGTRAP, // Trace/breakpoint trap.
+	ABRT = sys::SIGABRT, // Process abort.
+	BUS = sys::SIGBUS, // Access to an undefined portion of a memory object.
+	FPE = sys::SIGFPE, // Erroneous arithmetic operation.
+	KILL = sys::SIGKILL, // Kill (cannot be caught or ignored).
+	USR1 = sys::SIGUSR1, // User-defined signal 1.
+	SEGV = sys::SIGSEGV, // Invalid memory reference.
+	USR2 = sys::SIGUSR2, // User-defined signal 2.
+	PIPE = sys::SIGPIPE, // Write on a pipe with no one to read it.
+	ALRM = sys::SIGALRM, // Alarm clock.
+	TERM = sys::SIGTERM, // Termination.
+	CHLD = sys::SIGCHLD, // Child process terminated, stopped, or continued.
+	CONT = sys::SIGCONT, // Continue executing if stopped.
+	STOP = sys::SIGSTOP, // Stop executing (cannot be caught or ignored).
+	TSTP = sys::SIGTSTP, // Terminal stop.
+	TTIN = sys::SIGTTIN, // Background process attempting read.
+	TTOU = sys::SIGTTOU, // Background process attempting write.
+	URG = sys::SIGURG, // High bandwidth data is available at a socket.
+	XCPU = sys::SIGXCPU, // CPU time limit exceeded.
+	XFSZ = sys::SIGXFSZ, // File size limit exceeded.
+	VTALRM = sys::SIGVTALRM, // Virtual timer expired.
+	PROF = sys::SIGPROF, // Profiling timer expired.
+	WINCH = sys::SIGWINCH, // Window resize signal.
+	IO = sys::SIGIO, // I/O now possible (synonymous with sig::POLL).
+	POLL = sys::SIGPOLL, // Pollable event.
+	PWR = sys::SIGPWR, // Power failure.
+	SYS = sys::SIGSYS, // Bad system call.
 };
 
 // Creates a signal file that handles the given set of signals.
 export fn signalfd(signals: sig...) (io::file | errors::error) = {
 	let sa_mask = newsigset(signals...);
-	match (rt::signalfd(-1, &sa_mask, rt::SFD_CLOEXEC)) {
+	match (sys::signalfd(-1, &sa_mask, sys::SFD_CLOEXEC)) {
 	case let fd: int =>
 		return fd;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -429,26 +429,26 @@ export fn signalfd(signals: sig...) (io::file | errors::error) = {
 export fn update(fd: io::file, signals: sig...) (void | errors::error) = {
 	let sa_mask = newsigset(signals...);
 
-	match (rt::signalfd(fd, &sa_mask, rt::SFD_CLOEXEC)) {
+	match (sys::signalfd(fd, &sa_mask, sys::SFD_CLOEXEC)) {
 	case int =>
 		return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
 
 // Reads pending signal info from a signalfd.
 export fn read(fd: io::file) (siginfo | errors::error) = {
-	let si = rt::signalfd_siginfo { ... };
-	match (rt::read(fd, &si, size(rt::signalfd_siginfo))) {
-	case let err: rt::errno =>
+	let si = sys::signalfd_siginfo { ... };
+	match (sys::read(fd, &si, size(sys::signalfd_siginfo))) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let z: size =>
-		assert(z == size(rt::signalfd_siginfo));
+		assert(z == size(sys::signalfd_siginfo));
 	};
 	return siginfo {
 		signo = si.ssi_signo: sig,
-		errno = si.ssi_errno: rt::errno,
+		errno = si.ssi_errno: sys::errno,
 		code = si.ssi_code: code,
 		...
 	};

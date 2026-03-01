@@ -6,6 +6,7 @@ use fmt;
 use fs;
 use os;
 use rt;
+use sys;
 
 let default_abort: *rt::abort_handler = @undefined;
 
@@ -42,7 +43,7 @@ fn debug_abort(
 	print_context(*path, line, col, st.mtime);
 
 	let frame = walk();
-	// Skip rt::abort and debug::debug_abort
+	// Skip sys::abort and debug::debug_abort
 	for (let skip = 2; skip > 0; skip -= 1) {
 		match (next(frame)) {
 		case let next: stackframe =>
@@ -56,6 +57,6 @@ fn debug_abort(
 };
 
 fn halt() never = {
-	_ = rt::kill(rt::getpid(), rt::SIGABRT);
+	_ = sys::kill(sys::getpid(), sys::SIGABRT);
 	for (true) void;
 };

@@ -2,37 +2,37 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 
-// Converts a [[duration]] to an [[rt::timespec]]. This function is
+// Converts a [[duration]] to an [[sys::timespec]]. This function is
 // non-portable.
-export fn duration_to_timespec(n: duration) rt::timespec = rt::timespec {
+export fn duration_to_timespec(n: duration) sys::timespec = sys::timespec {
 	tv_sec = n / SECOND,
 	tv_nsec = n % SECOND,
 };
 
-// Converts a [[rt::timespec]] to a [[duration]]. This function is non-portable.
-export fn timespec_to_duration(spec: rt::timespec) duration = {
+// Converts a [[sys::timespec]] to a [[duration]]. This function is non-portable.
+export fn timespec_to_duration(spec: sys::timespec) duration = {
 	return (spec.tv_sec: i64 * SECOND) + spec.tv_nsec: i64;
 };
 
-// Converts a [[duration]] to an [[rt::timeval]]. This function is
+// Converts a [[duration]] to an [[sys::timeval]]. This function is
 // non-portable.
-export fn duration_to_timeval(d: duration) rt::timeval = rt::timeval {
+export fn duration_to_timeval(d: duration) sys::timeval = sys::timeval {
 	tv_sec = d / SECOND,
 	tv_usec = d % SECOND / 1000,
 };
 
-// Converts an [[instant]] to an [[rt::timespec]]. This function is
+// Converts an [[instant]] to an [[sys::timespec]]. This function is
 // non-portable.
-export fn instant_to_timespec(t: instant) rt::timespec = rt::timespec {
+export fn instant_to_timespec(t: instant) sys::timespec = sys::timespec {
 	tv_sec = t.sec,
 	tv_nsec = t.nsec,
 };
 
-// Converts a [[rt::timespec]] to an [[instant]]. This function is
+// Converts a [[sys::timespec]] to an [[instant]]. This function is
 // non-portable.
-export fn timespec_to_instant(ts: rt::timespec) instant = instant {
+export fn timespec_to_instant(ts: sys::timespec) instant = instant {
 	sec = ts.tv_sec,
 	nsec = ts.tv_nsec,
 };
@@ -42,13 +42,13 @@ export fn sleep(d: duration, c: clock = clock::MONOTONIC) void = {
 	let req = duration_to_timespec(d);
 
 	for (true) {
-		let res = rt::timespec { ... };
-		match (rt::clock_nanosleep(c: int, 0, &req, &res)) {
+		let res = sys::timespec { ... };
+		match (sys::clock_nanosleep(c: int, 0, &req, &res)) {
 		case void =>
 			return;
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			switch (err) {
-			case rt::EINTR =>
+			case sys::EINTR =>
 				req = res;
 			case =>
 				abort("Unexpected error from clock_nanosleep");
@@ -62,12 +62,12 @@ export fn sleep_until(i: instant, c: clock = clock::MONOTONIC) void = {
 	const requested = instant_to_timespec(i);
 
 	for (true) {
-		match (rt::clock_nanosleep(c: int, rt::TIMER_ABSTIME, &requested, null)) {
+		match (sys::clock_nanosleep(c: int, sys::TIMER_ABSTIME, &requested, null)) {
 		case void =>
 			return;
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			switch (err) {
-			case rt::EINTR =>
+			case sys::EINTR =>
 				continue;
 			case =>
 				abort("Unexpected error from clock_nanosleep");
@@ -84,37 +84,37 @@ export fn sleep_until(i: instant, c: clock = clock::MONOTONIC) void = {
 export type clock = enum {
 	// The current wall-clock time. This may jump forwards or backwards in
 	// time to account for leap seconds, NTP adjustments, etc.
-	REALTIME = rt::CLOCK_REALTIME,
+	REALTIME = sys::CLOCK_REALTIME,
 
 	// The current monotonic time. This clock measures from some undefined
 	// epoch and is not affected by leap seconds, NTP adjustments, and
 	// changes to the system time: it always increases by one second per
 	// second.
-	MONOTONIC = rt::CLOCK_MONOTONIC,
+	MONOTONIC = sys::CLOCK_MONOTONIC,
 
 	// Increments only when the CPU is running in user mode on behalf of the
 	// calling process.
-	VIRTUAL = rt::CLOCK_VIRTUAL,
+	VIRTUAL = sys::CLOCK_VIRTUAL,
 
 	// Increments when the CPU is running in user or kernel mode.
-	PROF = rt::CLOCK_PROF,
+	PROF = sys::CLOCK_PROF,
 
 	// The thread CPU clock. It begins at zero and is advanced while the
 	// calling thread is running in user or kernel mode.
-	THREAD_CPUTIME_ID = rt::CLOCK_THREAD_CPUTIME_ID,
+	THREAD_CPUTIME_ID = sys::CLOCK_THREAD_CPUTIME_ID,
 
 	// The process CPU clock. It begins at zero and is advanced while the
 	// calling process is running in user or kernel mode.
-	PROCESS_CPUTIME_ID = rt::CLOCK_PROCESS_CPUTIME_ID,
+	PROCESS_CPUTIME_ID = sys::CLOCK_PROCESS_CPUTIME_ID,
 };
 
 // Returns the current time for a given clock.
 export fn now(clock: clock) instant = {
-	let tp = rt::timespec { ... };
-	match (rt::clock_gettime(clock, &tp)) {
+	let tp = sys::timespec { ... };
+	match (sys::clock_gettime(clock, &tp)) {
 	case void =>
 		return timespec_to_instant(tp);
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		abort("Unexpected error from clock_gettime");
 	};
 };
@@ -122,12 +122,12 @@ export fn now(clock: clock) instant = {
 // Sets system clock to given time.
 export fn set(clock: clock, t: instant) (void | errors::noaccess) = {
 	let tp = instant_to_timespec(t);
-	let err = match (rt::clock_settime(clock, &tp)) {
+	let err = match (sys::clock_settime(clock, &tp)) {
 	case void => return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		yield err;
 	};
-	if (err == rt::EPERM) {
+	if (err == sys::EPERM) {
 		return errors::noaccess;
 	};
 	abort("Unexpected error from clock_settime");

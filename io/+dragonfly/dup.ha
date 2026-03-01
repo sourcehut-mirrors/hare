@@ -2,7 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 
 // Flags for [[dup]] and [[dup2]] operations.
 export type dupflag = enum {
@@ -10,19 +10,19 @@ export type dupflag = enum {
 
 	// Causes [[dup]] and [[dup2]] not to set the CLOEXEC flag on the
 	// duplicated file descriptor. By default, CLOEXEC is set.
-	NOCLOEXEC = rt::FD_CLOEXEC,
+	NOCLOEXEC = sys::FD_CLOEXEC,
 };
 
 // Duplicates a file descriptor.
 export fn dup(old: file, flags: dupflag = dupflag::NONE) (file | error) = {
 	flags ^= dupflag::NOCLOEXEC; // Invert CLOEXEC
 
-	match (rt::dup2(old, -1)) {
+	match (sys::dup2(old, -1)) {
 	case let fd: int =>
-		const fl = rt::fcntl(fd, rt::F_GETFD, 0)!;
-		rt::fcntl(fd, rt::F_SETFD, fl | rt::FD_CLOEXEC)!;
+		const fl = sys::fcntl(fd, sys::F_GETFD, 0)!;
+		sys::fcntl(fd, sys::F_SETFD, fl | sys::FD_CLOEXEC)!;
 		return fd;
-	case let e: rt::errno =>
+	case let e: sys::errno =>
 		return errors::errno(e);
 	};
 };
@@ -37,12 +37,12 @@ export fn dup2(
 ) (file | error) = {
 	flags ^= dupflag::NOCLOEXEC; // Invert CLOEXEC
 
-	match (rt::dup2(old, new)) {
+	match (sys::dup2(old, new)) {
 	case let fd: int =>
-		const fl = rt::fcntl(fd, rt::F_GETFD, 0)!;
-		rt::fcntl(fd, rt::F_SETFD, fl | flags)!;
+		const fl = sys::fcntl(fd, sys::F_GETFD, 0)!;
+		sys::fcntl(fd, sys::F_SETFD, fl | flags)!;
 		return fd;
-	case let e: rt::errno =>
+	case let e: sys::errno =>
 		return errors::errno(e);
 	};
 };

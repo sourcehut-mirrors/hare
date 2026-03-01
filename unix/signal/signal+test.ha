@@ -2,7 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 use unix;
 
 // Forward declaration to resolve signal => test => signal loop
@@ -21,8 +21,8 @@ fn handle_signal(
 @test fn test_handle() void = {
 	test::require("integration");
 	handle(sig::USR1, &handle_signal);
-	match (rt::kill(unix::getpid(), sig::USR1)) {
-	case let errno: rt::errno =>
+	match (sys::kill(unix::getpid(), sig::USR1)) {
+	case let errno: sys::errno =>
 		abort(errors::strerror(errors::errno(errno)));
 	case void => void;
 	};

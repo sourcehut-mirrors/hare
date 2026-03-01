@@ -2,14 +2,14 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 use unix;
 
 // Requests that [[sig::ALRM]] is delivered to the calling process in (about)
 // "sec" seconds. Returns the number of seconds until the previously scheduled
 // alarm, or zero if none was scheduled.
 export fn alarm(sec: uint) uint = {
-	return rt::alarm(sec);
+	return sys::alarm(sec);
 };
 
 // Configures a new signal handler, returning the old details (which can be
@@ -20,7 +20,7 @@ export fn handle(
 	flags: flag = flag::NONE,
 	mask: nullable *sigset = null,
 ) sigaction = {
-	flags |= rt::SA_SIGINFO: flag;
+	flags |= sys::SA_SIGINFO: flag;
 	let mask = match (mask) {
 	case null =>
 		yield newsigset();
@@ -28,15 +28,15 @@ export fn handle(
 		yield *set;
 	};
 
-	let new = rt::sigact {
+	let new = sys::sigact {
 		sa_sigaction = handler: *fn(_: int,
-			_: *rt::siginfo, _: *opaque) void,
+			_: *sys::siginfo, _: *opaque) void,
 		sa_mask = mask,
 		sa_flags = flags,
 	};
-	let old = rt::sigact { @undefined... };
-	match (rt::sigaction(signum, &new, &old)) {
-	case let err: rt::errno =>
+	let old = sys::sigact { @undefined... };
+	match (sys::sigaction(signum, &new, &old)) {
+	case let err: sys::errno =>
 		abort("sigaction failed (invalid signal?)");
 	case void => void;
 	};
@@ -46,8 +46,8 @@ export fn handle(
 
 // Restores previous signal behavior following [[handle]].
 export fn restore(signum: sig, action: *sigaction) void = {
-	match (rt::sigaction(signum, action: *rt::sigact, null)) {
-	case rt::errno =>
+	match (sys::sigaction(signum, action: *sys::sigact, null)) {
+	case sys::errno =>
 		abort("sigaction failed (invalid signal?)");
 	case void => void;
 	};
@@ -56,7 +56,7 @@ export fn restore(signum: sig, action: *sigaction) void = {
 
 // Unregisters signal handlers for the specified signal.
 export fn reset(signum: sig) void = {
-	handle(signum, rt::SIG_DFL: *handler);
+	handle(signum, sys::SIG_DFL: *handler);
 };
 
 // Unregisters all signal handlers.
@@ -96,7 +96,7 @@ export fn resetall() void = {
 // Prevents given signal from arriving to the current process.
 // One common use case is to ignore SIGCHLD to avoid zombie child processes.
 export fn ignore(signum: sig) void = {
-	handle(signum, rt::SIG_IGN: *handler);
+	handle(signum, sys::SIG_IGN: *handler);
 };
 
 // Adds the given list of signals to the process's current signal mask,
@@ -118,66 +118,66 @@ export fn unblock(signals: sig...) sigset = {
 // Sets the process's signal mask, returning the previous mask.
 export fn setprocmask(how: how, mask: *sigset) sigset = {
 	let old: sigset = 0;
-	rt::sigprocmask(how, mask: *rt::sigset, &old)!;
+	sys::sigprocmask(how, mask: *sys::sigset, &old)!;
 	return old;
 };
 
 // Gets the current process's signal mask.
 export fn getprocmask() sigset = {
 	let old: sigset = 0;
-	rt::sigprocmask(how::SETMASK, null, &old)!;
+	sys::sigprocmask(how::SETMASK, null, &old)!;
 	return old;
 };
 
 // Defines the modes of operation for [[setprocmask]].
 export type how = enum int {
 	// Adds the given set of signals to the current mask.
-	BLOCK = rt::SIG_BLOCK,
+	BLOCK = sys::SIG_BLOCK,
 	// Removes the given set of signals from the current mask.
-	UNBLOCK = rt::SIG_UNBLOCK,
+	UNBLOCK = sys::SIG_UNBLOCK,
 	// Sets the process mask to the given set.
-	SETMASK = rt::SIG_SETMASK,
+	SETMASK = sys::SIG_SETMASK,
 };
 
-export type sigaction = rt::sigact;
-export type sigset = rt::sigset;
+export type sigaction = sys::sigact;
+export type sigset = sys::sigset;
 
 // Creates a new signal set filled in with the provided signals (or empty if
 // none are provided).
 export fn newsigset(items: sig...) sigset = {
 	let set: sigset = 0;
-	rt::sigemptyset(&set);
+	sys::sigemptyset(&set);
 	sigset_add(&set, items...);
 	return set;
 };
 
 // Sets a [[sigset]] to empty.
 export fn sigset_empty(set: *sigset) void = {
-	rt::sigemptyset(set: *rt::sigset);
+	sys::sigemptyset(set: *sys::sigset);
 };
 
 // Adds signals to a [[sigset]].
 export fn sigset_add(set: *sigset, items: sig...) void = {
 	for (let i = 0z; i < len(items); i += 1) {
-		rt::sigaddset(set: *rt::sigset, items[i])!;
+		sys::sigaddset(set: *sys::sigset, items[i])!;
 	};
 };
 
 // Removes signals from a [[sigset]].
 export fn sigset_del(set: *sigset, items: sig...) void = {
 	for (let i = 0z; i < len(items); i += 1) {
-		rt::sigdelset(set: *rt::sigset, items[i])!;
+		sys::sigdelset(set: *sys::sigset, items[i])!;
 	};
 };
 
 // Adds all platform-defined signals to a [[sigset]].
 export fn sigset_fill(set: *sigset) void = {
-	rt::sigfillset(set: *rt::sigset)!;
+	sys::sigfillset(set: *sys::sigset)!;
 };
 
 // Returns true if the given signal is a member of this [[sigset]].
 export fn sigset_member(set: *sigset, item: sig) bool = {
-	return rt::sigismember(set: *rt::sigset, item)!;
+	return sys::sigismember(set: *sys::sigset, item)!;
 };
 
 // Waits for a signal among the given [[sigset]] to be delivered, then returns
@@ -189,9 +189,9 @@ export fn sigset_member(set: *sigset, item: sig) bool = {
 // cannot occur.
 export fn wait(set: *sigset) (sig | errors::interrupted) = {
 	let signal = 0i;
-	match (rt::sigwait(set: *rt::sigset, &signal)) {
-	case let err: rt::errno =>
-		assert(err == rt::EINTR);
+	match (sys::sigwait(set: *sys::sigset, &signal)) {
+	case let err: sys::errno =>
+		assert(err == sys::EINTR);
 		return errors::interrupted;
 	case void =>
 		return signal: sig;
@@ -199,7 +199,7 @@ export fn wait(set: *sigset) (sig | errors::interrupted) = {
 };
 
 // Provides additional information about signal deliveries. Only the members
-// defined by POSIX are available here; cast to [[rt::siginfo]] to access
+// defined by POSIX are available here; cast to [[sys::siginfo]] to access
 // non-portable members.
 export type siginfo = struct {
 	// The signal number being delivered.
@@ -208,7 +208,7 @@ export type siginfo = struct {
 	code: code,
 	// The errno, if any, associated with this signal. See
 	// [[errors::errno]] to convert to a Hare-native error.
-	errno: rt::errno,
+	errno: sys::errno,
 	union {
 		union {
 			struct {
@@ -227,106 +227,106 @@ export type siginfo = struct {
 };
 
 export type code = enum int {
-	NOINFO = rt::SI_NOINFO, // no signal information
-	USER = rt::SI_USER, // user generated signal via kill()
-	LWP = rt::SI_LWP, // user generated signal via lwp_kill()
-	QUEUE = rt::SI_QUEUE, // user generated signal via sigqueue()
-	TIMER = rt::SI_TIMER, // from timer expiration
+	NOINFO = sys::SI_NOINFO, // no signal information
+	USER = sys::SI_USER, // user generated signal via kill()
+	LWP = sys::SI_LWP, // user generated signal via lwp_kill()
+	QUEUE = sys::SI_QUEUE, // user generated signal via sigqueue()
+	TIMER = sys::SI_TIMER, // from timer expiration
 
-	ILLOPC = rt::ILL_ILLOPC, // sig::ILL: illegal opcode
-	ILLOPN = rt::ILL_ILLOPN, // sig::ILL: illegal operand
-	ILLADR = rt::ILL_ILLADR, // sig::ILL: illegal addressing mode
-	ILLTRP = rt::ILL_ILLTRP, // sig::ILL: illegal trap
-	PRVOPC = rt::ILL_PRVOPC, // sig::ILL: privileged opcode
-	PRVREG = rt::ILL_PRVREG, // sig::ILL: privileged register
-	COPROC = rt::ILL_COPROC, // sig::ILL: co-processor
-	BADSTK = rt::ILL_BADSTK, // sig::ILL: bad stack
+	ILLOPC = sys::ILL_ILLOPC, // sig::ILL: illegal opcode
+	ILLOPN = sys::ILL_ILLOPN, // sig::ILL: illegal operand
+	ILLADR = sys::ILL_ILLADR, // sig::ILL: illegal addressing mode
+	ILLTRP = sys::ILL_ILLTRP, // sig::ILL: illegal trap
+	PRVOPC = sys::ILL_PRVOPC, // sig::ILL: privileged opcode
+	PRVREG = sys::ILL_PRVREG, // sig::ILL: privileged register
+	COPROC = sys::ILL_COPROC, // sig::ILL: co-processor
+	BADSTK = sys::ILL_BADSTK, // sig::ILL: bad stack
 
-	INTDIV = rt::FPE_INTDIV, // sig::FPE: integer divide by zero
-	INTOVF = rt::FPE_INTOVF, // sig::FPE: integer overflow
-	FLTDIV = rt::FPE_FLTDIV, // sig::FPE: floating point divide by zero
-	FLTOVF = rt::FPE_FLTOVF, // sig::FPE: floating point overflow
-	FLTUND = rt::FPE_FLTUND, // sig::FPE: floating point underflow
-	FLTRES = rt::FPE_FLTRES, // sig::FPE: floating point inexact result
-	FLTINV = rt::FPE_FLTINV, // sig::FPE: invalid floating point operation
-	FLTSUB = rt::FPE_FLTSUB, // sig::FPE: subscript out of range
+	INTDIV = sys::FPE_INTDIV, // sig::FPE: integer divide by zero
+	INTOVF = sys::FPE_INTOVF, // sig::FPE: integer overflow
+	FLTDIV = sys::FPE_FLTDIV, // sig::FPE: floating point divide by zero
+	FLTOVF = sys::FPE_FLTOVF, // sig::FPE: floating point overflow
+	FLTUND = sys::FPE_FLTUND, // sig::FPE: floating point underflow
+	FLTRES = sys::FPE_FLTRES, // sig::FPE: floating point inexact result
+	FLTINV = sys::FPE_FLTINV, // sig::FPE: invalid floating point operation
+	FLTSUB = sys::FPE_FLTSUB, // sig::FPE: subscript out of range
 
-	MAPERR = rt::SEGV_MAPERR, // sig::SEGV: address not mapped to object
-	ACCERR = rt::SEGV_ACCERR, // sig::SEGV: invalid permissions
+	MAPERR = sys::SEGV_MAPERR, // sig::SEGV: address not mapped to object
+	ACCERR = sys::SEGV_ACCERR, // sig::SEGV: invalid permissions
 
-	ADRALN = rt::BUS_ADRALN, // sig::BUS: invalid address alignment
-	ADRERR = rt::BUS_ADRERR, // sig::BUS: non-existent physical address
-	OBJERR = rt::BUS_OBJERR, // sig::BUS: object specific hardware error
+	ADRALN = sys::BUS_ADRALN, // sig::BUS: invalid address alignment
+	ADRERR = sys::BUS_ADRERR, // sig::BUS: non-existent physical address
+	OBJERR = sys::BUS_OBJERR, // sig::BUS: object specific hardware error
 
-	BRKPT = rt::TRAP_BRKPT, // sig::TRAP: breakpoint trap
-	TRACE = rt::TRAP_TRACE, // sig::TRAP: trace trap
+	BRKPT = sys::TRAP_BRKPT, // sig::TRAP: breakpoint trap
+	TRACE = sys::TRAP_TRACE, // sig::TRAP: trace trap
 
-	EXITED = rt::CLD_EXITED, // sig::CHLD: child has exited
-	KILLED = rt::CLD_KILLED, // sig::CHLD: child was killed
-	DUMPED = rt::CLD_DUMPED, // sig::CHLD: child has coredumped
-	TRAPPED = rt::CLD_TRAPPED, // sig::CHLD: traced child has stopped
-	STOPPED = rt::CLD_STOPPED, // sig::CHLD: child has stopped on signal
-	CONTINUED = rt::CLD_CONTINUED, // sig::CHLD: stopped child has continued
+	EXITED = sys::CLD_EXITED, // sig::CHLD: child has exited
+	KILLED = sys::CLD_KILLED, // sig::CHLD: child was killed
+	DUMPED = sys::CLD_DUMPED, // sig::CHLD: child has coredumped
+	TRAPPED = sys::CLD_TRAPPED, // sig::CHLD: traced child has stopped
+	STOPPED = sys::CLD_STOPPED, // sig::CHLD: child has stopped on signal
+	CONTINUED = sys::CLD_CONTINUED, // sig::CHLD: stopped child has continued
 };
 
 export type flag = enum int {
 	NONE = 0,
 	// For use with sig::CHLD. Prevents notifications when child processes
 	// stop (e.g. via sig::STOP) or resume (i.e. sig::CONT).
-	NOCLDSTOP = rt::SA_NOCLDSTOP,
+	NOCLDSTOP = sys::SA_NOCLDSTOP,
 	// For use with sig::CHLD. Do not transform children into zombies when
 	// they terminate. Note that POSIX leaves the delivery of sig::CHLD
 	// unspecified when this flag is present; some systems will still
 	// deliver a signal and others may not.
-	NOCLDWAIT = rt::SA_NOCLDWAIT,
+	NOCLDWAIT = sys::SA_NOCLDWAIT,
 	// Uses an alternate stack when handling this signal. See
 	// [[setaltstack]] and [[getaltstack]] for details.
-	ONSTACK = rt::SA_ONSTACK,
+	ONSTACK = sys::SA_ONSTACK,
 	// Do not add the signal to the signal mask while executing the signal
 	// handler. This can cause the same signal to be delivered again during
 	// the execution of the signal handler.
-	NODEFER = rt::SA_NODEFER,
+	NODEFER = sys::SA_NODEFER,
 	// Restore the signal handler to the default behavior upon entering the
 	// signal handler.
-	RESETHAND = rt::SA_RESETHAND,
+	RESETHAND = sys::SA_RESETHAND,
 	// Makes certain system calls restartable across signals. See signal(7)
 	// or similar documentation for your local system for details.
-	RESTART = rt::SA_RESTART,
+	RESTART = sys::SA_RESTART,
 };
 
 // All possible signals.
 export type sig = enum int {
-	HUP = rt::SIGHUP, // Hangup.
-	INT = rt::SIGINT, // Terminal interrupt.
-	QUIT = rt::SIGQUIT, // Terminal quit.
-	ILL = rt::SIGILL, // Illegal instruction.
-	TRAP = rt::SIGTRAP, // Trace/breakpoint trap.
-	ABRT = rt::SIGABRT, // Process abort.
-	EMT = rt::SIGEMT, // Emulate instruction executed.
-	FPE = rt::SIGFPE, // Erroneous arithmetic operation.
-	KILL = rt::SIGKILL, // Kill (cannot be caught or ignored).
-	BUS = rt::SIGBUS, // Access to an undefined portion of a memory object.
-	SEGV = rt::SIGSEGV, // Invalid memory reference.
-	SYS = rt::SIGSYS, // Bad system call.
-	PIPE = rt::SIGPIPE, // Write on a pipe with no one to read it.
-	ALRM = rt::SIGALRM, // Alarm clock.
-	TERM = rt::SIGTERM, // Termination.
-	URG = rt::SIGURG, // High bandwidth data is available at a socket.
-	STOP = rt::SIGSTOP, // Stop executing (cannot be caught or ignored).
-	TSTP = rt::SIGTSTP, // Terminal stop.
-	CONT = rt::SIGCONT, // Continue executing, if stopped.
-	CHLD = rt::SIGCHLD, // Child process terminated, stopped, or continued.
-	TTIN = rt::SIGTTIN, // Background process attempting read.
-	TTOU = rt::SIGTTOU, // Background process attempting write.
-	IO = rt::SIGIO, // I/O now possible.
-	XCPU = rt::SIGXCPU, // CPU time limit exceeded.
-	XFSZ = rt::SIGXFSZ, // File size limit exceeded.
-	VTALRM = rt::SIGVTALRM, // Virtual timer expired.
-	PROF = rt::SIGPROF, // Profiling timer expired.
-	WINCH = rt::SIGWINCH, // Window resize.
-	INFO = rt::SIGINFO, // Status request from keyboard.
-	USR1 = rt::SIGUSR1, // User-defined signal 1.
-	USR2 = rt::SIGUSR2, // User-defined signal 2.
+	HUP = sys::SIGHUP, // Hangup.
+	INT = sys::SIGINT, // Terminal interrupt.
+	QUIT = sys::SIGQUIT, // Terminal quit.
+	ILL = sys::SIGILL, // Illegal instruction.
+	TRAP = sys::SIGTRAP, // Trace/breakpoint trap.
+	ABRT = sys::SIGABRT, // Process abort.
+	EMT = sys::SIGEMT, // Emulate instruction executed.
+	FPE = sys::SIGFPE, // Erroneous arithmetic operation.
+	KILL = sys::SIGKILL, // Kill (cannot be caught or ignored).
+	BUS = sys::SIGBUS, // Access to an undefined portion of a memory object.
+	SEGV = sys::SIGSEGV, // Invalid memory reference.
+	SYS = sys::SIGSYS, // Bad system call.
+	PIPE = sys::SIGPIPE, // Write on a pipe with no one to read it.
+	ALRM = sys::SIGALRM, // Alarm clock.
+	TERM = sys::SIGTERM, // Termination.
+	URG = sys::SIGURG, // High bandwidth data is available at a socket.
+	STOP = sys::SIGSTOP, // Stop executing (cannot be caught or ignored).
+	TSTP = sys::SIGTSTP, // Terminal stop.
+	CONT = sys::SIGCONT, // Continue executing, if stopped.
+	CHLD = sys::SIGCHLD, // Child process terminated, stopped, or continued.
+	TTIN = sys::SIGTTIN, // Background process attempting read.
+	TTOU = sys::SIGTTOU, // Background process attempting write.
+	IO = sys::SIGIO, // I/O now possible.
+	XCPU = sys::SIGXCPU, // CPU time limit exceeded.
+	XFSZ = sys::SIGXFSZ, // File size limit exceeded.
+	VTALRM = sys::SIGVTALRM, // Virtual timer expired.
+	PROF = sys::SIGPROF, // Profiling timer expired.
+	WINCH = sys::SIGWINCH, // Window resize.
+	INFO = sys::SIGINFO, // Status request from keyboard.
+	USR1 = sys::SIGUSR1, // User-defined signal 1.
+	USR2 = sys::SIGUSR2, // User-defined signal 2.
 };
 
 // Returns the human friendly name of a given signal.

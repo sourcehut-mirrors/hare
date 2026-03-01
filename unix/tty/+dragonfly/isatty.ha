@@ -2,13 +2,13 @@
 // (c) Hare authors <https://harelang.org>
 
 use io;
-use rt;
+use sys;
 
 // Returns whether the given stream is connected to a terminal.
 export fn isatty(fd: io::file) bool = {
-	let t = rt::termios { ... };
-	match (rt::ioctl(fd, rt::TIOCGETA, &t: *opaque)) {
-	case let e: rt::errno =>
+	let t = sys::termios { ... };
+	match (sys::ioctl(fd, sys::TIOCGETA, &t: *opaque)) {
+	case let e: sys::errno =>
 		return false;
 	case let r: int =>
 		return r == 0;

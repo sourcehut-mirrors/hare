@@ -3,14 +3,14 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // Flags to use for the [[io::file]]s returned by [[pipe]].
 // Only NOCLOEXEC and NONBLOCK are guaranteed to be available.
 export type pipe_flag = enum {
-	NOCLOEXEC = rt::O_CLOEXEC,
-	DIRECT = rt::O_DIRECT,
-	NONBLOCK = rt::O_NONBLOCK,
+	NOCLOEXEC = sys::O_CLOEXEC,
+	DIRECT = sys::O_DIRECT,
+	NONBLOCK = sys::O_NONBLOCK,
 };
 
 // Create a pair of two linked [[io::file]]s, such that any data written to the
@@ -18,9 +18,9 @@ export type pipe_flag = enum {
 export fn pipe(flags: pipe_flag = 0) ((io::file, io::file) | errors::error) = {
 	let fds: [2]int = [0...];
 	flags ^= pipe_flag::NOCLOEXEC; // invert CLOEXEC
-	match (rt::pipe2(&fds, flags)) {
+	match (sys::pipe2(&fds, flags)) {
 	case void => void;
-	case let e: rt::errno =>
+	case let e: sys::errno =>
 		return errors::errno(e);
 	};
 	return (fds[0], fds[1]);

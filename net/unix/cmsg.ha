@@ -3,13 +3,13 @@
 
 use io;
 use net;
-use rt;
+use sys;
 
 // Adds a list of file descriptors to the ancillary data for a sendmsg
 // operation.
 export fn addfiles(buf: *net::msghdr, files: io::file...) (void | nomem) = {
 	const msgsz = size(io::file) * len(files);
-	let buf = net::addcontrol(buf, msgsz, rt::SOL_SOCKET, rt::SCM_RIGHTS)?;
+	let buf = net::addcontrol(buf, msgsz, sys::SOL_SOCKET, sys::SCM_RIGHTS)?;
 	let buf = buf: *[*]io::file;
 	buf[..len(files)] = files[..];
 };
@@ -18,7 +18,7 @@ export fn addfiles(buf: *net::msghdr, files: io::file...) (void | nomem) = {
 // operation.
 export fn allocfiles(buf: *net::msghdr, nfile: size) (void | nomem) = {
 	const msgsz = size(io::file) * nfile;
-	net::addcontrol(buf, msgsz, rt::SOL_SOCKET, rt::SCM_RIGHTS)?;
+	net::addcontrol(buf, msgsz, sys::SOL_SOCKET, sys::SCM_RIGHTS)?;
 };
 
 // Receives files from an ancillary data buffer which was previously prepared
@@ -26,7 +26,7 @@ export fn allocfiles(buf: *net::msghdr, nfile: size) (void | nomem) = {
 export fn recvfiles(buf: *net::msghdr, nfile: size) []io::file = {
 	match (net::getcontrol(buf,
 		nfile * size(io::file),
-		rt::SOL_SOCKET, rt::SCM_RIGHTS)) {
+		sys::SOL_SOCKET, sys::SCM_RIGHTS)) {
 	case let buf: []u8 =>
 		return (buf: *[*]io::file)[..nfile];
 	case void =>

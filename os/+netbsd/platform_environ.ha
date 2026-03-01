@@ -3,6 +3,7 @@
 
 use errors;
 use rt;
+use sys;
 use strings;
 use types::c;
 
@@ -51,7 +52,7 @@ export fn getenvs() []str = {
 export fn sysname() const str = {
 	static let buf: [512]u8 = [0...];
 	let sz: size = len(buf);
-	rt::sysctl([rt::CTL_KERN, rt::KERN_OSTYPE], &buf, &sz, null, 0)!;
+	sys::sysctl([sys::CTL_KERN, sys::KERN_OSTYPE], &buf, &sz, null, 0)!;
 	return strings::fromutf8(buf[..(sz - 1)])!;
 };
 
@@ -59,7 +60,7 @@ export fn sysname() const str = {
 export fn hostname() const str = {
 	static let buf: [512]u8 = [0...];
 	let sz: size = len(buf);
-	rt::sysctl([rt::CTL_KERN, rt::KERN_HOSTNAME], &buf, &sz, null, 0)!;
+	sys::sysctl([sys::CTL_KERN, sys::KERN_HOSTNAME], &buf, &sz, null, 0)!;
 	return strings::fromutf8(buf[..(sz - 1)])!;
 };
 
@@ -67,7 +68,7 @@ export fn hostname() const str = {
 export fn release() const str = {
 	static let buf: [512]u8 = [0...];
 	let sz: size = len(buf);
-	rt::sysctl([rt::CTL_KERN, rt::KERN_OSRELEASE], &buf, &sz, null, 0)!;
+	sys::sysctl([sys::CTL_KERN, sys::KERN_OSRELEASE], &buf, &sz, null, 0)!;
 	return strings::fromutf8(buf[..(sz - 1)])!;
 };
 
@@ -75,7 +76,7 @@ export fn release() const str = {
 export fn version() const str = {
 	static let buf: [512]u8 = [0...];
 	let sz: size = len(buf);
-	rt::sysctl([rt::CTL_KERN, rt::KERN_VERSION], &buf, &sz, null, 0)!;
+	sys::sysctl([sys::CTL_KERN, sys::KERN_VERSION], &buf, &sz, null, 0)!;
 	return strings::fromutf8(buf[..(sz - 1)])!;
 };
 
@@ -84,7 +85,7 @@ export fn version() const str = {
 export fn machine() const str = {
 	static let buf: [32]u8 = [0...];
 	let sz: size = len(buf);
-	rt::sysctl([rt::CTL_HW, rt::HW_MACHINE], &buf, &sz, null, 0)!;
+	sys::sysctl([sys::CTL_HW, sys::HW_MACHINE], &buf, &sz, null, 0)!;
 	return strings::fromutf8(buf[..sz - 1])!;
 };
 
@@ -105,9 +106,9 @@ export fn architecture() arch = {
 export fn cpucount() (size | errors::error) = {
 	let count = 0;
 	let length = size(int);
-	match (rt::sysctl([rt::CTL_HW, rt::HW_NCPU], &count, &length, null, 0)) {
+	match (sys::sysctl([sys::CTL_HW, sys::HW_NCPU], &count, &length, null, 0)) {
 	case void => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 	return count: size;

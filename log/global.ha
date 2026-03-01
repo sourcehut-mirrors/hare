@@ -2,7 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use io;
-use rt;
+use sys;
 
 // The global logger instance.
 export let global: *logger = &_default;
@@ -13,7 +13,7 @@ export const default: *logger = &_default;
 let _default: stdlogger = stdlogger {
 	println = &log_println,
 	printfln = &log_printfln,
-	sink = rt::STDERR_FILENO: io::file,
+	sink = sys::STDERR_FILENO: io::file,
 };
 
 // Sets the global logger instance to the provided logger.

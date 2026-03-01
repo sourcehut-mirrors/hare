@@ -6,7 +6,7 @@ use fs;
 use io;
 use os;
 use path;
-use rt;
+use sys;
 use types::c;
 
 // Opens the executing process's binary image.
@@ -14,9 +14,9 @@ export fn self() (image | io::error | fs::error) = {
 	// 1: sysctl
 	let buf: [path::MAX * 2 + 1]u8 = [0...];
 	let pathsz = len(buf);
-	match (rt::sysctlbyname("kern.proc.pathname",
+	match (sys::sysctlbyname("kern.proc.pathname",
 			&buf[0], &pathsz, null, 0)) {
-	case rt::errno => void;
+	case sys::errno => void;
 	case void =>
 		const file = os::open(c::tostr(&buf[0]: *const c::char)!)?;
 		match (open(file)) {

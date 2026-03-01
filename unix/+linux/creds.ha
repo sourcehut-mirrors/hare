@@ -3,42 +3,42 @@
 // Unix credentials types & functions; ref credentials(7)
 
 use errors;
-use rt;
+use sys;
 
 // Process ID.
-export type pid = rt::pid_t;
+export type pid = sys::pid_t;
 
 // User ID.
-export type uid = rt::uid_t;
+export type uid = sys::uid_t;
 
 // Group ID.
-export type gid = rt::gid_t;
+export type gid = sys::gid_t;
 
 // Returns the current process user ID.
 export fn getuid() uid = {
 	let uid = 0u, euid = 0u, suid = 0u;
-	rt::getresuid(&uid, &euid, &suid) as void;
+	sys::getresuid(&uid, &euid, &suid) as void;
 	return uid;
 };
 
 // Returns the current process effective user ID.
 export fn geteuid() uid = {
 	let uid = 0u, euid = 0u, suid = 0u;
-	rt::getresuid(&uid, &euid, &suid) as void;
+	sys::getresuid(&uid, &euid, &suid) as void;
 	return euid;
 };
 
 // Returns the current process group ID.
 export fn getgid() gid = {
 	let gid = 0u, egid = 0u, sgid = 0u;
-	rt::getresgid(&gid, &egid, &sgid) as void;
+	sys::getresgid(&gid, &egid, &sgid) as void;
 	return gid;
 };
 
 // Returns the current process effective group ID.
 export fn getegid() gid = {
 	let gid = 0u, egid = 0u, sgid = 0u;
-	rt::getresgid(&gid, &egid, &sgid) as void;
+	sys::getresgid(&gid, &egid, &sgid) as void;
 	return egid;
 };
 
@@ -48,9 +48,9 @@ export fn getegid() gid = {
 // If the system returns an error, this function will abort the program. Failing
 // to handle errors from setuid is a grave security issue in your program, and
 // therefore we require this function to succeed. If you need to handle the
-// error case gracefully, call the appropriate syscall wrapper in [[rt::]]
+// error case gracefully, call the appropriate syscall wrapper in [[sys::]]
 // yourself, and take extreme care to handle errors correctly.
-export fn setuid(uid: uid) void = rt::setresuid(uid, -1i: uint, -1i: uint)!;
+export fn setuid(uid: uid) void = sys::setresuid(uid, -1i: uint, -1i: uint)!;
 
 // Sets the caller's effective user ID to the specified value. This generally
 // requires elevated permissions from the calling process.
@@ -58,9 +58,9 @@ export fn setuid(uid: uid) void = rt::setresuid(uid, -1i: uint, -1i: uint)!;
 // If the system returns an error, this function will abort the program. Failing
 // to handle errors from seteuid is a grave security issue in your program, and
 // therefore we require this function to succeed. If you need to handle the
-// error case gracefully, call the appropriate syscall wrapper in [[rt::]]
+// error case gracefully, call the appropriate syscall wrapper in [[sys::]]
 // yourself, and take extreme care to handle errors correctly.
-export fn seteuid(uid: uid) void = rt::setresuid(-1i: uint, uid, -1i: uint)!;
+export fn seteuid(uid: uid) void = sys::setresuid(-1i: uint, uid, -1i: uint)!;
 
 // Sets the caller's group ID to the specified value. This generally requires
 // elevated permissions from the calling process.
@@ -68,9 +68,9 @@ export fn seteuid(uid: uid) void = rt::setresuid(-1i: uint, uid, -1i: uint)!;
 // If the system returns an error, this function will abort the program. Failing
 // to handle errors from setuid is a grave security issue in your program, and
 // therefore we require this function to succeed. If you need to handle the
-// error case gracefully, call the appropriate syscall wrapper in [[rt::]]
+// error case gracefully, call the appropriate syscall wrapper in [[sys::]]
 // yourself, and take extreme care to handle errors correctly.
-export fn setgid(gid: gid) void = rt::setresgid(gid, -1i: uint, -1i: uint)!;
+export fn setgid(gid: gid) void = sys::setresgid(gid, -1i: uint, -1i: uint)!;
 
 // Sets the caller's effective group ID to the specified value. This generally
 // requires elevated permissions from the calling process.
@@ -78,15 +78,15 @@ export fn setgid(gid: gid) void = rt::setresgid(gid, -1i: uint, -1i: uint)!;
 // If the system returns an error, this function will abort the program. Failing
 // to handle errors from setegid is a grave security issue in your program, and
 // therefore we require this function to succeed. If you need to handle the
-// error case gracefully, call the appropriate syscall wrapper in [[rt::]]
+// error case gracefully, call the appropriate syscall wrapper in [[sys::]]
 // yourself, and take extreme care to handle errors correctly.
-export fn setegid(gid: gid) void = rt::setresgid(-1i: uint, gid, -1i: uint)!;
+export fn setegid(gid: gid) void = sys::setresgid(-1i: uint, gid, -1i: uint)!;
 
 // Returns a list of supplementary group IDs for the current process. The
 // returned slice is statically allocated.
 export fn getgroups() []gid = {
-	static let gids: [rt::NGROUPS_MAX]rt::gid_t = [0...];
-	const n = rt::getgroups(gids)!;
+	static let gids: [sys::NGROUPS_MAX]sys::gid_t = [0...];
+	const n = sys::getgroups(gids)!;
 	return gids[..n]: []gid;
 };
 
@@ -96,26 +96,26 @@ export fn getgroups() []gid = {
 // If the system returns an error, this function will abort the program. Failing
 // to handle errors from setgroups is a grave security issue in your program,
 // and therefore we require this function to succeed. If you need to handle the
-// error case gracefully, call the appropriate syscall wrapper in [[rt::]]
+// error case gracefully, call the appropriate syscall wrapper in [[sys::]]
 // yourself, and take extreme care to handle errors correctly.
-export fn setgroups(gids: []gid) void = rt::setgroups(gids: []rt::gid_t)!;
+export fn setgroups(gids: []gid) void = sys::setgroups(gids: []sys::gid_t)!;
 
 // Returns the current process ID.
-export fn getpid() pid = rt::getpid();
+export fn getpid() pid = sys::getpid();
 
 // Returns the parent process ID.
-export fn getppid() pid = rt::getppid();
+export fn getppid() pid = sys::getppid();
 
 // Returns the current process group ID.
-export fn getpgrp() pid = rt::getpgrp();
+export fn getpgrp() pid = sys::getpgrp();
 
 // Returns the process group associated with the given pid.
 export fn getpgid(pid: pid) (pid | errors::noentry) = {
-	match (rt::getpgid(pid)) {
-	case let pid: rt::pid_t =>
+	match (sys::getpgid(pid)) {
+	case let pid: sys::pid_t =>
 		return pid;
-	case let err: rt::errno =>
-		assert(err == rt::ESRCH, "Unexpected getpgid return value");
+	case let err: sys::errno =>
+		assert(err == sys::ESRCH, "Unexpected getpgid return value");
 		return errors::noentry;
 	};
 };
@@ -123,8 +123,8 @@ export fn getpgid(pid: pid) (pid | errors::noentry) = {
 // Sets the process group ID of the specified process. This function is
 // error-prone; see the notes in the POSIX specification for its many caveats.
 export fn setpgid(targ: pid, pgid: pid) (void | errors::error) = {
-	match (rt::setpgid(targ, pgid)) {
-	case let err: rt::errno =>
+	match (sys::setpgid(targ, pgid)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;
@@ -132,15 +132,15 @@ export fn setpgid(targ: pid, pgid: pid) (void | errors::error) = {
 };
 
 // Returns the current process's session ID.
-export fn getsid() pid = rt::getsid(0)!;
+export fn getsid() pid = sys::getsid(0)!;
 
 // Returns the session ID associated with the given process.
 export fn getpsid(pid: pid) (pid | errors::noentry | errors::noaccess) = {
-	match (rt::getsid(pid)) {
-	case let pid: rt::pid_t =>
+	match (sys::getsid(pid)) {
+	case let pid: sys::pid_t =>
 		return pid;
-	case let err: rt::errno =>
-		assert(err == rt::ESRCH, "Unexpected getsid return value");
+	case let err: sys::errno =>
+		assert(err == sys::ESRCH, "Unexpected getsid return value");
 		return errors::noentry;
 	};
 };
@@ -157,4 +157,4 @@ export fn getpsid(pid: pid) (pid | errors::noentry | errors::noaccess) = {
 //
 // The current process cannot be a process group leader; this is a programmer
 // error and will cause a runtime assertion failure.
-export fn setsid() void = rt::setsid()!;
+export fn setsid() void = sys::setsid()!;

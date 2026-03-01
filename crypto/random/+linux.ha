@@ -3,7 +3,7 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // Fills the given buffer with cryptographically random data. If the system is
 // unable to provide random data, abort. If you need to handle errors or want to
@@ -12,10 +12,10 @@ use rt;
 export fn buffer(buf: []u8) void = {
 	let n = 0z;
 	for (n < len(buf)) {
-		match (rt::getrandom(buf[n..]: *[*]u8, len(buf), 0)) {
-		case let err: rt::errno =>
+		match (sys::getrandom(buf[n..]: *[*]u8, len(buf), 0)) {
+		case let err: sys::errno =>
 			switch (err) {
-			case rt::EINTR => void;
+			case sys::EINTR => void;
 			case =>
 				abort();
 			};
@@ -27,8 +27,8 @@ export fn buffer(buf: []u8) void = {
 
 fn rand_reader(s: *io::stream, buf: []u8) (size | io::EOF | io::error) = {
 	assert(s == stream);
-	match (rt::getrandom(buf: *[*]u8, len(buf), 0)) {
-	case let err: rt::errno =>
+	match (sys::getrandom(buf: *[*]u8, len(buf), 0)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let n: size =>
 		return n;

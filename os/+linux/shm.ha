@@ -5,14 +5,14 @@ use errors;
 use fs;
 use io;
 use path;
-use rt;
+use sys;
 use strings;
 
 def SHM_PATH: str = "/dev/shm/";
 
 fn shm_path(name: str) (str | fs::error) = {
 	const name = strings::ltrim(name, '/');
-	if (len(name) > rt::NAME_MAX) {
+	if (len(name) > sys::NAME_MAX) {
 		return errors::invalid;
 	};
 	if (name == "." || name == "..") {

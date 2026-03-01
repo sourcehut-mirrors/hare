@@ -3,17 +3,17 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // Returns the dimensions of underlying terminal for an [[io::file]].
 export fn winsize(fd: io::file) (ttysize | error) = {
-	let wsz = rt::winsize { ... };
-	match (rt::ioctl(fd, rt::TIOCGWINSZ, &wsz: *opaque)) {
-	case let e: rt::errno =>
+	let wsz = sys::winsize { ... };
+	match (sys::ioctl(fd, sys::TIOCGWINSZ, &wsz: *opaque)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADFD =>
+		case sys::EBADFD =>
 			return errors::invalid;
-		case rt::ENOTTY =>
+		case sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");

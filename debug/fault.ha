@@ -2,7 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use debug::image;
-use rt;
+use sys;
 use unix::signal;
 use unix::signal::{sig};
 use fmt;
@@ -14,7 +14,7 @@ let altstack: [ALTSTACK_SIZE]uintptr;
 def ALTSTACK_SIZE: size = 16384;
 
 @init fn init_overflow() void = {
-	rt::sigaltstack(&rt::stack_t {
+	sys::sigaltstack(&sys::stack_t {
 		ss_sp = &altstack,
 		ss_flags = 0,
 		ss_size = ALTSTACK_SIZE,

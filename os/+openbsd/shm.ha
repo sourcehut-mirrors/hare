@@ -5,12 +5,12 @@ use errors;
 use fs;
 use io;
 use path;
-use rt;
+use sys;
 use strings;
 
 fn shm_path(name: str) (str | fs::error) = {
 	const name = strings::ltrim(name, '/');
-	if (len(name) > rt::NAME_MAX) {
+	if (len(name) > sys::NAME_MAX) {
 		return errors::invalid;
 	};
 	if (name == "." || name == "..") {
@@ -44,13 +44,13 @@ export fn shm_open(
 	mode: fs::mode = 0o600,
 ) (io::file | fs::error) = {
 	const path = shm_path(name)?;
-	def VALID_FLAGS: int = rt::O_RDWR | rt::O_CREAT | rt::O_EXCL | rt::O_TRUNC;
-	const oflag = (fsflags_to_bsd(oflag)? & VALID_FLAGS) | rt::O_CLOEXEC;
+	def VALID_FLAGS: int = sys::O_RDWR | sys::O_CREAT | sys::O_EXCL | sys::O_TRUNC;
+	const oflag = (fsflags_to_bsd(oflag)? & VALID_FLAGS) | sys::O_CLOEXEC;
 
-	match (rt::shm_open(path, oflag, mode: rt::mode_t)) {
+	match (sys::shm_open(path, oflag, mode: sys::mode_t)) {
 	case let fd: int =>
 		return fd: io::file;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err): fs::error;
 	};
 };
@@ -61,8 +61,8 @@ export fn shm_open(
 // exited, the memory is released.
 export fn shm_unlink(name: str) (void | fs::error) = {
 	const path = shm_path(name)?;
-	match (rt::shm_unlink(path)) {
-	case let err: rt::errno =>
+	match (sys::shm_unlink(path)) {
+	case let err: sys::errno =>
 		return errors::errno(err): fs::error;
 	case void =>
 		return;

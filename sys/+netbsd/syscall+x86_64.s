@@ -3,26 +3,26 @@ error:
 	neg %rax
 	ret
 
-.section .text.rt.syscall0
-.global rt.syscall0
-rt.syscall0:
+.section .text.sys.syscall0
+.global sys.syscall0
+sys.syscall0:
 	movq %rdi, %rax
 	syscall
 	jc error
 	ret
 
-.section .text.rt.syscall1
-.global rt.syscall1
-rt.syscall1:
+.section .text.sys.syscall1
+.global sys.syscall1
+sys.syscall1:
 	movq %rdi, %rax
 	movq %rsi, %rdi
 	syscall
 	jc error
 	ret
 
-.section .text.rt.syscall2
-.global rt.syscall2
-rt.syscall2:
+.section .text.sys.syscall2
+.global sys.syscall2
+sys.syscall2:
 	movq %rdi, %rax
 	movq %rsi, %rdi
 	movq %rdx, %rsi
@@ -30,9 +30,9 @@ rt.syscall2:
 	jc error
 	ret
 
-.section .text.rt.syscall3
-.global rt.syscall3
-rt.syscall3:
+.section .text.sys.syscall3
+.global sys.syscall3
+sys.syscall3:
 	movq %rdi, %rax
 	movq %rsi, %rdi
 	movq %rdx, %rsi
@@ -41,9 +41,9 @@ rt.syscall3:
 	jc error
 	ret
 
-.section .text.rt.syscall4
-.global rt.syscall4
-rt.syscall4:
+.section .text.sys.syscall4
+.global sys.syscall4
+sys.syscall4:
 	movq %rdi, %rax
 	movq %r8, %r10
 	movq %rsi, %rdi
@@ -53,9 +53,9 @@ rt.syscall4:
 	jc error
 	ret
 
-.section .text.rt.syscall5
-.global rt.syscall5
-rt.syscall5:
+.section .text.sys.syscall5
+.global sys.syscall5
+sys.syscall5:
 	movq %rdi, %rax
 	movq %r8, %r10
 	movq %rsi, %rdi
@@ -66,9 +66,9 @@ rt.syscall5:
 	jc error
 	ret
 
-.section .text.rt.syscall6
-.global rt.syscall6
-rt.syscall6:
+.section .text.sys.syscall6
+.global sys.syscall6
+sys.syscall6:
 	movq %rdi, %rax
 	movq %r8, %r10
 	movq %rsi, %rdi
@@ -80,9 +80,9 @@ rt.syscall6:
 	jc error
 	ret
 
-.section .text.rt.__sigtramp_siginfo_2
-.global rt.__sigtramp_siginfo_2
-rt.__sigtramp_siginfo_2:
+.section .text.sys.__sigtramp_siginfo_2
+.global sys.__sigtramp_siginfo_2
+sys.__sigtramp_siginfo_2:
 	movq	%r15,%rdi
 	/* $308 = SYS_setcontext */
 	movq	$308, %rax

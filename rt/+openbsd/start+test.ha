@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use sys;
+
 // The real main function.
 @symbol(".main") fn main() void;
 
@@ -24,5 +26,5 @@ export @symbol("preinit_hare") fn preinit_hare(
 // they are ran by crt0.
 export @symbol("main") fn _main() void = {
 	const ret = if (test_main() > 0) 1 else 0;
-	exit(ret);
+	sys::exit(ret);
 };

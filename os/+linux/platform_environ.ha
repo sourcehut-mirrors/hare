@@ -4,6 +4,7 @@
 use errors;
 use math;
 use rt;
+use sys;
 use strings;
 use types::c;
 
@@ -48,13 +49,13 @@ export fn getenvs() []str = {
 	return envp;
 };
 
-let uts: rt::utsname = rt::utsname { ... };
+let uts: sys::utsname = sys::utsname { ... };
 let uts_valid: bool = false;
 
 // Returns the host kernel name.
 export fn sysname() const str = {
 	if (!uts_valid) {
-		rt::uname(&uts) as void;
+		sys::uname(&uts) as void;
 		uts_valid = true;
 	};
 	return c::tostr(&uts.sysname: *const c::char)!;
@@ -63,7 +64,7 @@ export fn sysname() const str = {
 // Returns the host system hostname.
 export fn hostname() const str = {
 	if (!uts_valid) {
-		rt::uname(&uts) as void;
+		sys::uname(&uts) as void;
 		uts_valid = true;
 	};
 	return c::tostr(&uts.nodename: *const c::char)!;
@@ -72,7 +73,7 @@ export fn hostname() const str = {
 // Returns the host kernel version.
 export fn release() const str = {
 	if (!uts_valid) {
-		rt::uname(&uts) as void;
+		sys::uname(&uts) as void;
 		uts_valid = true;
 	};
 	return c::tostr(&uts.release: *const c::char)!;
@@ -81,7 +82,7 @@ export fn release() const str = {
 // Returns the host operating system version.
 export fn version() const str = {
 	if (!uts_valid) {
-		rt::uname(&uts) as void;
+		sys::uname(&uts) as void;
 		uts_valid = true;
 	};
 	return c::tostr(&uts.version: *const c::char)!;
@@ -91,7 +92,7 @@ export fn version() const str = {
 // [[architecture]] for a more portable wrapper.
 export fn machine() const str = {
 	if (!uts_valid) {
-		rt::uname(&uts) as void;
+		sys::uname(&uts) as void;
 		uts_valid = true;
 	};
 	return c::tostr(&uts.machine: *const c::char)!;
@@ -112,10 +113,10 @@ export fn architecture() arch = {
 
 // Returns the number of usable CPUs.
 export fn cpucount() (size | errors::error) = {
-	let set = rt::cpu_set { ... };
-	match (rt::sched_getaffinity(rt::getpid(), size(rt::cpu_set), &set)) {
+	let set = sys::cpu_set { ... };
+	match (sys::sched_getaffinity(sys::getpid(), size(sys::cpu_set), &set)) {
 	case void => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 

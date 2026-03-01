@@ -4,7 +4,7 @@
 use errors;
 use io;
 use os;
-use rt;
+use sys;
 use strings;
 use types::c;
 
@@ -68,7 +68,7 @@ fn platform_dup_env(env: []str) (platform_env | nomem) = {
 
 fn platform_free_env(env: platform_env) void = free_strlist(env);
 
-fn platform_finish(cmd: *command) void = rt::close(cmd.platform)!;
+fn platform_finish(cmd: *command) void = sys::close(cmd.platform)!;
 
 fn platform_setenv(
 	cmd: *command,

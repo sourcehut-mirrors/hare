@@ -2,49 +2,49 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 
 // A resource limit.
-export type limit = rt::rlim_t;
+export type limit = sys::rlim_t;
 
 // A [[limit]] representing an unlimited value.
-export def INFINITY: limit = rt::RLIM_INFINITY;
+export def INFINITY: limit = sys::RLIM_INFINITY;
 
 // Resources with limited or limitable usage constraints.
 export type resource = enum int {
 	// Maximum CPU time (seconds)
-	CPU = rt::RLIMIT_CPU,
+	CPU = sys::RLIMIT_CPU,
 	// Maximum size of files (bytes)
-	FSIZE = rt::RLIMIT_FSIZE,
+	FSIZE = sys::RLIMIT_FSIZE,
 	// Maximum size of data segment (bytes)
-	DATA = rt::RLIMIT_DATA,
+	DATA = sys::RLIMIT_DATA,
 	// Maximum size of stack(s) (bytes)
-	STACK = rt::RLIMIT_STACK,
+	STACK = sys::RLIMIT_STACK,
 	// Maximum size of a core dump (bytes)
-	CORE = rt::RLIMIT_CORE,
+	CORE = sys::RLIMIT_CORE,
 	// Maximum number of open files
-	NOFILE = rt::RLIMIT_NOFILE,
+	NOFILE = sys::RLIMIT_NOFILE,
 	// Maximum address space size (bytes)
-	AS = rt::RLIMIT_AS,
+	AS = sys::RLIMIT_AS,
 
 	// Total processes per user ID (Linux)
-	NPROC = rt::RLIMIT_NPROC,
+	NPROC = sys::RLIMIT_NPROC,
 	// Maximum size of resident set (bytes, Linux)
-	RSS = rt::RLIMIT_RSS,
+	RSS = sys::RLIMIT_RSS,
 	// Maximum amount of data "locked" in RAM (bytes, Linux)
-	MEMLOCK = rt::RLIMIT_MEMLOCK,
+	MEMLOCK = sys::RLIMIT_MEMLOCK,
 	// Maximum flock locks and fcntl leases (Linux, removed in 2.4.24)
-	LOCKS = rt::RLIMIT_LOCKS,
+	LOCKS = sys::RLIMIT_LOCKS,
 	// Maximum queued signals per user ID (Linux)
-	SIGPENDING = rt::RLIMIT_SIGPENDING,
+	SIGPENDING = sys::RLIMIT_SIGPENDING,
 	// Maximum size of POSIX message queues per user ID (Linux)
-	MSGQUEUE = rt::RLIMIT_MSGQUEUE,
+	MSGQUEUE = sys::RLIMIT_MSGQUEUE,
 	// Maximum "niceness" of process (Linux, see getrlimit(2))
-	NICE = rt::RLIMIT_NICE,
+	NICE = sys::RLIMIT_NICE,
 	// Maximum real-time priority of process (Linux, see getrlimit(2))
-	RTPRIO = rt::RLIMIT_RTPRIO,
+	RTPRIO = sys::RLIMIT_RTPRIO,
 	// Maximum real-time CPU time (microseconds, Linux)
-	RTTIME = rt::RLIMIT_RTTIME,
+	RTTIME = sys::RLIMIT_RTTIME,
 };
 
 // Soft and hard limits for a [[resource]].
@@ -55,8 +55,8 @@ export type rlimit = struct {
 
 // Returns the current limits for a [[resource]].
 export fn getrlimit(res: resource) rlimit = {
-	let rlim = rt::rlimit { ... };
-	rt::getrlimit(res, &rlim)!;
+	let rlim = sys::rlimit { ... };
+	sys::getrlimit(res, &rlim)!;
 	return rlimit {
 		soft = rlim.rlim_cur,
 		hard = rlim.rlim_max,
@@ -65,12 +65,12 @@ export fn getrlimit(res: resource) rlimit = {
 
 // Modifies a [[resource]] limit.
 export fn setrlimit(res: resource, limit: *rlimit) (void | errors::error) = {
-	let rlim = rt::rlimit {
+	let rlim = sys::rlimit {
 		rlim_cur = limit.soft,
 		rlim_max = limit.hard,
 	};
-	match (rt::setrlimit(res, &rlim)) {
-	case let err: rt::errno =>
+	match (sys::setrlimit(res, &rlim)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;

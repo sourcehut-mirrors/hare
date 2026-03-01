@@ -2,18 +2,18 @@
 // (c) Hare authors <https://harelang.org>
 
 use fs;
-use rt;
+use sys;
 use types::c;
 
 @init fn init_cwd() void = {
 	static let cwd_fs = os_filesystem { ... };
-	cwd = static_dirfdopen(rt::AT_FDCWD, &cwd_fs);
+	cwd = static_dirfdopen(sys::AT_FDCWD, &cwd_fs);
 };
 
 // Returns the current working directory. The return value is statically
 // allocated and must be duplicated (see [[strings::dup]]) before calling getcwd
 // again.
-export fn getcwd() str = c::tostr(rt::getcwd() as *const u8: *const c::char)!;
+export fn getcwd() str = c::tostr(sys::getcwd() as *const u8: *const c::char)!;
 
 // Change the current working directory.
 export fn chdir(target: (*fs::fs | str)) (void | fs::error) = {
@@ -21,8 +21,8 @@ export fn chdir(target: (*fs::fs | str)) (void | fs::error) = {
 	case let fs: *fs::fs =>
 		assert(fs.open == &fs_open);
 		let fs = fs: *os_filesystem;
-		match (rt::fchdir(fs.dirfd)) {
-		case let err: rt::errno =>
+		match (sys::fchdir(fs.dirfd)) {
+		case let err: sys::errno =>
 			return errno_to_fs(err);
 		case void =>
 			return;
@@ -30,8 +30,8 @@ export fn chdir(target: (*fs::fs | str)) (void | fs::error) = {
 	case let s: str =>
 		yield s;
 	};
-	match (rt::chdir(path)) {
-	case let err: rt::errno =>
+	match (sys::chdir(path)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -42,8 +42,8 @@ export fn chdir(target: (*fs::fs | str)) (void | fs::error) = {
 //
 // This function is not appropriate for sandboxing.
 export fn chroot(target: str) (void | fs::error) = {
-	match (rt::chroot(target)) {
-	case let err: rt::errno =>
+	match (sys::chroot(target)) {
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
@@ -51,10 +51,10 @@ export fn chroot(target: str) (void | fs::error) = {
 
 // Access modes for [[access]].
 export type amode = enum int {
-	F_OK = rt::F_OK,
-	R_OK = rt::R_OK,
-	W_OK = rt::W_OK,
-	X_OK = rt::X_OK,
+	F_OK = sys::F_OK,
+	R_OK = sys::R_OK,
+	W_OK = sys::W_OK,
+	X_OK = sys::X_OK,
 };
 
 // Returns true if the given mode of access is permissible. The use of this
@@ -64,10 +64,10 @@ export type amode = enum int {
 // instead to attempt to use the file directly and to handle any errors that
 // should occur at that time.
 export fn access(path: str, mode: amode) (bool | fs::error) = {
-	match (rt::access(path, mode)) {
+	match (sys::access(path, mode)) {
 	case let b: bool =>
 		return b;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errno_to_fs(err);
 	};
 };

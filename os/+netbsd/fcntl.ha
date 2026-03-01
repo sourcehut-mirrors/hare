@@ -4,14 +4,14 @@
 use errors;
 use fs;
 use io;
-use rt;
+use sys;
 
 // Returns the [[fs::flag]]s associated with a file descriptor. See fcntl(2).
 export fn getfl(file: io::file) (fs::flag | errors::error) = {
-	match (rt::fcntl(file, rt::F_GETFL, void)) {
+	match (sys::fcntl(file, sys::F_GETFL, void)) {
 	case let i: int =>
 		return bsd_to_fsflags(i);
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -21,10 +21,10 @@ export fn getfl(file: io::file) (fs::flag | errors::error) = {
 // [[fs::flag::CREATE]]) are ignored. See fcntl(2).
 export fn setfl(file: io::file, flags: fs::flag) (void | errors::error) = {
 	const flags = fsflags_to_bsd(flags)?;
-	match (rt::fcntl(file, rt::F_SETFL, flags)) {
+	match (sys::fcntl(file, sys::F_SETFL, flags)) {
 	case int =>
 		return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

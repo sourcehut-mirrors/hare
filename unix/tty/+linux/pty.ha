@@ -6,7 +6,7 @@ use fmt;
 use fs;
 use io;
 use os;
-use rt;
+use sys;
 
 // Opens an available pseudoterminal and returns the file descriptors of the
 // master and slave.
@@ -31,17 +31,17 @@ fn open_master() (io::file | fs::error) = {
 // pseudoterminal master.
 fn get_slave(master: io::file) (io::file | fs::error) = {
 	// Unlock the pseudoterminal slave
-	match (rt::ioctl(master, rt::TIOCSPTLCK, &0)) {
-	case rt::errno =>
+	match (sys::ioctl(master, sys::TIOCSPTLCK, &0)) {
+	case sys::errno =>
 		return errors::invalid;
 	case => void;
 	};
 
-	let ioctl = rt::ioctl(
-		master, rt::TIOCGPTPEER,
-		(rt::O_RDWR | rt::O_NOCTTY): u64);
+	let ioctl = sys::ioctl(
+		master, sys::TIOCGPTPEER,
+		(sys::O_RDWR | sys::O_NOCTTY): u64);
 	match (ioctl) {
-	case let e: rt::errno =>
+	case let e: sys::errno =>
 		return errors::errno(e);
 	case let fd: int =>
 		return io::fdopen(fd);
@@ -53,12 +53,12 @@ fn get_slave(master: io::file) (io::file | fs::error) = {
 // function.
 export fn ptsname(master: io::file) (str | error) = {
 	let pty = 0;
-	match (rt::ioctl(master, rt::TIOCGPTN, &pty)) {
-	case let e: rt::errno =>
+	match (sys::ioctl(master, sys::TIOCGPTN, &pty)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF =>
+		case sys::EBADF =>
 			return errors::invalid;
-		case rt::ENOTTY =>
+		case sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");
@@ -71,13 +71,13 @@ export fn ptsname(master: io::file) (str | error) = {
 
 // Sets the dimensions of the underlying pseudoterminal for an [[io::file]].
 export fn set_winsize(pty: io::file, sz: ttysize) (void | error) = {
-	let wsz = rt::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
-	match (rt::ioctl(pty, rt::TIOCSWINSZ, &wsz)) {
-	case let e: rt::errno =>
+	let wsz = sys::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
+	match (sys::ioctl(pty, sys::TIOCSWINSZ, &wsz)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF =>
+		case sys::EBADF =>
 			return errors::invalid;
-		case rt::ENOTTY =>
+		case sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");

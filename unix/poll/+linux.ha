@@ -3,7 +3,7 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 use time;
 
 // Events bitfield for the events and revents field of [[pollfd]].
@@ -41,8 +41,8 @@ export fn poll(
 ) (uint | error) = {
 	let ts = time::duration_to_timespec(timeout);
 	let ts = if (timeout == INDEF) null else &ts;
-	match (rt::ppoll(fds: *[*]pollfd: *[*]rt::pollfd, len(fds), ts, null)) {
-	case let err: rt::errno =>
+	match (sys::ppoll(fds: *[*]pollfd: *[*]sys::pollfd, len(fds), ts, null)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let n: int =>
 		return n: uint;

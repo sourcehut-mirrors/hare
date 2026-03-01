@@ -3,36 +3,36 @@
 
 use errors;
 use linux::vdso;
-use rt;
+use sys;
 
-// Converts a [[duration]] to an [[rt::timespec]]. This function is
+// Converts a [[duration]] to an [[sys::timespec]]. This function is
 // non-portable.
-export fn duration_to_timespec(d: duration) rt::timespec = rt::timespec {
+export fn duration_to_timespec(d: duration) sys::timespec = sys::timespec {
 	tv_sec = d / SECOND,
 	tv_nsec = d % SECOND,
 };
 
-// Converts a [[rt::timespec]] to a [[duration]]. This function is non-portable.
-export fn timespec_to_duration(spec: rt::timespec) duration = {
+// Converts a [[sys::timespec]] to a [[duration]]. This function is non-portable.
+export fn timespec_to_duration(spec: sys::timespec) duration = {
 	return (spec.tv_sec: i64 * SECOND) + spec.tv_nsec: i64;
 };
 
-// Converts a [[duration]] to an [[rt::timeval]]. This function is
+// Converts a [[duration]] to an [[sys::timeval]]. This function is
 // non-portable.
-export fn duration_to_timeval(d: duration) rt::timeval = rt::timeval {
+export fn duration_to_timeval(d: duration) sys::timeval = sys::timeval {
 	tv_sec = d / SECOND,
 	tv_usec = d % SECOND / 1000,
 };
 
-// Converts an [[instant]] to an [[rt::timespec]]. This function is
+// Converts an [[instant]] to an [[sys::timespec]]. This function is
 // non-portable.
-export fn instant_to_timespec(t: instant) rt::timespec = rt::timespec {
+export fn instant_to_timespec(t: instant) sys::timespec = sys::timespec {
 	tv_sec = t.sec,
 	tv_nsec = t.nsec,
 };
 
-// Converts a [[rt::timespec]] to an [[instant]]. This function is non-portable.
-export fn timespec_to_instant(ts: rt::timespec) instant = instant {
+// Converts a [[sys::timespec]] to an [[instant]]. This function is non-portable.
+export fn timespec_to_instant(ts: sys::timespec) instant = instant {
 	sec = ts.tv_sec,
 	nsec = ts.tv_nsec,
 };
@@ -42,13 +42,13 @@ export fn sleep(d: duration, c: clock = clock::MONOTONIC) void = {
 	let req = duration_to_timespec(d);
 
 	for (true) {
-		let res = rt::timespec { ... };
-		match (rt::clock_nanosleep(c: int, 0, &req, &res)) {
+		let res = sys::timespec { ... };
+		match (sys::clock_nanosleep(c: int, 0, &req, &res)) {
 		case void =>
 			return;
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			switch (err) {
-			case rt::EINTR =>
+			case sys::EINTR =>
 				req = res;
 			case =>
 				abort("Unexpected error from clock_nanosleep");
@@ -62,12 +62,12 @@ export fn sleep_until(i: instant, c: clock = clock::MONOTONIC) void = {
 	const requested = instant_to_timespec(i);
 
 	for (true) {
-		match (rt::clock_nanosleep(c: int, rt::TIMER_ABSTIME, &requested, null)) {
+		match (sys::clock_nanosleep(c: int, sys::TIMER_ABSTIME, &requested, null)) {
 		case void =>
 			return;
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			switch (err) {
-			case rt::EINTR =>
+			case sys::EINTR =>
 				continue;
 			case =>
 				abort("Unexpected error from clock_nanosleep");
@@ -108,23 +108,23 @@ export type clock = enum {
 	TAI = 11,
 };
 
-fn cgt_vdso() nullable *fn(_: int, _: *rt::timespec) int = {
+fn cgt_vdso() nullable *fn(_: int, _: *sys::timespec) int = {
 	static let vdso_checked: bool = false;
-	static let cgt_vdso: nullable *fn(_: int, _: *rt::timespec) int = null;
+	static let cgt_vdso: nullable *fn(_: int, _: *sys::timespec) int = null;
 	if (vdso_checked) {
 		return cgt_vdso;
 	};
 	vdso_checked = true;
 	cgt_vdso = vdso::getsym(VDSO_CGT_SYM, VDSO_CGT_VER):
-		nullable *fn(_: int, _: *rt::timespec) int;
+		nullable *fn(_: int, _: *sys::timespec) int;
 	return cgt_vdso;
 };
 
-fn now_vdso(clock: clock, tp: *rt::timespec) (void | rt::errno) = {
+fn now_vdso(clock: clock, tp: *sys::timespec) (void | sys::errno) = {
 	const vfn = match (cgt_vdso()) {
 	case null =>
-		return rt::ENOSYS;
-	case let vfn: *fn(_: int, _: *rt::timespec) int =>
+		return sys::ENOSYS;
+	case let vfn: *fn(_: int, _: *sys::timespec) int =>
 		yield vfn;
 	};
 	const ret = vfn(clock, tp);
@@ -136,20 +136,20 @@ fn now_vdso(clock: clock, tp: *rt::timespec) (void | rt::errno) = {
 
 // Returns the current time for a given clock.
 export fn now(clock: clock) instant = {
-	let tp = rt::timespec { ... };
+	let tp = sys::timespec { ... };
 	let err = match (now_vdso(clock, &tp)) {
 	case void =>
 		return timespec_to_instant(tp);
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		yield err;
 	};
-	if (err != rt::ENOSYS) {
+	if (err != sys::ENOSYS) {
 		abort("Unexpected error from clock_gettime");
 	};
-	match (rt::clock_gettime(clock, &tp)) {
+	match (sys::clock_gettime(clock, &tp)) {
 	case void =>
 		return timespec_to_instant(tp);
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		abort("Unexpected error from clock_gettime");
 	};
 };
@@ -157,12 +157,12 @@ export fn now(clock: clock) instant = {
 // Sets system clock to given time.
 export fn set(clock: clock, t: instant) (void | errors::noaccess) = {
 	let tp = instant_to_timespec(t);
-	let err = match (rt::clock_settime(clock, &tp)) {
+	let err = match (sys::clock_settime(clock, &tp)) {
 	case void => return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		yield err;
 	};
-	if (err == rt::EPERM) {
+	if (err == sys::EPERM) {
 		return errors::noaccess;
 	};
 	abort("Unexpected error from clock_settime");

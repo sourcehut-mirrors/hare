@@ -5,7 +5,7 @@ use errors;
 use fs;
 use io;
 use os;
-use rt;
+use sys;
 use types::c;
 use unix;
 use path;
@@ -13,8 +13,8 @@ use path;
 // Forks the current process, returning the [[process]] of the child (to the
 // parent) and void (to the child), or an error.
 export fn fork() (process | void | error) = {
-	match (rt::fork()) {
-	case let err: rt::errno  =>
+	match (sys::fork()) {
+	case let err: sys::errno  =>
 		return errors::errno(err);
 	case let i: int =>
 		return i: process;
@@ -79,10 +79,10 @@ fn platform_exec(cmd: *command) error = {
 			continue;
 		};
 
-		file.0 = match (rt::fcntl(from, rt::F_DUPFD_CLOEXEC, 0)) {
+		file.0 = match (sys::fcntl(from, sys::F_DUPFD_CLOEXEC, 0)) {
 		case let fd: int =>
 			yield fd;
-		case let err: rt::errno =>
+		case let err: sys::errno =>
 			return errors::errno(err);
 		};
 	};
@@ -103,17 +103,17 @@ fn platform_exec(cmd: *command) error = {
 		};
 
 		if (file.1 == from) {
-			let flags = match (rt::fcntl(from, rt::F_GETFD, 0)) {
+			let flags = match (sys::fcntl(from, sys::F_GETFD, 0)) {
 			case let flags: int =>
 				yield flags;
-			case let e: rt::errno =>
+			case let e: sys::errno =>
 				return errors::errno(e);
 			};
-			rt::fcntl(from, rt::F_SETFD, flags & ~rt::FD_CLOEXEC)!;
+			sys::fcntl(from, sys::F_SETFD, flags & ~sys::FD_CLOEXEC)!;
 		} else {
-			match (rt::dup2(from, file.1)) {
+			match (sys::dup2(from, file.1)) {
 			case int => void;
-			case let e: rt::errno =>
+			case let e: sys::errno =>
 				return errors::errno(e);
 			};
 		};
@@ -128,7 +128,7 @@ fn platform_exec(cmd: *command) error = {
 		envp = cmd.env: *[*]nullable *const c::char;
 	};
 
-	return errors::errno(rt::execve(path::string(&cmd.platform),
+	return errors::errno(sys::execve(path::string(&cmd.platform),
 		cmd.argv: *[*]nullable *const u8,
 		envp: *[*]nullable *const u8));
 };
@@ -136,21 +136,21 @@ fn platform_exec(cmd: *command) error = {
 fn platform_start(cmd: *command) (process | errors::error) = {
 	// TODO: Let the user configure clone more to their taste (e.g. SIGCHLD)
 	let pipe: [2]int = [0...];
-	match (rt::pipe2(&pipe, rt::O_CLOEXEC)) {
-	case let err: rt::errno =>
+	match (sys::pipe2(&pipe, sys::O_CLOEXEC)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void => void;
 	};
 
-	match (rt::fork()) {
-	case let err: rt::errno =>
+	match (sys::fork()) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let pid: int =>
-		rt::close(pipe[1])!;
-		defer rt::close(pipe[0])!;
+		sys::close(pipe[1])!;
+		defer sys::close(pipe[0])!;
 		let errno: int = 0;
-		match (rt::read(pipe[0], &errno, size(int))) {
-		case let err: rt::errno =>
+		match (sys::read(pipe[0], &errno, size(int))) {
+		case let err: sys::errno =>
 			return errors::errno(err);
 		case let n: size =>
 			switch (n) {
@@ -159,18 +159,18 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 			case 0 =>
 				return pid;
 			case =>
-				abort("Unexpected rt::read result");
+				abort("Unexpected sys::read result");
 			};
 		};
 	case void =>
-		rt::close(pipe[0])!;
+		sys::close(pipe[0])!;
 		let err = platform_exec(cmd);
 		if (!(err is errors::opaque_)) {
-			rt::exit(1);
+			sys::exit(1);
 		};
 		let err = err as errors::opaque_;
-		let err = &err.data: *rt::errno;
-		rt::write(pipe[1], err, size(int))!;
-		rt::exit(1);
+		let err = &err.data: *sys::errno;
+		sys::write(pipe[1], err, size(int))!;
+		sys::exit(1);
 	};
 };

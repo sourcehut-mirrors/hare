@@ -3,7 +3,7 @@
 
 // TODO: Implement FreeBSD version
 use errors;
-use rt;
+use sys;
 
 // Flags for the [[mlock]] family of operations.
 export type mcl = enum uint {
@@ -18,8 +18,8 @@ export fn mlock(
 	length: size,
 	flags: mcl,
 ) (void | errors::error) = {
-	match (rt::mlock2(addr, length, flags)) {
-	case let err: rt::errno =>
+	match (sys::mlock2(addr, length, flags)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;
@@ -28,8 +28,8 @@ export fn mlock(
 
 // Unlocks memory previously locked with [[mlock]].
 export fn munlock(addr: *opaque, length: size) (void | errors::error) = {
-	match (rt::munlock(addr, length)) {
-	case let err: rt::errno =>
+	match (sys::munlock(addr, length)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;
@@ -39,8 +39,8 @@ export fn munlock(addr: *opaque, length: size) (void | errors::error) = {
 // Locks the entire process's address space so that it will not be written to
 // swap.
 export fn mlockall(flags: mcl) (void | errors::error) = {
-	match (rt::mlockall(flags)) {
-	case let err: rt::errno =>
+	match (sys::mlockall(flags)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;
@@ -49,8 +49,8 @@ export fn mlockall(flags: mcl) (void | errors::error) = {
 
 // Unlocks all locked memory in the process's address space.
 export fn munlockall() (void | errors::error) = {
-	match (rt::munlockall()) {
-	case let err: rt::errno =>
+	match (sys::munlockall()) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;

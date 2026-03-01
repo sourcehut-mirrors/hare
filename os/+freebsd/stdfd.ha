@@ -3,7 +3,7 @@
 
 use bufio;
 use io;
-use rt;
+use sys;
 
 let stdin_bufio: bufio::stream = bufio::stream {
 	// Will be overwritten, but must be initialized
@@ -20,22 +20,22 @@ let stdout_bufio: bufio::stream = bufio::stream {
 };
 
 // The standard input. This handle is buffered.
-export let stdin: io::handle = rt::STDIN_FILENO; // initialized by init_stdfd
+export let stdin: io::handle = sys::STDIN_FILENO; // initialized by init_stdfd
 
 // The standard input, as an [[io::file]]. This handle is unbuffered.
-export let stdin_file: io::file = rt::STDIN_FILENO;
+export let stdin_file: io::file = sys::STDIN_FILENO;
 
 // The standard output. This handle is buffered.
-export let stdout: io::handle = rt::STDOUT_FILENO; // initialized by init_stdfd
+export let stdout: io::handle = sys::STDOUT_FILENO; // initialized by init_stdfd
 
 // The standard output, as an [[io::file]]. This handle is unbuffered.
-export let stdout_file: io::file = rt::STDOUT_FILENO;
+export let stdout_file: io::file = sys::STDOUT_FILENO;
 
 // The standard error. This handle is unbuffered.
-export let stderr: io::handle = rt::STDERR_FILENO;
+export let stderr: io::handle = sys::STDERR_FILENO;
 
 // The standard error, as an [[io::file]]. This handle is unbuffered.
-export let stderr_file: io::file = rt::STDERR_FILENO;
+export let stderr_file: io::file = sys::STDERR_FILENO;
 
 // The recommended buffer size for reading from disk.
 export def BUFSZ: size = 4096; // 4 KiB

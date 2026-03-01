@@ -5,7 +5,7 @@ use errors;
 use path;
 use io;
 use os;
-use rt;
+use sys;
 use strings;
 use types::c;
 

@@ -5,7 +5,7 @@ use errors;
 use io;
 use net;
 use net::ip;
-use rt;
+use sys;
 
 // Opens a TCP connection to the given host and port. Blocks until the
 // connection is established.
@@ -17,9 +17,9 @@ export fn connect(
 	const sockaddr = ip::to_native(addr, port);
 	const family = match (addr) {
 	case ip::addr4 =>
-		yield rt::AF_INET: int;
+		yield sys::AF_INET: int;
 	case ip::addr6 =>
-		yield rt::AF_INET6: int;
+		yield sys::AF_INET6: int;
 	};
 	let f = 0i;
 	for (let i = 0z; i < len(options); i += 1) {
@@ -29,9 +29,9 @@ export fn connect(
 		case => void;
 		};
 	};
-	f ^= rt::SOCK_CLOEXEC; // invert CLOEXEC
-	const sockfd = match (rt::socket(family, rt::SOCK_STREAM | f, 0)) {
-	case let err: rt::errno =>
+	f ^= sys::SOCK_CLOEXEC; // invert CLOEXEC
+	const sockfd = match (sys::socket(family, sys::SOCK_STREAM | f, 0)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let fd: int =>
 		yield fd;
@@ -40,17 +40,17 @@ export fn connect(
 	for (let i = 0z; i < len(options); i += 1) {
 		match (options[i]) {
 		case keepalive =>
-			setsockopt(sockfd, rt::SO_KEEPALIVE, true)?;
+			setsockopt(sockfd, sys::SO_KEEPALIVE, true)?;
 		case => void;
 		};
 	};
 	const sz = ip::native_addrlen(addr);
-	match (rt::connect(sockfd, &sockaddr, sz)) {
-	case let err: rt::errno =>
-		if (err != rt::EINPROGRESS) {
+	match (sys::connect(sockfd, &sockaddr, sz)) {
+	case let err: sys::errno =>
+		if (err != sys::EINPROGRESS) {
 			return errors::errno(err);
 		};
-		assert(f & rt::SOCK_NONBLOCK == rt::SOCK_NONBLOCK);
+		assert(f & sys::SOCK_NONBLOCK == sys::SOCK_NONBLOCK);
 	case void => void;
 	};
 	return io::fdopen(sockfd);
@@ -65,9 +65,9 @@ export fn listen(
 	const sockaddr = ip::to_native(addr, port);
 	const family = match (addr) {
 	case ip::addr4 =>
-		yield rt::AF_INET: int;
+		yield sys::AF_INET: int;
 	case ip::addr6 =>
-		yield rt::AF_INET6: int;
+		yield sys::AF_INET6: int;
 	};
 	let f = 0i;
 	for (let i = 0z; i < len(options); i += 1) {
@@ -77,9 +77,9 @@ export fn listen(
 		case => void;
 		};
 	};
-	f ^= rt::SOCK_CLOEXEC; // invert CLOEXEC
-	const sockfd = match (rt::socket(family, rt::SOCK_STREAM | f, 0)) {
-	case let err: rt::errno =>
+	f ^= sys::SOCK_CLOEXEC; // invert CLOEXEC
+	const sockfd = match (sys::socket(family, sys::SOCK_STREAM | f, 0)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let fd: int =>
 		yield fd;
@@ -89,11 +89,11 @@ export fn listen(
 	for (let i = 0z; i < len(options); i += 1) {
 		match (options[i]) {
 		case reuseaddr =>
-			setsockopt(sockfd, rt::SO_REUSEADDR, true)?;
+			setsockopt(sockfd, sys::SO_REUSEADDR, true)?;
 		case reuseport =>
-			setsockopt(sockfd, rt::SO_REUSEPORT, true)?;
+			setsockopt(sockfd, sys::SO_REUSEPORT, true)?;
 		case keepalive =>
-			setsockopt(sockfd, rt::SO_KEEPALIVE, true)?;
+			setsockopt(sockfd, sys::SO_KEEPALIVE, true)?;
 		case let b: backlog =>
 			bk = b;
 		case => void;
@@ -101,13 +101,13 @@ export fn listen(
 	};
 
 	const sz = ip::native_addrlen(addr);
-	match (rt::bind(sockfd, &sockaddr, sz)) {
-	case let err: rt::errno =>
+	match (sys::bind(sockfd, &sockaddr, sz)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void => void;
 	};
-	match (rt::listen(sockfd, bk)) {
-	case let err: rt::errno =>
+	match (sys::listen(sockfd, bk)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case int => void;
 	};
@@ -119,10 +119,10 @@ export fn listen(
 		case =>
 			continue;
 		};
-		let sn = rt::sockaddr {...};
-		let al = size(rt::sockaddr): u32;
-		match (rt::getsockname(sockfd, &sn, &al)) {
-		case let err: rt::errno =>
+		let sn = sys::sockaddr {...};
+		let al = size(sys::sockaddr): u32;
+		match (sys::getsockname(sockfd, &sn, &al)) {
+		case let err: sys::errno =>
 			return errors::errno(err);
 		case int => void;
 		};
@@ -136,9 +136,9 @@ export fn listen(
 // Returns the remote address for a given connection, or void if none is
 // available.
 export fn peeraddr(peer: net::socket) ((ip::addr, u16) | void) = {
-	let sn = rt::sockaddr {...};
-	let sz = size(rt::sockaddr): u32;
-	if (rt::getpeername(peer, &sn, &sz) is rt::errno) {
+	let sn = sys::sockaddr {...};
+	let sz = size(sys::sockaddr): u32;
+	if (sys::getpeername(peer, &sn, &sz) is sys::errno) {
 		return;
 	};
 	return ip::from_native(sn);
@@ -150,9 +150,9 @@ fn setsockopt(
 	value: bool,
 ) (void | net::error) = {
 	let val: int = if (value) 1 else 0;
-	match (rt::setsockopt(sockfd, rt::SOL_SOCKET, option,
+	match (sys::setsockopt(sockfd, sys::SOL_SOCKET, option,
 			&val: *opaque, size(int): u32)) {
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case int => void;
 	};

@@ -4,11 +4,11 @@
 // TODO:
 // - Set name field
 // - Figure out the portability mess that is this interface
-use rt;
+use sys;
 
 export type msghdr = struct {
-	native: rt::msghdr,
-	vectors: []rt::iovec,
+	native: sys::msghdr,
+	vectors: []sys::iovec,
 	control: []u8,
 };
 
@@ -41,7 +41,7 @@ export fn reset(msg: *msghdr) void = {
 
 // Adds an I/O vector to the message.
 export fn addvector(msg: *msghdr, vec: []u8) (void | nomem) = {
-	append(msg.vectors, rt::iovec {
+	append(msg.vectors, sys::iovec {
 		iov_base = vec: *[*]u8,
 		iov_len = len(vec),
 	})?;
@@ -80,7 +80,7 @@ export fn addcontrol(
 	const prev = len(msg.control);
 	const space = cmsg_space(length);
 	append(msg.control, [0...], space)?;
-	let newbuf = msg.control[prev..prev + space]: *[*]rt::cmsghdr;
+	let newbuf = msg.control[prev..prev + space]: *[*]sys::cmsghdr;
 	newbuf[0].cmsg_len = cmsg_len(length): uint;
 	newbuf[0].cmsg_level = level;
 	newbuf[0].cmsg_type = ctype;
@@ -104,7 +104,7 @@ export fn getcontrol(
 	let native = &msg.native;
 	let cbuf = native.msg_control: *[*]u8;
 	for (let i = 0z; i < native.msg_controllen) {
-		let next = &cbuf[i]: *rt::cmsg;
+		let next = &cbuf[i]: *sys::cmsg;
 		if (next.hdr.cmsg_len >= length
 				&& next.hdr.cmsg_level == level
 				&& next.hdr.cmsg_type == ctype) {
@@ -115,5 +115,5 @@ export fn getcontrol(
 };
 
 fn cmsg_align(z: size) size = (z + size(size) - 1) & ~(size(size) - 1);
-fn cmsg_len(z: size) size = cmsg_align(size(rt::cmsghdr)) + z;
-fn cmsg_space(z: size) size = cmsg_align(size(rt::cmsghdr)) + cmsg_align(z);
+fn cmsg_len(z: size) size = cmsg_align(size(sys::cmsghdr)) + z;
+fn cmsg_space(z: size) size = cmsg_align(size(sys::cmsghdr)) + cmsg_align(z);

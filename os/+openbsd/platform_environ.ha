@@ -3,6 +3,7 @@
 
 use errors;
 use rt;
+use sys;
 use strings;
 use types::c;
 
@@ -48,46 +49,46 @@ export fn getenvs() []str = {
 
 // Returns the host kernel name.
 export fn sysname() const str = {
-	let name: [2]int = [rt::CTL_KERN, rt::KERN_OSTYPE];
+	let name: [2]int = [sys::CTL_KERN, sys::KERN_OSTYPE];
 
 	static let buf: [32]u8 = [0...];
 	let buf_sz = len(buf);
 
-	rt::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
+	sys::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
 	return strings::fromutf8(buf[..(buf_sz -1)])!;
 };
 
 // Returns the host system hostname.
 export fn hostname() const str = {
-	let name: [2]int = [rt::CTL_KERN, rt::KERN_HOSTNAME];
+	let name: [2]int = [sys::CTL_KERN, sys::KERN_HOSTNAME];
 
-	static let buf: [rt::MAXHOSTNAMELEN]u8 = [0...];
+	static let buf: [sys::MAXHOSTNAMELEN]u8 = [0...];
 	let buf_sz = len(buf);
 
-	rt::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
+	sys::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
 	return strings::fromutf8(buf[..(buf_sz -1)])!;
 };
 
 // Returns the host operating system version.
 export fn version() const str = {
-	let name: [2]int = [rt::CTL_KERN, rt::KERN_OSRELEASE];
+	let name: [2]int = [sys::CTL_KERN, sys::KERN_OSRELEASE];
 
 	static let buf: [32]u8 = [0...];
 	let buf_sz = len(buf);
 
-	rt::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
+	sys::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
 	return strings::fromutf8(buf[..(buf_sz -1)])!;
 };
 
 // Returns the host CPU architecture, in a platform-specific format. See
 // [[architecture]] for a more portable wrapper.
 export fn machine() const str = {
-	let name: [2]int = [rt::CTL_HW, rt::HW_MACHINE];
+	let name: [2]int = [sys::CTL_HW, sys::HW_MACHINE];
 
 	static let buf: [32]u8 = [0...];
 	let buf_sz = len(buf);
 
-	rt::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
+	sys::sysctl(name, len(name): uint, &buf, &buf_sz, null, 0)!;
 
 	return strings::fromutf8(buf[..(buf_sz - 1)])!;
 };
@@ -107,15 +108,15 @@ export fn architecture() arch = {
 
 // Returns the number of usable CPUs.
 export fn cpucount() (size | errors::error) = {
-	let name: [2]int = [rt::CTL_HW, rt::HW_NCPUONLINE];
+	let name: [2]int = [sys::CTL_HW, sys::HW_NCPUONLINE];
 
 	let ncpu: int = 0;
 	let ncpu_sz = size(int);
 
-	match (rt::sysctl(name, len(name): uint, &ncpu, &ncpu_sz, null, 0)) {
+	match (sys::sysctl(name, len(name): uint, &ncpu, &ncpu_sz, null, 0)) {
 	case void =>
 		return ncpu: size;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

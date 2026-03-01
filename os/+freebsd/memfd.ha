@@ -3,7 +3,7 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // Flags for [[memfd]].
 export type memfd_flag = enum uint {
@@ -24,19 +24,19 @@ export fn memfd(
 	name: str,
 	flags: memfd_flag = memfd_flag::NONE,
 ) (io::file | errors::error) = {
-	let oflag = rt::O_RDWR | rt::O_CLOEXEC;
-	let shm_flag = rt::SHM_GROW_ON_WRITE;
+	let oflag = sys::O_RDWR | sys::O_CLOEXEC;
+	let shm_flag = sys::SHM_GROW_ON_WRITE;
 	if (flags & memfd_flag::NOCLOEXEC != 0) {
-		oflag &= ~rt::O_CLOEXEC;
+		oflag &= ~sys::O_CLOEXEC;
 	};
 	if (flags & memfd_flag::ALLOW_SEALING != 0) {
-		shm_flag |= rt::SHM_ALLOW_SEALING;
+		shm_flag |= sys::SHM_ALLOW_SEALING;
 	};
 
-	match (rt::shm_open(rt::SHM_ANON, oflag, 0, shm_flag, name)) {
+	match (sys::shm_open(sys::SHM_ANON, oflag, 0, shm_flag, name)) {
 	case let fd: int =>
 		return fd: io::file;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

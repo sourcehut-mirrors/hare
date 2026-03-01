@@ -43,7 +43,7 @@ fn copy_kpath(path: path, buf: []u8) (*const u8 | errno) = {
 	if (len(path) + 1 >= len(pathbuf)) {
 		return ENAMETOOLONG;
 	};
-	memcpy(buf: *[*]u8, path: *[*]u8, len(path));
+	buf[..len(path)] = path;
 	buf[len(path)] = 0;
 	return buf: *[*]u8: *const u8;
 };
@@ -649,8 +649,8 @@ export fn sigprocmask(
 		size(sigset): u64))?: int;
 };
 
-fn restore() void;
-fn restore_si() void;
+fn rt::restore() void;
+fn rt::restore_si() void;
 
 export fn sigaction(
 	signum: int,
@@ -659,8 +659,8 @@ export fn sigaction(
 ) (int | errno) = {
 	let real_act = *act;
 	real_act.sa_flags |= SA_RESTORER;
-	let restore_fn = if ((act.sa_flags & SA_SIGINFO) != 0) &restore_si else &restore;
-	real_act.sa_restorer = &restore;
+	let restore_fn = if ((act.sa_flags & SA_SIGINFO) != 0) &rt::restore_si else &rt::restore;
+	real_act.sa_restorer = &rt::restore;
 	return wrap_return(syscall4(SYS_rt_sigaction,
 		signum: u64, &real_act: uintptr: u64, old: uintptr: u64,
 		size(sigset): u64))?: int;

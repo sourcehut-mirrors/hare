@@ -2,39 +2,39 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 
 // A resource limit.
-export type limit = rt::rlim_t;
+export type limit = sys::rlim_t;
 
 // A [[limit]] representing an unlimited value.
-export def INFINITY: limit = rt::RLIM_INFINITY;
+export def INFINITY: limit = sys::RLIM_INFINITY;
 
 // Resources with limited or limitable usage constraints.
 export type resource = enum int {
 	// Maximum CPU time (seconds)
-	CPU = rt::RLIMIT_CPU,
+	CPU = sys::RLIMIT_CPU,
 	// Maximum size of files (bytes)
-	FSIZE = rt::RLIMIT_FSIZE,
+	FSIZE = sys::RLIMIT_FSIZE,
 	// Maximum size of data segment (bytes)
-	DATA = rt::RLIMIT_DATA,
+	DATA = sys::RLIMIT_DATA,
 	// Maximum size of stack(s) (bytes)
-	STACK = rt::RLIMIT_STACK,
+	STACK = sys::RLIMIT_STACK,
 	// Maximum size of a core dump (bytes)
-	CORE = rt::RLIMIT_CORE,
+	CORE = sys::RLIMIT_CORE,
 	// Maximum number of open files
-	NOFILE = rt::RLIMIT_NOFILE,
+	NOFILE = sys::RLIMIT_NOFILE,
 	// Maximum address space size (bytes)
-	AS = rt::RLIMIT_AS,
+	AS = sys::RLIMIT_AS,
 
 	// Maximum size of resident set (bytes, DragonFly)
-	RSS = rt::RLIMIT_RSS,
+	RSS = sys::RLIMIT_RSS,
 	// Maximum amount of data "locked" in RAM (bytes, DragonFly)
-	MEMLOCK = rt::RLIMIT_MEMLOCK,
+	MEMLOCK = sys::RLIMIT_MEMLOCK,
 	// Total processes per user ID (DragonFly)
-	NPROC = rt::RLIMIT_NPROC,
+	NPROC = sys::RLIMIT_NPROC,
 	// Maximum socket buffer size per user ID (DragonFly)
-	SBSIZE = rt::RLIMIT_SBSIZE,
+	SBSIZE = sys::RLIMIT_SBSIZE,
 	// Alias for [[resource::AS]] (DragonFly)
 	VMEM = AS,
 };
@@ -47,8 +47,8 @@ export type rlimit = struct {
 
 // Returns the current limits for a [[resource]].
 export fn getrlimit(res: resource) rlimit = {
-	let rlim = rt::rlimit { ... };
-	rt::getrlimit(res, &rlim)!;
+	let rlim = sys::rlimit { ... };
+	sys::getrlimit(res, &rlim)!;
 	return rlimit {
 		soft = rlim.rlim_cur,
 		hard = rlim.rlim_max,
@@ -57,12 +57,12 @@ export fn getrlimit(res: resource) rlimit = {
 
 // Modifies a [[resource]] limit.
 export fn setrlimit(res: resource, limit: *rlimit) (void | errors::error) = {
-	let rlim = rt::rlimit {
+	let rlim = sys::rlimit {
 		rlim_cur = limit.soft,
 		rlim_max = limit.hard,
 	};
-	match (rt::setrlimit(res, &rlim)) {
-	case let err: rt::errno =>
+	match (sys::setrlimit(res, &rlim)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;

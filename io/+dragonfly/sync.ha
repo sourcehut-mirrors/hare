@@ -2,14 +2,14 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 
 // Flushes all in-flight I/O for the given file descriptor to persistent
 // storage, flushing any writes the kernel has cached, and any changes to the
 // corresponding inode.
 export fn fsync(fd: file) (void | error) = {
-	match (rt::fsync(fd)) {
-	case let err: rt::errno =>
+	match (sys::fsync(fd)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;
@@ -23,8 +23,8 @@ export fn fsync(fd: file) (void | error) = {
 // block until the inode is updated; but it would not block on an update to its
 // mtime.
 export fn fdatasync(fd: file) (void | error) = {
-	match (rt::fdatasync(fd)) {
-	case let err: rt::errno =>
+	match (sys::fdatasync(fd)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>
 		return;

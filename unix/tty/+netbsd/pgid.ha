@@ -3,14 +3,14 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 use unix;
 
 // Sets the process group on the foreground of this terminal.
 export fn tcsetpgrp(fd: io::file, pg: unix::pid) (void | errors::error) = {
-	match (rt::ioctl(fd, rt::TIOCSPGRP, &pg)) {
+	match (sys::ioctl(fd, sys::TIOCSPGRP, &pg)) {
 	case int => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -18,10 +18,10 @@ export fn tcsetpgrp(fd: io::file, pg: unix::pid) (void | errors::error) = {
 // Gets the process group on the foreground of this terminal.
 export fn tcgetpgrp(fd: io::file) (unix::pid | errors::error) = {
 	let pg: unix::pid = @undefined;
-	match (rt::ioctl(fd, rt::TIOCGPGRP, &pg)) {
+	match (sys::ioctl(fd, sys::TIOCGPGRP, &pg)) {
 	case int =>
 		return pg;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

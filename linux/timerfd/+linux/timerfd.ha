@@ -4,7 +4,7 @@
 use endian;
 use errors;
 use io;
-use rt;
+use sys;
 use time;
 
 // The timer will trigger only once, after the set duration and never after.
@@ -20,17 +20,17 @@ export type interval = time::duration;
 // The expiration configuration for the timer.
 export type expiration = (oneshot | interval | interval_delayed);
 
-const empty_timerspec: rt::itimerspec = rt::itimerspec {
-	it_interval = rt::timespec { tv_sec = 0, tv_nsec = 0 },
-	it_value = rt::timespec { tv_sec = 0, tv_nsec = 0 },
+const empty_timerspec: sys::itimerspec = sys::itimerspec {
+	it_interval = sys::timespec { tv_sec = 0, tv_nsec = 0 },
+	it_value = sys::timespec { tv_sec = 0, tv_nsec = 0 },
 };
 
 // Flags to use in [[new]]. CLOEXEC is enabled by default, use NOCLOEXEC to
 // disable it.
 export type new_flag = enum int {
 	NONE = 0,
-	NONBLOCK = rt::O_NONBLOCK,
-	NOCLOEXEC = rt::O_CLOEXEC,
+	NONBLOCK = sys::O_NONBLOCK,
+	NOCLOEXEC = sys::O_CLOEXEC,
 };
 
 // Flags to use in [[set]].
@@ -48,10 +48,10 @@ export fn new(
 ) (io::file | errors::error) = {
 	flags ^= new_flag::NOCLOEXEC;
 
-	match (rt::timerfd_create(clockid, flags)) {
+	match (sys::timerfd_create(clockid, flags)) {
 	case let fd: int =>
 		return fd;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -65,27 +65,27 @@ export fn set(
 ) (void | errors::error) = {
 	const timerspec = match (exp) {
 	case let o: oneshot =>
-		yield rt::itimerspec {
-			it_interval = rt::timespec { tv_sec = 0, tv_nsec = 0 },
+		yield sys::itimerspec {
+			it_interval = sys::timespec { tv_sec = 0, tv_nsec = 0 },
 			it_value = time::duration_to_timespec(o),
 		};
 	case let i: interval =>
 		const interval_timespec = time::duration_to_timespec(i);
-		yield rt::itimerspec {
+		yield sys::itimerspec {
 			it_interval = interval_timespec,
 			it_value = interval_timespec,
 		};
 	case let id: interval_delayed =>
-		yield rt::itimerspec {
+		yield sys::itimerspec {
 			it_interval = time::duration_to_timespec(id.0),
 			it_value = time::duration_to_timespec(id.1),
 		};
 	};
 
-	match (rt::timerfd_settime(t, flags, &timerspec, null)) {
+	match (sys::timerfd_settime(t, flags, &timerspec, null)) {
 	case let ok: int =>
 		return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -94,10 +94,10 @@ export fn set(
 export fn unset(
 	t: io::file,
 ) (void | errors::error) = {
-	match (rt::timerfd_settime(t, 0, &empty_timerspec, null)) {
+	match (sys::timerfd_settime(t, 0, &empty_timerspec, null)) {
 	case int =>
 		return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -110,8 +110,8 @@ export fn read(
 	t: io::file
 ) (u64 | errors::error) = {
 	let expirations: [8]u8 = [0...];
-	match (rt::read(t, &expirations, len(expirations))) {
-	case let err: rt::errno =>
+	match (sys::read(t, &expirations, len(expirations))) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let z: size =>
 		assert(z == len(expirations));

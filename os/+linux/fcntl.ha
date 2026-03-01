@@ -4,15 +4,15 @@
 use errors;
 use fs;
 use io;
-use rt;
+use sys;
 
 // Returns the [[fs::flag]]s associated with a file descriptor. See fcntl(2),
 // ref F_GETFL.
 export fn getflags(file: io::file) (fs::flag | errors::error) = {
-	match (rt::fcntl(file, rt::F_GETFL, void)) {
+	match (sys::fcntl(file, sys::F_GETFL, void)) {
 	case let i: int =>
 		return i: fs::flag;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -21,10 +21,10 @@ export fn getflags(file: io::file) (fs::flag | errors::error) = {
 // access mode (e.g. [[fs::flag::RDWR]] and file creation flags (e.g.
 // [[fs::flag::CREATE]]) are ignored. See fcntl(2), ref F_SETFL.
 export fn setflags(file: io::file, flags: fs::flag) (void | errors::error) = {
-	match (rt::fcntl(file, rt::F_SETFL, flags)) {
+	match (sys::fcntl(file, sys::F_SETFL, flags)) {
 	case int =>
 		return;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

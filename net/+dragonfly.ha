@@ -3,7 +3,7 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 // A network socket.
 export type socket = io::file;
@@ -12,17 +12,17 @@ export type socket = io::file;
 // See the O_CLOEXEC and O_NONBLOCK sections of open(2) for details.
 // Note that CLOEXEC is on by default, and NOCLOEXEC flag disables it.
 export type sockflag = enum int {
-	NOCLOEXEC = rt::SOCK_CLOEXEC,
-	NONBLOCK = rt::SOCK_NONBLOCK
+	NOCLOEXEC = sys::SOCK_CLOEXEC,
+	NONBLOCK = sys::SOCK_NONBLOCK
 };
 
 // Accepts the next connection from a socket. Blocks until a new connection is
 // available. Optionally accepts NOCLOEXEC and NONBLOCK flags. If flags are
 // supplied, the [[io::file]] returned will have the supplied flags set.
 export fn accept(sock: socket, flags: sockflag = 0) (socket | error) = {
-	flags ^= rt::SOCK_CLOEXEC: sockflag; // invert CLOEXEC
-	const fd = match (rt::accept4(sock, null, null, flags)) {
-	case let err: rt::errno =>
+	flags ^= sys::SOCK_CLOEXEC: sockflag; // invert CLOEXEC
+	const fd = match (sys::accept4(sock, null, null, flags)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let fd: int =>
 		yield fd;
@@ -30,15 +30,15 @@ export fn accept(sock: socket, flags: sockflag = 0) (socket | error) = {
 	return io::fdopen(fd);
 };
 
-fn msg_to_native(msg: *msghdr) *rt::msghdr = {
+fn msg_to_native(msg: *msghdr) *sys::msghdr = {
 	let native = &msg.native;
 	if (len(msg.vectors) != 0) {
-		native.msg_iov = msg.vectors: *[*]rt::iovec;
+		native.msg_iov = msg.vectors: *[*]sys::iovec;
 		native.msg_iovlen = len(msg.vectors): int;
 	};
 	if (len(msg.control) != 0) {
 		native.msg_control = msg.control: *[*]u8;
-		native.msg_controllen = len(msg.control): rt::socklen_t;
+		native.msg_controllen = len(msg.control): sys::socklen_t;
 	};
 	return native;
 };
@@ -46,10 +46,10 @@ fn msg_to_native(msg: *msghdr) *rt::msghdr = {
 // Sends a message to a socket. See [[newmsg]] for details.
 export fn sendmsg(sock: socket, msg: *msghdr) (size | error) = {
 	// TODO: Flags
-	match (rt::sendmsg(sock, msg_to_native(msg), 0)) {
+	match (sys::sendmsg(sock, msg_to_native(msg), 0)) {
 	case let n: int =>
 		return n: size;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -57,10 +57,10 @@ export fn sendmsg(sock: socket, msg: *msghdr) (size | error) = {
 // Receives a message from a socket. See [[newmsg]] for details.
 export fn recvmsg(sock: socket, msg: *msghdr) (size | error) = {
 	// TODO: Flags
-	match (rt::recvmsg(sock, msg_to_native(msg), 0)) {
+	match (sys::recvmsg(sock, msg_to_native(msg), 0)) {
 	case let n: int =>
 		return n: size;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -84,9 +84,9 @@ export fn close(sock: socket) (void | error) = {
 
 // Shuts down part of a full-duplex connection.
 export fn shutdown(sock: socket, how: shut) (void | error) = {
-	match (rt::shutdown(sock, how)) {
+	match (sys::shutdown(sock, how)) {
 	case void => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };

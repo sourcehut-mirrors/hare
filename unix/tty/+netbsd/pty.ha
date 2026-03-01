@@ -6,7 +6,7 @@ use fmt;
 use fs;
 use io;
 use os;
-use rt;
+use sys;
 use types::c;
 
 // Opens an available pseudoterminal and returns the file descriptors of the
@@ -25,8 +25,8 @@ export fn openpty() ((io::file, io::file) | fs::error) = {
 
 // Opens an available pseudoterminal master.
 fn open_master() (io::file | fs::error) = {
-	match (rt::posix_openpt(rt::O_RDWR | rt::O_NOCTTY)) {
-	case let e: rt::errno =>
+	match (sys::posix_openpt(sys::O_RDWR | sys::O_NOCTTY)) {
+	case let e: sys::errno =>
 		return errors::errno(e);
 	case let i: int =>
 		return io::fdopen(i);
@@ -42,13 +42,13 @@ fn get_slave(master: io::file) (io::file | fs::error) =
 // statically allocated and will be overwritten on subsequent calls to this
 // function.
 export fn ptsname(master: io::file) (str | error) = {
-	let pm = rt::ptmget { ... };
-	match (rt::ioctl(master, rt::TIOCPTSNAME, &pm)) {
-	case let e: rt::errno =>
+	let pm = sys::ptmget { ... };
+	match (sys::ioctl(master, sys::TIOCPTSNAME, &pm)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF =>
+		case sys::EBADF =>
 			return errors::invalid;
-		case rt::EINVAL, rt::ENOTTY =>
+		case sys::EINVAL, sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");
@@ -56,19 +56,19 @@ export fn ptsname(master: io::file) (str | error) = {
 	case => void;
 	};
 
-	static let buf: [rt::PATH_MAX]u8 = [0...];
+	static let buf: [sys::PATH_MAX]u8 = [0...];
 	return fmt::bsprintf(buf, c::tostr(&pm.sn: *const c::char)!)!;
 };
 
 // Sets the dimensions of the underlying pseudoterminal for an [[io::file]].
 export fn set_winsize(pty: io::file, sz: ttysize) (void | error) = {
-	let wsz = rt::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
-	match (rt::ioctl(pty, rt::TIOCSWINSZ, &wsz)) {
-	case let e: rt::errno =>
+	let wsz = sys::winsize { ws_row = sz.rows, ws_col = sz.columns, ... };
+	match (sys::ioctl(pty, sys::TIOCSWINSZ, &wsz)) {
+	case let e: sys::errno =>
 		switch (e) {
-		case rt::EBADF, rt::EINVAL =>
+		case sys::EBADF, sys::EINVAL =>
 			return errors::invalid;
-		case rt::ENOTTY =>
+		case sys::ENOTTY =>
 			return errors::unsupported;
 		case =>
 			abort("Unexpected error from ioctl");

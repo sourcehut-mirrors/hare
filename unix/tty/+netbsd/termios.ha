@@ -3,21 +3,21 @@
 
 use errors;
 use io;
-use rt;
+use sys;
 
 export type termios = struct {
 	file: io::file,
-	saved: rt::termios,
-	current: rt::termios,
+	saved: sys::termios,
+	current: sys::termios,
 };
 
 // Retrieves serial port settings of the given terminal.
 export fn termios_query(file: io::file) (termios | errors::error) = {
-	let settings = rt::termios { ... };
+	let settings = sys::termios { ... };
 
-	match (rt::ioctl(file, rt::TIOCGETA, &settings)) {
+	match (sys::ioctl(file, sys::TIOCGETA, &settings)) {
 	case int => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 
@@ -30,14 +30,14 @@ export fn termios_query(file: io::file) (termios | errors::error) = {
 
 // Restores original serial port settings.
 export fn termios_restore(termios: *const termios) void = {
-	_ = rt::ioctl(termios.file, rt::TIOCSETA, &termios.saved);
+	_ = sys::ioctl(termios.file, sys::TIOCSETA, &termios.saved);
 };
 
 // Sets serial port settings.
 export fn termios_set(termios: *const termios) (void | errors::error) = {
-	match (rt::ioctl(termios.file, rt::TIOCSETA, &termios.current)) {
+	match (sys::ioctl(termios.file, sys::TIOCSETA, &termios.current)) {
 	case int => void;
-	case let err: rt::errno =>
+	case let err: sys::errno =>
 		return errors::errno(err);
 	};
 };
@@ -48,16 +48,16 @@ export fn termios_set(termios: *const termios) (void | errors::error) = {
 // [[termios_restore]] to restore them before exiting.
 export fn makeraw(termios: *termios) (void | errors::error) = {
 	// Disable break signal and CR<->LF processing
-	termios.current.c_iflag &= ~(rt::tcflag::IGNBRK | rt::tcflag::BRKINT
-		| rt::tcflag::INLCR | rt::tcflag::IGNCR
-		| rt::tcflag::ICRNL);
+	termios.current.c_iflag &= ~(sys::tcflag::IGNBRK | sys::tcflag::BRKINT
+		| sys::tcflag::INLCR | sys::tcflag::IGNCR
+		| sys::tcflag::ICRNL);
 	// Disable output post-processing
-	termios.current.c_oflag &= ~rt::tcflag::OPOST;
+	termios.current.c_oflag &= ~sys::tcflag::OPOST;
 	// Disable character echo, canonical mode, implementation defined
 	// extensions and INTR/QUIT/SUSP characters
-	termios.current.c_lflag &= ~(rt::tcflag::ECHO | rt::tcflag::ECHONL
-		| rt::tcflag::ICANON | rt::tcflag::IEXTEN
-		| rt::tcflag::ISIG);
+	termios.current.c_lflag &= ~(sys::tcflag::ECHO | sys::tcflag::ECHONL
+		| sys::tcflag::ICANON | sys::tcflag::IEXTEN
+		| sys::tcflag::ISIG);
 
 	termios_set(termios)?;
 };
@@ -65,13 +65,13 @@ export fn makeraw(termios: *termios) (void | errors::error) = {
 // Disables "echo" on this terminal. Users should call [[termios_restore]] to
 // restore settings.
 export fn noecho(termios: *termios) (void | errors::error) = {
-	termios.current.c_lflag &= ~rt::tcflag::ECHO;
+	termios.current.c_lflag &= ~sys::tcflag::ECHO;
 	termios_set(termios)?;
 };
 
 // Enables "noncanonical" mode for this terminal, disabling line buffering and
 // line editing. Users should call [[termios_restore]] to restore settings.
 export fn noncanonical(termios: *termios) (void | errors::error) = {
-	termios.current.c_lflag &= ~rt::tcflag::ICANON;
+	termios.current.c_lflag &= ~sys::tcflag::ICANON;
 	termios_set(termios)?;
 };

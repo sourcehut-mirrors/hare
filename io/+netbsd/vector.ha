@@ -2,10 +2,10 @@
 // (c) Hare authors <https://harelang.org>
 
 use errors;
-use rt;
+use sys;
 use types;
 
-export type vector = rt::iovec;
+export type vector = sys::iovec;
 
 // Creates a vector for use with [[writev]] and [[readv]].
 export fn mkvector(buf: []u8) vector = vector {
@@ -25,8 +25,8 @@ export fn readv(fd: file, vectors: vector...) (size | EOF | error) = {
 	if (len(vectors) > types::INT_MAX: size) {
 		return errors::invalid;
 	};
-	match (rt::readv(fd, vectors: *[*]rt::iovec, len(vectors): int)) {
-	case let err: rt::errno =>
+	match (sys::readv(fd, vectors: *[*]sys::iovec, len(vectors): int)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let n: size =>
 		switch (n) {
@@ -45,8 +45,8 @@ export fn writev(fd: file, vectors: vector...) (size | error) = {
 	if (len(vectors) > types::INT_MAX: size) {
 		return errors::invalid;
 	};
-	match (rt::writev(fd, vectors: *[*]rt::iovec, len(vectors): int)) {
-	case let err: rt::errno =>
+	match (sys::writev(fd, vectors: *[*]sys::iovec, len(vectors): int)) {
+	case let err: sys::errno =>
 		return errors::errno(err);
 	case let n: size =>
 		return n;
