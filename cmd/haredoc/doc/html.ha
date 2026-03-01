@@ -191,7 +191,6 @@ fn tocentries(
 
 		match (&decls[i].decl) {
 		case let d: *ast::decl_func =>
-			free(d.symbol);
 			d.symbol = "";
 		case => void;
 		};
