@@ -1,0 +1,8 @@
+sys: low-level system interface
+
+The sys module provides low-level, non-portable access to the host, primarily
+through syscalls. The use of this module is not recommended for most user
+programs, and any program which uses sys is unlikely to be portable.
+
+Documentation for most interfaces is not provided; refer to the host
+documentation (e.g. Linux man pages) instead.

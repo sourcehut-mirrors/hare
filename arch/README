@@ -1,0 +1,4 @@
+arch: architecture-specific interface
+
+The arch module provides non-portable access to CPU information and the floating
+point environment.
