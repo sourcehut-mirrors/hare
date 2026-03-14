@@ -16,6 +16,7 @@ fn run_find_case(
 ) void = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
+	case nomem => abort("out of memory");
 	case let e: error =>
 		if (expected == matchres::MATCH) {
 			fmt::errorln(e)!;
@@ -91,6 +92,7 @@ fn run_findall_case(
 ) void = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
+	case nomem => abort("out of memory");
 	case let e: error =>
 		if (expected != matchres::ERROR) {
 			fmt::errorln(e)!;
@@ -144,6 +146,7 @@ fn run_replace_case(
 ) void = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
+	case nomem => abort("out of memory");
 	case let e: error =>
 		fmt::errorln(e)!;
 		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
@@ -153,6 +156,7 @@ fn run_replace_case(
 	defer finish(&re);
 
 	match (replacen(&re, string, target, n)) {
+	case nomem => abort("out of memory");
 	case let e: error =>
 		if (expected is str) {
 			fmt::errorln(e)!;
@@ -185,6 +189,7 @@ fn run_rawreplace_case(
 ) void = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
+	case nomem => abort("out of memory");
 	case let e: error =>
 		fmt::errorln(e)!;
 		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
