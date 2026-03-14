@@ -83,27 +83,33 @@ export fn emit_tty(ctx: *context) (void | error) = {
 
 	// XXX: Should we emit the dependencies, too?
 	let printed = false;
+	let any_undocumented = false;
 	for (let t &.. summary.types) {
+		any_undocumented ||= len(t.docs) == 0;
 		if (details_tty(ctx, t)?) {
 			printed = true;
 		};
 	};
 	for (let c &.. summary.constants) {
+		any_undocumented ||= len(c.docs) == 0;
 		if (details_tty(ctx, c)?) {
 			printed = true;
 		};
 	};
 	for (let e &.. summary.errors) {
+		any_undocumented ||= len(e.docs) == 0;
 		if (details_tty(ctx, e)?) {
 			printed = true;
 		};
 	};
 	for (let g &.. summary.globals) {
+		any_undocumented ||= len(g.docs) == 0;
 		if (details_tty(ctx, g)?) {
 			printed = true;
 		};
 	};
 	for (let f &.. summary.funcs) {
+		any_undocumented ||= len(f.docs) == 0;
 		if (details_tty(ctx, f)?) {
 			printed = true;
 		};
@@ -115,7 +121,12 @@ export fn emit_tty(ctx: *context) (void | error) = {
 		};
 		if (!no_color) fmt::fprintf(ctx.out, "\x1b[{}m",
 			color(unparse::synkind::COMMENT))?;
-		fmt::fprint(ctx.out, "// No exported declarations")?;
+		if (ctx.show_undocumented || !any_undocumented) {
+			fmt::fprint(ctx.out, "// No exported declarations")?;
+		} else {
+			fmt::fprint(ctx.out,
+				"// No documented exported declarations")?;
+		};
 		if (!no_color) fmt::fprint(ctx.out, "\x1b[m")?;
 		fmt::fprintln(ctx.out)?;
 	};
