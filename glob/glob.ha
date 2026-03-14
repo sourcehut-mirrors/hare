@@ -98,10 +98,14 @@ export fn next(gen: *generator) (str | done | failure | nomem) = {
 		&& len(memio::string(&gen.tmpp.dir)!) == 0
 		&& len(memio::string(&gen.tmpp.pat)!) == 0
 		&& len(memio::string(&gen.tmpp.rem)!) == 0;
-	match (next_match(gen)?) {
-	case let s: str =>
-		return s;
-	case void => void;
+	for (true) {
+		match (next_match(gen)?) {
+		case let s: str =>
+			return s;
+		case done =>
+			break;
+		case void => void;
+		};
 	};
 	if (init && gen.flgs & flag::NOCHECK != 0) {
 		return memio::string(&gen.pats.bufv[0])!;
@@ -109,10 +113,10 @@ export fn next(gen: *generator) (str | done | failure | nomem) = {
 	return done;
 };
 
-fn next_match(gen: *generator) (str | void | failure | nomem) = {
+fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 	match (strstack_pop(&gen.pats)) {
 	case void =>
-		return;
+		return done;
 	case let s: str =>
 		if (gen.matc > 0) {
 			gen.matc -= 1;
@@ -126,7 +130,7 @@ fn next_match(gen: *generator) (str | void | failure | nomem) = {
 	let pat = pattern_pat(&gen.tmpp);
 	if (pat == "") {
 		assert(pattern_rem(&gen.tmpp) == "");
-		return if (os::exists(dir)) dir else void;
+		return if (os::exists(dir)) dir else done;
 	};
 	const patm = strings::hassuffix(pat, '/');
 	if (patm) {
@@ -209,8 +213,6 @@ fn next_match(gen: *generator) (str | void | failure | nomem) = {
 	if (gen.flgs & flag::NOSORT == 0) {
 		strstack_sort(&gen.pats, l)?;
 	};
-
-	return next_match(gen);
 };
 
 fn pattern_init() pattern = pattern {
