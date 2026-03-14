@@ -13,7 +13,7 @@ fn run_find_case(
 	expected: matchres,
 	start: int,
 	end: int
-) void = {
+) bool = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
 	case nomem => abort("out of memory");
@@ -22,22 +22,22 @@ fn run_find_case(
 			fmt::errorln(e)!;
 			fmt::errorfln("Expected expression /{}/ to match string \"{}\", but it errored",
 				expr, string)!;
-			abort();
+			return false;
 		};
 		if (expected == matchres::NOMATCH) {
 			fmt::errorln(e)!;
 			fmt::errorfln("Expected expression /{}/ to not match string \"{}\", but it errored",
 				expr, string)!;
-			abort();
+			return false;
 		};
-		return;
+		return true;
 	};
 	defer finish(&re);
 
 	if (expected == matchres::ERROR) {
 		fmt::errorfln("Expected expression /{}/ to have error caught during compilation, but it did not",
 			expr)!;
-		abort();
+		return false;
 	};
 
 	const result = find(&re, string)!;
@@ -46,95 +46,88 @@ fn run_find_case(
 		if (expected == matchres::MATCH) {
 			fmt::errorfln("Expected expression /{}/ to match string \"{}\", but it did not",
 				expr, string)!;
-			abort();
+			return false;
 		};
-		return;
+		return true;
 	} else if (expected == matchres::NOMATCH) {
 		fmt::errorfln("Expected expression /{}/ to not match string \"{}\", but it did",
 			expr, string)!;
-		abort();
+		return false;
 	};
 
 	if (start: size != result[0].start) {
-		fmt::errorfln("Expected start of main capture to be {} but it was {}",
-			start, result[0].start)!;
-		abort();
+		fmt::errorfln("Expected start of main capture of expression /{}/ to be {} but it was {}",
+			expr, start, result[0].start)!;
+		return false;
 	};
 	if (end: size != result[0].end) {
-		fmt::errorfln("Expected end of main capture to be {} but it was {}",
-			end, result[0].end)!;
-		abort();
+		fmt::errorfln("Expected end of main capture of expression /{}/ to be {} but it was {}",
+			expr, end, result[0].end)!;
+		return false;
 	};
+
+	return true;
 };
 
-fn run_submatch_case(
-	expr: str,
-	string: str,
-	expected: matchres,
-	targets: []str
-) void = {
-	const re = compile(expr)!;
-	defer finish(&re);
-
-	const result = find(&re, string)!;
-	defer result_free(result);
-	assert(len(result) == len(targets), "Invalid number of captures");
-	for (let i = 0z; i < len(targets); i += 1) {
-		assert(targets[i] == result[i].content, "Invalid capture");
-	};
-};
-
-fn run_findall_case(
-	expr: str,
-	string: str,
-	expected: matchres,
-	targets: []str
-) void = {
+fn run_submatch_case(expr: str, string: str, targets: []str) bool = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
 	case nomem => abort("out of memory");
 	case let e: error =>
-		if (expected != matchres::ERROR) {
-			fmt::errorln(e)!;
-			fmt::errorfln("Expected expression /{}/ to compile, but it errored",
-				expr)!;
-			abort();
-		};
-		return;
+		fmt::errorln(e)!;
+		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
+			expr)!;
+		return false;
 	};
 	defer finish(&re);
 
-	if (expected == matchres::ERROR) {
-		fmt::errorfln("Expected expression /{}/ to have error caught during compilation, but it did not",
-			expr)!;
-		abort();
+	const result = find(&re, string)!;
+	defer result_free(result);
+	if (len(targets) != len(result)) {
+		fmt::errorfln("Expected expression /{}/ to find {} results but found {}",
+			expr, len(targets), len(result))!;
+		return false;
 	};
+	for (let i = 0z; i < len(targets); i += 1) {
+		if (result[i].content != targets[i]) {
+			fmt::errorfln("Expected submatch of expression /{}/ to be \"{}\" but it was \"{}\"",
+				expr, targets[i], result[i].content)!;
+			return false;
+		};
+	};
+
+	return true;
+};
+
+fn run_findall_case(expr: str, string: str, targets: []str) bool = {
+	const re = match (compile(expr)) {
+	case let re: regex => yield re;
+	case nomem => abort("out of memory");
+	case let e: error =>
+		fmt::errorln(e)!;
+		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
+			expr)!;
+		return false;
+	};
+	defer finish(&re);
 
 	const results = findall(&re, string)!;
-	if (len(results) == 0 && expected == matchres::MATCH) {
-		fmt::errorfln("Expected expression /{}/ to match string \"{}\", but it did not",
-			expr, string)!;
-		abort();
-	};
 	defer result_freeall(results);
 
-	if (expected == matchres::NOMATCH) {
-		fmt::errorfln("Expected expression /{}/ to not match string \"{}\", but it did",
-			expr, string)!;
-		abort();
-	};
 	if (len(targets) != len(results)) {
 		fmt::errorfln("Expected expression /{}/ to find {} results but found {}",
 			expr, len(targets), len(results))!;
-		abort();
+		return false;
 	};
 	for (let i = 0z; i < len(results); i += 1) {
 		if (results[i][0].content != targets[i]) {
-			fmt::errorfln("Expected submatch of expression /{}/ to be {} but it was {}",
+			fmt::errorfln("Expected submatch of expression /{}/ to be \"{}\" but it was \"{}\"",
 				expr, targets[i], results[i][0].content)!;
-			abort();
+			return false;
 		};
 	};
+
+	return true;
 };
 
 fn run_replace_case(
@@ -143,7 +136,7 @@ fn run_replace_case(
 	target: str,
 	n: size,
 	expected: (str | void),
-) void = {
+) bool = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
 	case nomem => abort("out of memory");
@@ -151,33 +144,41 @@ fn run_replace_case(
 		fmt::errorln(e)!;
 		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
 			expr)!;
-		abort();
+		return false;
 	};
 	defer finish(&re);
 
-	match (replacen(&re, string, target, n)) {
+	const s = match (replacen(&re, string, target, n)) {
+	case let s: str => yield s;
 	case nomem => abort("out of memory");
 	case let e: error =>
-		if (expected is str) {
+		match (expected) {
+		case void =>
+			return true;
+		case let expected: str =>
 			fmt::errorln(e)!;
 			fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} expected=\"{}\"",
-				expr, string, target, n, expected as str)!;
-			abort();
-		};
-	case let s: str =>
-		defer free(s);
-		if (expected is void) {
-			fmt::errorln("Expected replace to fail, but it did not")!;
-			fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} return=\"{}\"",
-				expr, string, target, n, s)!;
-			abort();
-		};
-		if (expected as str != s) {
-			fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} expected=\"{}\" return=\"{}\"",
-				expr, string, target, n, expected as str, s)!;
-			abort();
+				expr, string, target, n, expected)!;
+			return false;
 		};
 	};
+	defer free(s);
+
+	match (expected) {
+	case void =>
+		fmt::errorln("Expected replace to fail, but it did not")!;
+		fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} return=\"{}\"",
+			expr, string, target, n, s)!;
+		return false;
+	case let expected: str =>
+		if (expected != s) {
+			fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} expected=\"{}\" return=\"{}\"",
+				expr, string, target, n, expected, s)!;
+			return false;
+		};
+	};
+
+	return true;
 };
 
 fn run_rawreplace_case(
@@ -186,7 +187,7 @@ fn run_rawreplace_case(
 	target: str,
 	n: size,
 	expected: str,
-) void = {
+) bool = {
 	const re = match (compile(expr)) {
 	case let re: regex => yield re;
 	case nomem => abort("out of memory");
@@ -194,7 +195,7 @@ fn run_rawreplace_case(
 		fmt::errorln(e)!;
 		fmt::errorfln("Expected expression /{}/ to compile, but it errored",
 			expr)!;
-		abort();
+		return false;
 	};
 	defer finish(&re);
 
@@ -203,8 +204,10 @@ fn run_rawreplace_case(
 	if (expected != s) {
 		fmt::errorfln("expr=/{}/ string=\"{}\" target=\"{}\" n={} expected=\"{}\" return=\"{}\"",
 			expr, string, target, n, expected, s)!;
-		abort();
+		return false;
 	};
+
+	return true;
 };
 
 @test fn find() void = {
@@ -659,6 +662,8 @@ fn run_rawreplace_case(
 		// (`^([ab]*?)(?<!(a))c`, "abc", matchres::MATCH, 0, -1),
 	];
 
+	let ok = true;
+
 	for (let (expr, string, should_match, start, end) .. cases) {
 		if (end == -1) {
 			// workaround to get the length in codepoints
@@ -666,37 +671,47 @@ fn run_rawreplace_case(
 			defer free(runes);
 			end = len(runes): int;
 		};
-		run_find_case(expr, string, should_match, start, end);
+		if (!run_find_case(expr, string, should_match, start, end)) {
+			ok = false;
+		};
 	};
 
 	const submatch_cases = [
 		// literals
-		(`aaa ([^ ]*) (...)`, "aaa bbb ccc", matchres::MATCH,
+		(`aaa ([^ ]*) (...)`, "aaa bbb ccc",
 			["aaa bbb ccc", "bbb", "ccc"]: []str),
 	];
 
-	for (let (expr, string, should_match, targets) .. submatch_cases) {
-		run_submatch_case(expr, string, should_match, targets);
+	for (let (expr, string, targets) .. submatch_cases) {
+		if (!run_submatch_case(expr, string, targets)) {
+			ok = false;
+		};
 	};
+
+	assert(ok);
 };
 
 @test fn findall() void = {
 	const cases = [
-		(`ab.`, "hello abc and abあ test abq thanks", matchres::MATCH,
+		(`ab.`, "hello abc and abあ test abq thanks",
 			["abc", "abあ", "abq"]: []str),
-		(`a`, "aa", matchres::MATCH,
+		(`a`, "aa",
 			["a", "a"]: []str),
-		(`fo{2,}`, "fo foo fooofoof oofoo", matchres::MATCH,
+		(`fo{2,}`, "fo foo fooofoof oofoo",
 			["foo", "fooo", "foo", "foo"]: []str),
-		(``, "abc", matchres::MATCH,
+		(``, "abc",
 			["", "", "", ""]: []str),
-		(`a*`, "aaa", matchres::MATCH,
+		(`a*`, "aaa",
 			["aaa", ""]: []str),
 	];
 
-	for (let (expr, string, should_match, targets) .. cases) {
-		run_findall_case(expr, string, should_match, targets);
+	let ok = true;
+	for (let (expr, string, targets) .. cases) {
+		if (!run_findall_case(expr, string, targets)) {
+			ok = false;
+		};
 	};
+	assert(ok);
 };
 
 @test fn replace() void = {
@@ -719,9 +734,13 @@ fn run_rawreplace_case(
 		(`[[:alpha:]]`, `1a2b3`, `\\`, types::SIZE_MAX, `1\2\3`),
 	];
 
+	let ok = true;
 	for (let (expr, string, target, n, expected) .. cases) {
-		run_replace_case(expr, string, target, n, expected);
+		if (!run_replace_case(expr, string, target, n, expected)) {
+			ok = false;
+		};
 	};
+	assert(ok);
 };
 
 @test fn rawreplace() void = {
@@ -739,7 +758,11 @@ fn run_rawreplace_case(
 		(`.`, "blablabla", `x`, 0, "blablabla"),
 	];
 
+	let ok = true;
 	for (let (expr, string, target, n, expected) .. cases) {
-		run_rawreplace_case(expr, string, target, n, expected);
+		if (!run_rawreplace_case(expr, string, target, n, expected)) {
+			ok = false;
+		};
 	};
+	assert(ok);
 };
