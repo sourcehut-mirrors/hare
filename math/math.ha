@@ -579,7 +579,7 @@ export fn exp2f64(x: f64) f64 = {
 //      huge + tiny is equal to huge, and whether huge - tiny is
 //      equal to huge for some floating point number "huge" and "tiny".
 
-// Returns the square root of x.
+// Returns the non-negative square root of x.
 export fn sqrtf64(x: f64) f64 = {
 	if (x == 0f64) {
 		return x;
