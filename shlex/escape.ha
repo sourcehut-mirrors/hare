@@ -11,10 +11,10 @@ fn is_safe(s: str) bool = {
 	const iter = strings::iter(s);
 	for (let rn => strings::next(&iter)) {
 		switch (rn) {
-		case '@', '%', '+', '=', ':', ',', '.', '/', '-' =>
-			void;
+		case '@', '%', '+', '=', ':', ',', '.', '/', '-' => void;
 		case =>
-			if (!ascii::isalnum(rn) || ascii::isspace(rn)) {
+			// XXX: what about non-ascii characters?
+			if (!ascii::isalnum(rn)) {
 				return false;
 			};
 		};
