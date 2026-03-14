@@ -16,7 +16,7 @@ fn utf8_byte_len_bounded(iter: *iterator, end: size) size = {
 			abort("index exceeds string length");
 		};
 	};
-	return iter.dec.offs;
+	return iter.offs;
 };
 
 // Returns a substring in the range [start, end - 1], where each argument is the

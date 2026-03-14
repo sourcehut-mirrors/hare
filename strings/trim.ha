@@ -23,7 +23,7 @@ export fn ltrim(input: str, trim: rune...) str = {
 		prev(&it);
 		break;
 	};
-	return fromutf8_unsafe(it.dec.src[it.dec.offs..]);
+	return fromutf8_unsafe(it.src[it.offs..]);
 };
 
 // Returns a string (borrowed from given input string) after trimming off of
@@ -44,7 +44,7 @@ export fn rtrim(input: str, trim: rune...) str = {
 		prev(&it);
 		break;
 	};
-	return fromutf8_unsafe(it.dec.src[..it.dec.offs]);
+	return fromutf8_unsafe(it.src[..it.offs]);
 };
 
 // Returns a string (borrowed from given input string) after trimming off of

@@ -4,7 +4,7 @@
 use encoding::utf8;
 
 export type iterator = struct {
-	dec:  utf8::decoder,
+	utf8::decoder,
 	reverse: bool,
 };
 
@@ -22,19 +22,17 @@ export type iterator = struct {
 //	strings::next(&dup);	// '!'
 //	strings::next(&dup);	// done
 export fn iter(src: str) iterator = iterator {
-	dec = utf8::decode(toutf8(src)),
+	src = toutf8(src),
+	offs = 0,
 	reverse = false,
 };
 
 // Initializes a string iterator, starting at the end of the string and moving
 // backwards with each call to [[next]].
-export fn riter(src: str) iterator = {
-	let ret = iterator {
-		dec = utf8::decode(toutf8(src)),
-		reverse = true,
-	};
-	ret.dec.offs = len(src);
-	return ret;
+export fn riter(src: str) iterator = iterator {
+	src = toutf8(src),
+	offs = len(src),
+	reverse = true,
 };
 
 // Gets the next rune from an iterator, or done if there are none left.
@@ -52,7 +50,7 @@ export fn prev(iter: *iterator) (rune | done) = move(iter.reverse, iter);
 
 fn move(forward: bool, iter: *iterator) (rune | done) = {
 	let fun = if (forward) &utf8::next else &utf8::prev;
-	match (fun(&iter.dec)) {
+	match (fun(iter)) {
 	case (utf8::more | utf8::invalid) =>
 		abort("Invalid UTF-8 string (this should not happen)");
 	case let r: (rune | done) =>
@@ -64,9 +62,9 @@ fn move(forward: bool, iter: *iterator) (rune | done) = {
 // with [[iter]], or the beginning of the string if initialized with [[riter]].
 export fn iterstr(iter: *iterator) str = {
 	if (iter.reverse) {
-		return fromutf8_unsafe(iter.dec.src[..iter.dec.offs]);
+		return fromutf8_unsafe(iter.src[..iter.offs]);
 	} else {
-		return fromutf8_unsafe(iter.dec.src[iter.dec.offs..]);
+		return fromutf8_unsafe(iter.src[iter.offs..]);
 	};
 };
 
@@ -81,7 +79,7 @@ export fn slice(begin: *iterator, end: *iterator) str = {
 // Returns the byte-wise position of the iterator. When possible, it's generally
 // considered more idiomatic to use other functions in this module, such as
 // [[iterstr]] and [[slice]].
-export fn position(iter: *iterator) size = iter.dec.offs;
+export fn position(iter: *iterator) size = iter.offs;
 
 @test fn iter() void = {
 	let s = iter("こんにちは");
