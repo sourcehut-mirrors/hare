@@ -103,7 +103,6 @@ fn path_find(ctx: *context, buf: *path::buffer) (srcset | error) = {
 		};
 		free(srcs);
 	};
-	let mtime = time::INSTANT_MIN;
 	let res = srcset { mtime = time::INSTANT_MIN, ... };
 
 	_findsrcs(buf, ctx.tags, &srcs, &res, 0)?;
