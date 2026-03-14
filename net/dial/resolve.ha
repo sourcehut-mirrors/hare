@@ -16,7 +16,7 @@ export fn splitaddr(addr: str, service: str) ((str, u16) | invalid_address) = {
 		// [::1]:80 (IPv6)
 		match (strings::index(addr, "]:")) {
 		case let i: size =>
-			const sub = strings::sub(addr, i + 2, strings::end);
+			const sub = strings::sub(addr, i + 2);
 			addr = strings::sub(addr, 1, i);
 			match (strconv::stou16(sub)) {
 			case let u: u16 =>
@@ -43,7 +43,7 @@ export fn splitaddr(addr: str, service: str) ((str, u16) | invalid_address) = {
 		case => void;
 		};
 	case let i: size =>
-		const sub = strings::sub(addr, i + 1, strings::end);
+		const sub = strings::sub(addr, i + 1);
 		addr = strings::sub(addr, 0, i);
 		match (strconv::stou16(sub)) {
 		case let u: u16 =>

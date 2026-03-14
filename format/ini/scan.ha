@@ -92,7 +92,7 @@ export fn next(sc: *scanner) (entry | io::EOF | error | nomem) = {
 		return (
 			sc.section,
 			strings::sub(line, 0, eq),
-			strings::sub(line, eq + 1, strings::end),
+			strings::sub(line, eq + 1),
 		);
 	};
 
