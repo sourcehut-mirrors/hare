@@ -41,7 +41,7 @@ The following C types are *not* supported by Hare:
 - Bit-precise integer types (_BitInt)
 - Decimal floating point types: _Decimal32, _Decimal64, _Decimal128
 - long double
-- Extended floating point types: _Float128 (__float128), _Float16 (__fp16), etc.
+- Interchange and extended binary floating point types: _Float128 (__float128), _Float16, _Float64x, etc.
 - Packed types: __m64, __m128, __m256, __m512
 - Integer types with any width other than 8, 16, 32, or 64
 - max_align_t
