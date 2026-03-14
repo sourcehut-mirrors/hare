@@ -26,6 +26,8 @@ type parsed_done = !void;
 // 	date::parse(&v, "%H:%M:%S.%N", "22:07:08.000000000")!;
 // 	date::parse(&v, "%z %Z %L",    "+0100 CET Europe/Amsterdam")!;
 //
+// Note: %L and %Z currently only parse ASCII printable characters.
+//
 // Parse will return [[parsefail]] if an invalid layout format specifier is
 // encountered or if given info string does not match the layout.
 export fn parse(v: *virtual, layout: str, info: str) (void | parsefail) = {
