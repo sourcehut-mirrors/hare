@@ -78,6 +78,7 @@ export fn resetall() void = {
 	reset(sig::PIPE);
 	reset(sig::ALRM);
 	reset(sig::TERM);
+	reset(sig::STKFLT);
 	reset(sig::CHLD);
 	reset(sig::CONT);
 	reset(sig::TSTP);
@@ -395,6 +396,7 @@ export type sig = enum int {
 	PIPE = sys::SIGPIPE, // Write on a pipe with no one to read it.
 	ALRM = sys::SIGALRM, // Alarm clock.
 	TERM = sys::SIGTERM, // Termination.
+	STKFLT = sys::SIGSTKFLT, // Stack fault.
 	CHLD = sys::SIGCHLD, // Child process terminated, stopped, or continued.
 	CONT = sys::SIGCONT, // Continue executing if stopped.
 	STOP = sys::SIGSTOP, // Stop executing (cannot be caught or ignored).
@@ -487,6 +489,8 @@ export fn signame(sig: sig) const str = {
 		return "SIGALRM";
 	case sig::TERM =>
 		return "SIGTERM";
+	case sig::STKFLT =>
+		return "SIGSTKFLT";
 	case sig::CHLD =>
 		return "SIGCHLD";
 	case sig::CONT =>
