@@ -50,8 +50,9 @@ export fn emit_tty(ctx: *context) (void | error) = {
 		fmt::fprint(ctx.out, "WARNING")?;
 		if (!no_color) fmt::fprintf(ctx.out, "\x1b[m" "\x1b[{}m",
 			color(unparse::synkind::COMMENT))?;
-		fmt::fprintln(ctx.out,
-			": parsing errors occurred; documentation may be incomplete")?;
+		fmt::fprintfln(ctx.out,
+			": parsing error{} occurred; documentation may be incomplete",
+			if (len(ctx.parse_errs) == 1) "" else "s")?;
 		if (!no_color) fmt::fprint(ctx.out, "\x1b[m")?;
 	};
 	for (let i = 0z; i < len(ctx.parse_errs); i += 1) {
