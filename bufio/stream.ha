@@ -63,8 +63,8 @@ export type flag = enum uint {
 // the desired buffer, or empty slices if read or write functionality is
 // disabled. The same buffer may not be used for both reads and writes.
 //
-// 	let rbuf: [os::BUFSZ]u8 = [0...];
-// 	let wbuf: [os::BUFSZ]u8 = [0...];
+// 	let rbuf: [os::BUFSZ]u8 = @undefined;
+// 	let wbuf: [os::BUFSZ]u8 = @undefined;
 // 	let buffered = bufio::init(source, rbuf, wbuf);
 export fn init(
 	src: io::handle,
