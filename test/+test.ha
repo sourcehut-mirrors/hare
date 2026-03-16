@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use arch;
 use ascii;
 use bufio;
 use debug;
@@ -10,7 +11,6 @@ use encoding::utf8;
 use fmt;
 use fnmatch;
 use io;
-use math;
 use memio;
 use os;
 use rt;
@@ -70,7 +70,7 @@ type context = struct {
 	output: []output,
 	maxname: size,
 	total_time: time::duration,
-	default_round: math::fround,
+	default_round: uint,
 	cwd: str,
 };
 
@@ -127,7 +127,7 @@ export @symbol("__test_main") fn main() size = {
 		stdout = memio::dynamic(),
 		stderr = memio::dynamic(),
 		maxname = maxname,
-		default_round = math::getround(),
+		default_round = arch::fegetround(),
 		cwd = strings::dup(os::getcwd())!,
 		...
 	};
@@ -240,8 +240,8 @@ fn test_cmp(a: const *opaque, b: const *opaque) int = {
 };
 
 fn reset(ctx: *context) void = {
-	math::setround(ctx.default_round);
-	math::clearexcept(math::fexcept::ALL);
+	arch::fesetround(ctx.default_round);
+	arch::feclearexcept(~0u);
 	signal::resetall();
 	os::chdir(ctx.cwd)!;
 	want_abort = false;

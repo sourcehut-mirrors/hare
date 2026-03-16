@@ -2,3 +2,9 @@ arch: architecture-specific interface
 
 The arch module provides non-portable access to CPU information and the floating
 point environment.
+
+Note that the compiler currently optimizes under the assumption that the
+floating point environment is never modified. Because of this, you're *strongly*
+advised to not touch the floating point environment unless you absolutely have
+to. No compatibility or correctness guarantees are provided if you choose to do
+so anyway.
