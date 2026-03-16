@@ -491,7 +491,7 @@ fn _expr(ctx: *context, syn: *synfunc, e: *ast::expr) (size | io::error) = {
 		};
 		return z;
 	case ast::undefined_expr =>
-		return syn(ctx, "@undefined", synkind::ATTRIBUTE)?;
+		return syn(ctx, "@undefined", synkind::KEYWORD)?;
 	};
 };
 
