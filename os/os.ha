@@ -49,7 +49,8 @@ export fn exists(path: str) bool = fs::exists(cwd, path);
 // Creates a directory.
 export fn mkdir(path: str, mode: fs::mode) (void | fs::error) = fs::mkdir(cwd, path, mode);
 
-// Creates a directory, and all non-extant directories in its path.
+// Creates a directory if it doesn't exist, as well as all non-extant
+// directories in its path.
 export fn mkdirs(path: str, mode: fs::mode) (void | fs::error) = fs::mkdirs(cwd, path, mode);
 
 // Removes a directory. The target directory must be empty; see [[rmdirall]] to

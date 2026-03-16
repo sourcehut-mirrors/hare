@@ -223,7 +223,8 @@ export fn mkdir(fs: *fs, path: str, mode: mode) (void | error) = {
 	};
 };
 
-// Makes a directory, and all non-extant directories in its path.
+// Creates a directory if it doesn't exist, as well as all non-extant
+// directories in its path.
 export fn mkdirs(fs: *fs, path: str, mode: mode) (void | error) = {
 	let parent = path::dirname(path);
 	if (path != parent) {
