@@ -74,7 +74,7 @@ export fn c64to128(z: c64) c128 = (z.0: f64, z.1: f64);
 // Truncates a [[c128]] to a [[c64]]. Precision may be lost.
 export fn c128to64(z: c128) c64 = (z.0: f32, z.1: f32);
 
-// Adds two complex numbers
+// Adds two complex numbers.
 export fn addc64(a: c64, b: c64) c64 = (a.0 + b.0, a.1 + b.1);
 
 // Adds two complex numbers.
