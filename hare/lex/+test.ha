@@ -20,7 +20,7 @@ fn initbuf(in: []u8, flags: flag = flag::NONE) lexer = {
 	};
 
 	s = memio::fixed(in);
-	sc = bufio::newscanner_static(&s, buf);
+	sc = bufio::newscanner_buf(&s, buf);
 	return init(&sc, "<test>", flags);
 };
 
@@ -29,7 +29,7 @@ fn initstr(in: str, flags: flag = flag::NONE) lexer = {
 };
 
 @test fn unlex() void = {
-	let sc = bufio::newscanner_static(io::empty, []);
+	let sc = bufio::newscanner_buf(io::empty, []);
 	let lexer = init(&sc, "<test>");
 	unlex(&lexer, (ltok::IF, void, location {
 		path = "<test>",

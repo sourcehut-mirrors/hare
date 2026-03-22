@@ -89,7 +89,7 @@ export fn newscanner(
 // return [[errors::overflow]] if the buffer length is reached, but will not
 // perform any allocations. The user should not call [[finish]] after use unless
 // they wish to free the underlying buffer through bufio.
-export fn newscanner_static(
+export fn newscanner_buf(
 	src: io::handle,
 	buffer: []u8,
 	opts: scan_options = scan_options::DEFAULT,

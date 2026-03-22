@@ -33,7 +33,7 @@ fn print_context(
 	};
 
 	static let linebuf: [1024]u8 = [0...];
-	const scan = bufio::newscanner_static(file, linebuf);
+	const scan = bufio::newscanner_buf(file, linebuf);
 
 	let context = "";
 	for (let i = 0u; i < line; i += 1) {

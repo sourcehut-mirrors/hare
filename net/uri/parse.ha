@@ -331,12 +331,12 @@ fn percent_decode(s: str) (str | invalid | nomem) = {
 	let buf = memio::dynamic();
 	let success = false;
 	defer if (!success) io::close(&buf)!;
-	percent_decode_static(&buf, s)?;
+	percent_decode_buf(&buf, s)?;
 	success = true;
 	return memio::string(&buf)!;
 };
 
-fn percent_decode_static(out: io::handle, s: str) (void | invalid | nomem) = {
+fn percent_decode_buf(out: io::handle, s: str) (void | invalid | nomem) = {
 	let iter = strings::iter(s);
 	let tmp = memio::dynamic();
 	defer io::close(&tmp)!;

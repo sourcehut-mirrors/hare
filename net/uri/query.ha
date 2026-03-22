@@ -35,9 +35,9 @@ export fn query_next(dec: *query_decoder) ((str, str) | invalid | nomem | void) 
 
 	const raw = strings::cut(tok, "=");
 	memio::reset(&dec.bufs.0);
-	percent_decode_static(&dec.bufs.0, raw.0)?;
+	percent_decode_buf(&dec.bufs.0, raw.0)?;
 	memio::reset(&dec.bufs.1);
-	percent_decode_static(&dec.bufs.1, raw.1)?;
+	percent_decode_buf(&dec.bufs.1, raw.1)?;
 	return (
 		memio::string(&dec.bufs.0)!,
 		memio::string(&dec.bufs.1)!,

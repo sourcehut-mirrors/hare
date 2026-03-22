@@ -102,7 +102,7 @@ fn get_deps(cachedir: str, srcs: *srcset) ([]ast::ident | error) = {
 			fmt::fprintln(&out)?;
 		};
 	} else {
-		let in = bufio::newscanner_static(depsfile, buf.buf);
+		let in = bufio::newscanner_buf(depsfile, buf.buf);
 		for (let s => bufio::scan_line(&in)?) {
 			append(deps, parse::identstr(s)?)!;
 		};
