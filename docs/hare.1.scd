@@ -8,19 +8,11 @@ hare - compile, run, test, and inspect Hare programs and modules
 
 *hare* -h
 
-*hare* version [-hv]
-
 *hare* _command_ [_arguments_...]
 
 # DESCRIPTION
 
 *hare -h* prints help text.
-
-*hare version* prints version information for the *hare* program. If *-v* is
-supplied, it also prints information about the build parameters. If *-vv* is
-specified, detailed information about the version and build parameters is
-printed as shell environment variables in a format which is consistent between
-versions and suitable for machine reading.
 
 *hare-build*(1) compiles a Hare program or module.
 
@@ -33,6 +25,8 @@ versions and suitable for machine reading.
 *hare-test*(1) compiles and runs tests for Hare code.
 
 *hare-tool*(1) runs a third-party Hare tool.
+
+*hare-version*(1) prints information about the Hare toolchain and environment.
 
 # BUGS
 

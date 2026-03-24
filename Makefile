@@ -81,14 +81,15 @@ docs: \
 	docs/hare-build.1 \
 	docs/hare-cache.1 \
 	docs/hare-deps.1 \
-	docs/hare-tool.1 \
 	docs/haredoc.1 \
 	docs/hare-run.1 \
 	docs/hare-test.1 \
+	docs/hare-tool.1 \
+	docs/hare-version.1 \
 	docs/haredoc.5 \
 	docs/hare-module.5
 
-MAN1 = hare hare-build hare-cache hare-deps haredoc hare-run hare-test hare-tool
+MAN1 = hare hare-build hare-cache hare-deps haredoc hare-run hare-test hare-tool hare-version
 MAN5 = haredoc hare-module
 
 bootstrap:
