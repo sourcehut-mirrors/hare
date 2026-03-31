@@ -295,38 +295,51 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 
 fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
 	let fs = fs: *os_filesystem;
-	let stat = sys::stat { ... };
-	match (sys::fstatat(fs.dirfd, path, &stat, sys::AT_SYMLINK_NOFOLLOW)) {
+	let st = sys::stat { ... };
+	match (sys::fstatat(fs.dirfd, path, &st, sys::AT_SYMLINK_NOFOLLOW)) {
 	case let err: sys::errno =>
 		return errno_to_fs(err);
 	case void => void;
 	};
-	return fs::filestat {
-		mask = fs::stat_mask::UID
-			| fs::stat_mask::GID
-			| fs::stat_mask::SIZE
-			| fs::stat_mask::INODE
-			| fs::stat_mask::ATIME
-			| fs::stat_mask::MTIME
-			| fs::stat_mask::CTIME,
-		mode = stat.st_mode: fs::mode,
-		uid = stat.st_uid,
-		gid = stat.st_gid,
-		sz = stat.st_size: size,
-		inode = stat.st_ino,
-		atime = time::instant {
-			sec = stat.st_atim.tv_sec,
-			nsec = stat.st_atim.tv_nsec,
-		},
-		mtime = time::instant {
-			sec = stat.st_mtim.tv_sec,
-			nsec = stat.st_mtim.tv_nsec,
-		},
-		ctime = time::instant {
-			sec = stat.st_ctim.tv_sec,
-			nsec = stat.st_ctim.tv_nsec,
-		},
+	return st_to_filestat(&st);
+};
+
+fn fs_fstat(fs: *fs::fs, fd: io::file) (fs::filestat | fs::error) = {
+	let fs = fs: *os_filesystem;
+	let st = sys::stat { ... };
+	match (sys::fstat(fd, &st)) {
+	case let err: sys::errno =>
+		return errno_to_fs(err);
+	case void => void;
 	};
+	return st_to_filestat(&st);
+};
+
+fn st_to_filestat(st: *sys::stat) fs::filestat = fs::filestat {
+	mask = fs::stat_mask::UID
+		| fs::stat_mask::GID
+		| fs::stat_mask::SIZE
+		| fs::stat_mask::INODE
+		| fs::stat_mask::ATIME
+		| fs::stat_mask::MTIME
+		| fs::stat_mask::CTIME,
+	mode = st.st_mode: fs::mode,
+	uid = st.st_uid,
+	gid = st.st_gid,
+	sz = st.st_size: size,
+	inode = st.st_ino,
+	atime = time::instant {
+		sec = st.st_atim.tv_sec,
+		nsec = st.st_atim.tv_nsec,
+	},
+	mtime = time::instant {
+		sec = st.st_mtim.tv_sec,
+		nsec = st.st_mtim.tv_nsec,
+	},
+	ctime = time::instant {
+		sec = st.st_ctim.tv_sec,
+		nsec = st.st_ctim.tv_nsec,
+	},
 };
 
 fn fs_mkdir(fs: *fs::fs, path: str, mode: fs::mode) (void | fs::error) = {
@@ -489,6 +502,7 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			rename = &fs_rename,
 			iter = &fs_iter,
 			stat = &fs_stat,
+			fstat = &fs_fstat,
 			readlink = &fs_readlink,
 			mkdir = &fs_mkdir,
 			rmdir = &fs_rmdir,

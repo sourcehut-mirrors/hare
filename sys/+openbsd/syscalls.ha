@@ -432,6 +432,19 @@ export fn mmap(
 // acct
 // sigpending
 // fstat
+
+@symbol("fstat") fn libc_fstat(fd: int, sb: *stat) int;
+
+export fn fstat(
+	dirfd: int,
+	stat: *stat,
+) (void | errno) = {
+	let res = libc_fstat(dirfd, stat);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // ioctl
 
 @symbol("ioctl") fn libc_ioctl(fd: int, req: u64, arg: u64) int;
