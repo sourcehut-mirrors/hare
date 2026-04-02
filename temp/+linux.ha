@@ -96,7 +96,7 @@ export fn dir() str = {
 	static let buf = path::buffer { ... };
 	path::set(&buf, get_tmpdir(), name)!;
 	const path = path::string(&buf);
-	match (os::mkdir(path, 0o755)) {
+	match (os::mkdir(path, 0o700)) {
 	case let err: fs::error => abort("Could not create temp directory");
 	case void => void;
 	};
