@@ -297,7 +297,7 @@ fn run_test(ctx: *context, test: *test) status = {
 	defer rt::onabort(default_abort);
 
 	defer jmp = null;
-	const n = rt::setjmp(&jmp_buf): status;
+	const n = arch::setjmp(&jmp_buf): status;
 	if (n == status::RETURN) {
 		jmp = &jmp_buf;
 		_current = test;
@@ -398,8 +398,8 @@ fn styled_print(color: int, result: fmt::formattable) void = {
 	};
 };
 
-let jmp_buf = rt::jmp_buf { ... };
-let jmp: nullable *rt::jmp_buf = null;
+let jmp_buf = arch::jmp_buf { ... };
+let jmp: nullable *arch::jmp_buf = null;
 let reason: abort_reason = abort_reason { ... };
 let trace = 0u64;
 let default_abort: *rt::abort_handler = @undefined;
@@ -411,7 +411,7 @@ fn onabort(
 	msg: str,
 ) never = {
 	match (jmp) {
-	case let j: *rt::jmp_buf =>
+	case let j: *arch::jmp_buf =>
 		let frame = debug::walk();
 		// Skip rt:: and test:: frames
 		frame = debug::next(frame) as debug::stackframe;
@@ -424,7 +424,7 @@ fn onabort(
 			col = col,
 			msg = msg,
 		};
-		rt::longjmp(j, status::ABORT);
+		arch::longjmp(j, status::ABORT);
 	case null =>
 		default_abort(path, line, col, msg);
 	};
@@ -435,7 +435,7 @@ fn handle_segv(
 	info: *signal::siginfo,
 	uctx: *opaque,
 ) void = {
-	rt::longjmp(&jmp_buf, status::SEGV);
+	arch::longjmp(&jmp_buf, status::SEGV);
 };
 
 fn easter_egg(fails: []failure, tests: []test) void = {

@@ -1,7 +1,7 @@
-.section ".text.rt.longjmp","ax"
-.global rt.longjmp
-.type rt.longjmp, %function
-rt.longjmp:
+.section ".text.arch.longjmp","ax"
+.global arch.longjmp
+.type arch.longjmp, %function
+arch.longjmp:
 	ld s0,    0(a0)
 	ld s1,    8(a0)
 	ld s2,    16(a0)

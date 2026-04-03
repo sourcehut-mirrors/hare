@@ -1,9 +1,9 @@
 /* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
 
-.section ".text.rt.setjmp","ax"
-.global rt.setjmp
-.type rt.setjmp,@function
-rt.setjmp:
+.section ".text.arch.setjmp","ax"
+.global arch.setjmp
+.type arch.setjmp,@function
+arch.setjmp:
 	/* no endbr64 here to avoid exploitation - this function cannot be the
 	 * result of an indirect branch.
 	 */

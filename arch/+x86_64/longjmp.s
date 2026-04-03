@@ -1,9 +1,9 @@
 /* Copyright 2011-2012 Nicholas J. Kain, licensed under standard MIT license */
 
-.section ".text.rt.longjmp","ax"
-.global rt.longjmp
-.type rt.longjmp,@function
-rt.longjmp:
+.section ".text.arch.longjmp","ax"
+.global arch.longjmp
+.type arch.longjmp,@function
+arch.longjmp:
 	/* no endbr64 here to avoid exploitation - this function cannot be the
 	 * result of an indirect branch.
 	 */

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use arch;
 use fmt;
 use os;
-use rt;
 use strings;
 
 let want_abort = false;
@@ -26,7 +26,7 @@ export fn skip(why: str) never = {
 		msg = why,
 		...
 	};
-	rt::longjmp(&jmp_buf, status::SKIP);
+	arch::longjmp(&jmp_buf, status::SKIP);
 };
 
 // Check the $HARETEST_INCLUDE space-delimited environment variable for

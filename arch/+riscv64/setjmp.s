@@ -1,7 +1,7 @@
-.section ".text.rt.setjmp","ax"
-.global rt.setjmp
-.type rt.setjmp, %function
-rt.setjmp:
+.section ".text.arch.setjmp","ax"
+.global arch.setjmp
+.type arch.setjmp, %function
+arch.setjmp:
 	sd s0,    0(a0)
 	sd s1,    8(a0)
 	sd s2,    16(a0)

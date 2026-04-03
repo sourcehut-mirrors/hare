@@ -1,7 +1,7 @@
-.section ".text.rt.setjmp","ax"
-.global rt.setjmp
-.type rt.setjmp,@function
-rt.setjmp:
+.section ".text.arch.setjmp","ax"
+.global arch.setjmp
+.type arch.setjmp,@function
+arch.setjmp:
 	// IHI0055B_aapcs64.pdf 5.1.1, 5.1.2 callee saved registers
 	stp x19, x20, [x0,#0]
 	stp x21, x22, [x0,#16]

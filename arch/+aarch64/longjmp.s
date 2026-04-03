@@ -1,7 +1,7 @@
-.section ".text.rt.longjmp","ax"
-.global rt.longjmp
-.type rt.longjmp,@function
-rt.longjmp:
+.section ".text.arch.longjmp","ax"
+.global arch.longjmp
+.type arch.longjmp,@function
+arch.longjmp:
 	// IHI0055B_aapcs64.pdf 5.1.1, 5.1.2 callee saved registers
 	ldp x19, x20, [x0,#0]
 	ldp x21, x22, [x0,#16]
