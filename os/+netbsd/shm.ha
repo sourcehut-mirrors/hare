@@ -40,7 +40,7 @@ fn shm_get_path(name: const str) (str | fs::error) = {
 		return errors::errno(sys::ENOTSUP): fs::error;
 
 	// The name may start with a slash character.
-	name = strings::trimprefix(name, '/');
+	name = strings::trimprefix(name, "/");
 
 	// We may disallow other slashes (implementation-defined behaviour).
 	if (strings::contains(name, '/'))
