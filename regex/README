@@ -16,11 +16,11 @@ Compiling an expression:
 
 Testing an expression against a string:
 
-	assert(regex::test(&re, "Harriet is happy"));
+	assert(regex::test(&re, "Harriet is happy")!);
 
 Finding a match for an expression in a string:
 
-	const result = regex::find(&re, "Harriet is happy");
+	const result = regex::find(&re, "Harriet is happy")!;
 	defer regex::result_free(result);
 	for (let i = 0z; i < len(result); i += 1) {
 		fmt::printf("{} ", result[i].content)!;
@@ -30,7 +30,7 @@ Finding a match for an expression in a string:
 
 Finding all matches for an expression in a string:
 
-	const results = regex::findall(&re, "Harriet is happy");
+	const results = regex::findall(&re, "Harriet is happy")!;
 	defer regex::result_freeall(results);
 	for (let i = 0z; i < len(results); i += 1) {
 		for (let j = 0z; j < len(results[i]); j += 1) {
