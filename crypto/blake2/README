@@ -1,8 +1,9 @@
-blake2b: blake2b password hashing algorithm support
+blake2: BLAKE2b and BLAKE2s cryptographic hash functions per RFC 7693
 
-This module implements the blake2b password hashing algorithm, bug-for-bug
-compatible with the classic OpenBSD implementation. It is not recommended except
-in cases of backwards-compatibility with legacy systems.
+BLAKE2b is optimized for 64-bit platforms and produces digests of any size
+between 1 and 64 bytes. BLAKE2s is optimized for 8- to 32-bit platforms and
+produces digests of any size between 1 and 32 bytes. Both implement the
+hash::hash interface and support keyed hashing (MAC).
 
 This is a low-level module which implements cryptographic primitives. Direct use
 of cryptographic primitives is not recommended for non-experts, as incorrect use
