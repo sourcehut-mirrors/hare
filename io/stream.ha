@@ -12,7 +12,7 @@ use errors;
 //		fd: int,
 //	};
 //
-//	const my_vtable: io::vtable = io::vtable {
+//	const my_vtable = io::vtable {
 //		reader = &my_stream_read,
 //		writer = &my_stream_write,
 //		closer = null,
