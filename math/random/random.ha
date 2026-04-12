@@ -12,9 +12,10 @@ export fn init(seed: u64) random = seed;
 export fn next(r: *random) u64 = {
 	// SplitMix64
 	*r += 0x9e3779b97f4a7c15;
-	*r = (*r ^ *r >> 30) * 0xbf58476d1ce4e5b9;
-	*r = (*r ^ *r >> 27) * 0x94d049bb133111eb;
-	return *r ^ *r >> 31;
+	let a = *r;
+	a = (a ^ a >> 30) * 0xbf58476d1ce4e5b9;
+	a = (a ^ a >> 27) * 0x94d049bb133111eb;
+	return a ^ a >> 31;
 };
 
 // Returns a pseudo-random 32-bit unsigned integer in the half-open interval
@@ -60,12 +61,13 @@ export fn f64rand(r: *random) f64 = {
 };
 
 @test fn rng() void = {
-	let r = init(0);
+	let r = init(1234567);
 	let expected: [_]u64 = [
-		16294208416658607535,
-		15501543990041496116,
-		15737388954706874752,
-		15091258616627000950,
+		6457827717110365317,
+		3203168211198807973,
+		9817491932198370423,
+		4593380528125082431,
+		16408922859458223821
 	];
 	for (let i = 0z; i < len(expected); i += 1) {
 		assert(next(&r) == expected[i]);

@@ -107,7 +107,7 @@ use types;
 };
 
 @test fn shuffle() void = {
-	let rand = random::init(0x424242);
+	let rand = random::init(0xC0FFEE);
 	let cases: [_][]int = [
 		[1, 2, 3, 4, 5],
 		[1, 2],
