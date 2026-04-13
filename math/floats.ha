@@ -329,11 +329,7 @@ export fn ldexpf64(mantissa: f64, exp: i64) f64 = {
 	};
 	// Overflow
 	if (res_exp > (F64_EXPONENT_BIAS: i64)) {
-		if (mantissa < 0f64) {
-			return -INF;
-		} else {
-			return INF;
-		};
+		return copysignf64(INF, mantissa);
 	};
 	// Subnormal
 	let subnormal_factor = 1f64;
@@ -369,11 +365,7 @@ export fn ldexpf32(mantissa: f32, exp: i64) f32 = {
 	};
 	// Overflow
 	if (res_exp > (F32_EXPONENT_BIAS: i32)) {
-		if (mantissa < 0.0f32) {
-			return -INF;
-		} else {
-			return INF;
-		};
+		return copysignf32(INF, mantissa);
 	};
 	// Subnormal
 	let subnormal_factor = 1.0f32;
