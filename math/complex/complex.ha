@@ -135,12 +135,19 @@ export fn equalc128(a: c128, b: c128) bool = a.0 == b.0 && a.1 == b.1;
 // Checks if two complex numbers are equal. Be sure to take floating point
 // round-off errors into account.
 export fn equal(a: complex, b: complex) bool = {
-	match (a) {
+	const a: c128 = match (a) {
 	case let a: c64 =>
-		return equalc64(a, b as c64);
+		yield (a.0, a.1);
 	case let a: c128 =>
-		return equalc128(a, b as c128);
+		yield a;
 	};
+	const b: c128 = match (b) {
+	case let b: c64 =>
+		yield (b.0, b.1);
+	case let b: c128 =>
+		yield b;
+	};
+	return a.0 == b.0 && a.1 == b.1;
 };
 
 // Returns [[math::E]] raised to the power of z.
