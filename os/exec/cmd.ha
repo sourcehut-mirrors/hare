@@ -22,6 +22,7 @@ use strings;
 //	assert(exec::check(&status) is void);
 //
 // By default, the new command will inherit the current process's environment.
+// To clear the environment, use [[clearenv]].
 export fn cmd(name: str, args: str...) (command | error | nomem) = {
 	let platcmd = if (strings::contains(name, '/')) {
 		yield match (open(name)) {
