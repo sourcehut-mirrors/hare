@@ -159,7 +159,7 @@ fn fixed_write(s: *io::stream, buf: const []u8) (size | io::error) = {
 	};
 	let s = s: *stream;
 	if (s.pos >= len(s.buf)) {
-		return errors::overflow;
+		return nomem;
 	};
 	const n = if (len(buf) > len(s.buf[s.pos..])) {
 		yield len(s.buf[s.pos..]);
@@ -210,7 +210,7 @@ fn dynamic_close(s: *io::stream) (void | io::error) = {
 	assert(io::read(&s, out[..1]) as size == 1 && out[0] == 1);
 	assert(io::seek(&s, 1, io::whence::CUR) as io::off == 2: io::off);
 	assert(io::read(&s, buf[..]) is io::EOF);
-	assert(io::writeall(&s, [1, 2]) as io::error is errors::overflow);
+	assert(io::writeall(&s, [1, 2]) as io::error is nomem);
 
 	let in: [6]u8 = [0, 1, 2, 3, 4, 5];
 	let out: [6]u8 = [0...];
