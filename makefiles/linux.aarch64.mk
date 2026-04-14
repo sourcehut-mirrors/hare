@@ -243,7 +243,7 @@ $(HARECACHE)/os_exec.ssa: $(os_exec_ha) $(HARECACHE)/errors.td $(HARECACHE)/fmt.
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/os_exec.td.tmp -N os::exec $(os_exec_ha)
 
 shlex_ha = shlex/escape.ha shlex/split.ha
-$(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/encoding_utf8.td $(HARECACHE)/io.td $(HARECACHE)/memio.td $(HARECACHE)/strings.td
+$(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/io.td $(HARECACHE)/memio.td $(HARECACHE)/strings.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/shlex.td.tmp -N shlex $(shlex_ha)

@@ -2,7 +2,6 @@
 // (c) Hare authors <https://harelang.org>
 
 use ascii;
-use encoding::utf8;
 use io;
 use memio;
 use strings;
@@ -25,24 +24,24 @@ fn is_safe(s: str) bool = {
 // Quotes a shell string and writes it to the provided I/O handle.
 export fn quote(sink: io::handle, s: str) (size | io::error) = {
 	if (len(s) == 0) {
-		return io::writeall(sink, strings::toutf8(`''`))?;
+		return memio::concat(sink, `''`);
 	};
 	if (is_safe(s)) {
-		return io::writeall(sink, strings::toutf8(s))?;
+		return memio::concat(sink, s);
 	};
 
-	let z = io::writeall(sink, ['\''])?;
+	let z = memio::appendrune(sink, '\'')?;
 
 	const iter = strings::iter(s);
 	for (let rn => strings::next(&iter)) {
 		if (rn == '\'') {
-			z += io::writeall(sink, strings::toutf8(`'"'"'`))?;
+			z += memio::concat(sink, `'"'"'`)?;
 		} else {
-			z += io::writeall(sink, utf8::encoderune(rn))?;
+			z += memio::appendrune(sink, rn)?;
 		};
 	};
 
-	z += io::writeall(sink, ['\''])?;
+	z += memio::appendrune(sink, '\'')?;
 	return z;
 };
 
