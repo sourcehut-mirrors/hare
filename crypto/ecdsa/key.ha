@@ -155,7 +155,7 @@ export fn pubkey_init(pub: *pubkey, x: []u8, y: []u8) (void | invalidkey) = {
 	q[..] = [0x04, 0x00...];
 
 	const xoff = 1 + (csz - len(x));
-	const yoff = 1 + xoff + (csz - len(y));
+	const yoff = 1 + csz + (csz - len(y));
 
 	q[xoff..xoff + len(x)] = x[..];
 	q[yoff..] = y[..];
