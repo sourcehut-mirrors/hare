@@ -224,6 +224,15 @@ fn scalar_multiply_add(s: *scalar, a: *scalar, b: *scalar, c: *scalar) void = {
 	scalar_mod_L(s, &x);
 };
 
+// returns a < b
+fn scalar_less_than(a: *scalar, b: *scalar) bool = {
+	let borrow: u32 = 0;
+	for (let i = 0z; i < SCALARSZ; i += 1) {
+		borrow = ((a[i]: u32) - (b[i]: u32) - borrow) >> 8 & 1;
+	};
+	return borrow == 1;
+};
+
 
 def POINTSZ: size = 32;
 

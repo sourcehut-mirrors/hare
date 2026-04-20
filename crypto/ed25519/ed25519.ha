@@ -182,6 +182,11 @@ export fn verify(h: *hash) (void | invalidsig) = {
 
 	let s: scalar = [0...];
 	s[..] = h.sig[32..64];
+	if (!scalar_less_than(&s, &L)) {
+		return invalidsig;
+	};
+
+
 	scalarmult_base(&A, &s);
 	point_add(&check_R, &check_R, &A);
 	let R_bytes: [POINTSZ]u8 = [0...];
