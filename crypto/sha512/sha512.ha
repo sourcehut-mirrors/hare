@@ -342,6 +342,6 @@ fn block(h: *digest, p: []u8) void = {
 
 fn close(stream: *io::stream) (void | io::error) = {
 	let s = stream: *digest;
-	bytes::zero((s.h[..]: *[*]u8)[..len(s.h) * size(u32)]);
+	bytes::zero((s.h[..]: *[*]u8)[..len(s.h) * size(u64)]);
 	bytes::zero(s.x);
 };
