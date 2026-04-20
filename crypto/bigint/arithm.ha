@@ -306,7 +306,7 @@ export fn reduce(x: []word, a: const []word, m: const []word) void = {
 	// The source length is at least equal to that of the modulus.
 	// We must thus copy N-1 words, and input the remaining words
 	// one by one.
-	x[1..mlen] = a[2 + (alen - mlen).. 1 + mlen];
+	x[1..mlen] = a[2 + (alen - mlen).. 1 + alen];
 	x[mlen] = 0;
 	for (let u = 1 + alen - mlen; u > 0; u -= 1) {
 		muladd_small(x, a[u], m);
