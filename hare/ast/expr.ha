@@ -133,7 +133,7 @@ export type binarithm_expr = struct {
 // A single variable biding.
 //
 // 	foo: int = bar
-// 	(foo, _, foo2): int = bar
+// 	(foo, _, foo2): (int, int, int) = bar
 // 	_ = bar
 export type binding = struct {
 	names: []str, // empty slice for _
