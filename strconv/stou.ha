@@ -57,7 +57,7 @@ fn parseint(s: str, base: base) ((bool, u64) | invalid | overflow) = {
 		n *= base;
 		n += digit;
 
-		if (n < old) {
+		if (n / base != old) {
 			return overflow;
 		};
 	};
@@ -122,6 +122,8 @@ export fn stoz(s: str, base: base = base::DEC) (size | invalid | overflow) =
 
 	assert(stou64("18446744073709551616") is overflow);
 	assert(stou64("184467440737095516150") is overflow);
+	assert(stou64("184467440737095516159") is overflow);
+	assert(stou64("20496382304121724019") is overflow);
 	assert(stou64("-1") is overflow);
 
 	assert(stou64("0") as u64 == 0);
