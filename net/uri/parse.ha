@@ -342,7 +342,7 @@ fn percent_decode_buf(out: io::handle, s: str) (void | invalid | nomem) = {
 	defer io::close(&tmp)!;
 	let percent_data: []u8 = [];
 	let success = false;
-	if (!success) free(percent_data);
+	defer if (!success) free(percent_data);
 
 	for (true) {
 		match (strings::next(&iter)) {
