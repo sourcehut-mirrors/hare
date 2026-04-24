@@ -14,7 +14,11 @@ export type msghdr = struct {
 
 // Creates a new message header for advanced socket usage, with configurable I/O
 // vectors, control messages, and other details, for use with [[sendmsg]] and
-// [[recvmsg]].
+// [[recvmsg]]. One can populate the message with vectors (buffers of data to
+// send or receive) via [[addvector]], and populate control messages via
+// [[addcontrol]]. Control messages are domain-specific, see e.g.
+// [[net::unix::addfiles]] for a higher-level, protocol-aware interface to
+// control messages.
 //
 // The user must call [[finish]] when they are done using this message for
 // sending or receiving. The same message may be used for multiple operations
