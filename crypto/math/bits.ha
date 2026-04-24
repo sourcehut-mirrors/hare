@@ -179,3 +179,13 @@ export fn ccopyu32(ctl: u32, dest: []u32, src: const []u32) void = {
 		dest[i] = muxu32(ctl, x, y);
 	};
 };
+
+// Copies 'src' to 'dest' if 'ctl' == 1
+export fn ccopyu8(ctl: u32, dest: []u8, src: const []u8) void = {
+	for (let i = 0z; i < len(dest); i += 1) {
+		const x = src[i];
+		const y = dest[i];
+
+		dest[i] = muxu32(ctl, x, y): u8;
+	};
+};
