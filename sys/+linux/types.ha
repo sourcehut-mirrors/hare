@@ -352,7 +352,7 @@ export def POLLPRI: i16 = 0x002;
 export def POLLOUT: i16 = 0x004;
 export def POLLERR: i16 = 0x008;
 export def POLLHUP: i16 = 0x010;
-export def POLLVAL: i16 = 0x020;
+export def POLLNVAL: i16 = 0x020;
 
 export type pollfd = struct {
 	fd: int,
