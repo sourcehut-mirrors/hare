@@ -111,7 +111,7 @@ fn iexpand(
 	const hashsz = hash::sz(h);
 
 	// to avoid ctr overflows
-	assert((len(dest) + hashsz - 1) / hashsz < 255,
+	assert((len(dest) + hashsz - 1) / hashsz <= 255,
 		"'dest' exceeds maximum allowed size");
 
 	let ctr: [1]u8 = [0];
