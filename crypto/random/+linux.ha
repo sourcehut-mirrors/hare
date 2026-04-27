@@ -12,7 +12,7 @@ use sys;
 export fn buffer(buf: []u8) void = {
 	let n = 0z;
 	for (n < len(buf)) {
-		match (sys::getrandom(buf[n..]: *[*]u8, len(buf), 0)) {
+		match (sys::getrandom(buf[n..]: *[*]u8, len(buf) - n, 0)) {
 		case let err: sys::errno =>
 			switch (err) {
 			case sys::EINTR => void;
