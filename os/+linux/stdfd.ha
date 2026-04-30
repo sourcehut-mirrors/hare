@@ -9,16 +9,22 @@ let stdin_bufio: bufio::stream = @undefined; // overwritten by init_stdfd
 
 let stdout_bufio: bufio::stream = @undefined; // overwritten by init_stdfd
 
-// The standard input. This handle is buffered.
+// The standard input. This handle is buffered (i.e. backed by a
+// [[bufio::stream]]).
 export let stdin: io::handle = sys::STDIN_FILENO; // initialized by init_stdfd
 
-// The standard input, as an [[io::file]]. This handle is unbuffered.
+// The standard input, as an [[io::file]]. This handle is unbuffered. Reads from
+// this file should not be intermixed with reads from the buffered stream
+// [[stdin]].
 export let stdin_file: io::file = sys::STDIN_FILENO;
 
-// The standard output. This handle is buffered.
+// The standard output. This handle is buffered (i.e. backed by a
+// [[bufio::stream]]).
 export let stdout: io::handle = sys::STDOUT_FILENO; // initialized by init_stdfd
 
-// The standard output, as an [[io::file]]. This handle is unbuffered.
+// The standard output, as an [[io::file]]. This handle is unbuffered. Writes to
+// this file should not be intermixed with writes to the buffered stream
+// [[stdout]].
 export let stdout_file: io::file = sys::STDOUT_FILENO;
 
 // The standard error. This handle is unbuffered.
