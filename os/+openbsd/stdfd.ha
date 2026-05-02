@@ -5,19 +5,9 @@ use bufio;
 use io;
 use sys;
 
-let stdin_bufio: bufio::stream = bufio::stream {
-	// Will be overwritten, but must be initialized
-	vtable = null: io::stream,
-	source = 0,
-	...
-};
+let stdin_bufio: bufio::stream = @undefined; // overwritten by init_stdfd
 
-let stdout_bufio: bufio::stream = bufio::stream {
-	// Will be overwritten, but must be initialized
-	vtable = null: io::stream,
-	source = 1,
-	...
-};
+let stdout_bufio: bufio::stream = @undefined; // overwritten by init_stdfd
 
 // The standard input. This handle is buffered.
 export let stdin: io::handle = sys::STDIN_FILENO; // initialized by init_stdfd
