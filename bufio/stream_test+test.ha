@@ -118,3 +118,36 @@ use strings;
 	assert(io::read(&f, buf) as size == 4);
 	assert(io::read(&f, buf) is io::EOF);
 };
+
+@test fn seek() void = {
+	let sourcebuf: [16]u8 = [0...];
+	for (let i = 0u8; i < 16u8; i += 1) {
+		sourcebuf[i] = i;
+	};
+
+	let source = memio::fixed(sourcebuf);
+	defer io::close(&source)!;
+
+	let rbuf: [3]u8 = [0...];
+	let wbuf: [3]u8 = [0...];
+
+	let f = init(&source, rbuf, wbuf);
+	defer io::close(&f)!;
+
+	let b: [1]u8 = [0];
+	assert(io::read(&f, b) as size == 1);
+	assert(b[0] == 0);
+	assert(f.ravail == 2);
+
+	assert(io::seek(&f, 5, io::whence::SET) as io::off == 5);
+	assert(f.ravail == 0);
+	assert(io::read(&f, b) as size == 1);
+	assert(b[0] == 5);
+
+	assert(io::write(&f, [16, 17]) as size == 2);
+	assert(f.wavail == 2);
+	assert(f.wbuffer[0] == 16);
+	assert(f.wbuffer[1] == 17);
+	assert(io::seek(&f, 0, io::whence::END) as io::off == 16);
+	assert(f.wavail == 0);
+};

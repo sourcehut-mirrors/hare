@@ -8,12 +8,14 @@ use io;
 const vtable_r: io::vtable = io::vtable {
 	closer = &close_buffered,
 	reader = &read,
+	seeker = &seek,
 	...
 };
 
 const vtable_w: io::vtable = io::vtable {
 	closer = &close_buffered,
 	writer = &write,
+	seeker = &seek,
 	...
 };
 
@@ -21,6 +23,7 @@ const vtable_rw: io::vtable = io::vtable {
 	closer = &close_buffered,
 	reader = &read,
 	writer = &write,
+	seeker = &seek,
 	...
 };
 
@@ -265,4 +268,27 @@ fn write(s: *io::stream, buf: const []u8) (size | io::error) = {
 	};
 
 	return z;
+};
+
+fn seek(s: *io::stream, off: io::off, w: io::whence) (io::off | io::error) = {
+	const seeker = s.seeker;
+	const writer = s.writer;
+	let s = s: *stream;
+
+	match (seeker) {
+	case null =>
+		return errors::unsupported;
+	case let sk: *io::seeker =>
+		assert(sk == &seek);
+		// Flush the buffer if needed.
+		if (writer == &write) {
+			flush(s)?;
+		};
+
+		// Reset the read buffer.
+		s.ravail = 0;
+		s.rpos = len(s.rbuffer);
+
+		return io::seek(s.source, off, w);
+	};
 };
