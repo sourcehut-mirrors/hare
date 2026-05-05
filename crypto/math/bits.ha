@@ -170,6 +170,9 @@ export fn cmpu32(x: u32, y: u32) i32 = gtu32(x, y): i32 | -(gtu32(y, x): i32);
 // Multiplies two u32 and returns result as u64.
 export fn mulu32(x: u32, y: u32) u64 = x: u64 * y: u64;
 
+// Multiplies two u16 and returns result as u32.
+export fn mulu16(x: u16, y: u16) u32 = x: u32 * y: u32;
+
 // Copies 'src' to 'dest' if 'ctl' == 1
 export fn ccopyu32(ctl: u32, dest: []u32, src: const []u32) void = {
 	for (let i = 0z; i < len(dest); i += 1) {
