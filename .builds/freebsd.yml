@@ -44,3 +44,8 @@ tasks:
 - check_with_libc: |
     cd hare
     hare test -lc
+submitter:
+  git.sr.ht:
+    allow-refs:
+      - refs/heads/master
+      - "refs/tags/*"
