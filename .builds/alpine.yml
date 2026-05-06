@@ -87,3 +87,8 @@ tasks:
         exit
     fi
     hut pages publish -d docs.harelang.org docs/html
+submitter:
+  git.sr.ht:
+    allow-refs:
+      - refs/heads/master
+      - "refs/tags/*"
