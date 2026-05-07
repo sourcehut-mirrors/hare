@@ -135,21 +135,15 @@ fn platform_exec(cmd: *command) error = {
 
 fn platform_start(cmd: *command) (process | errors::error) = {
 	// TODO: Let the user configure clone more to their taste (e.g. SIGCHLD)
-	let pipe: [2]int = [0...];
-	match (sys::pipe2(&pipe, sys::O_CLOEXEC)) {
-	case let err: sys::errno =>
-		return errors::errno(err);
-	case void => void;
-	};
-
+	const (rd, wr) = unix::pipe()?;
 	match (sys::fork()) {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	case let pid: int =>
-		sys::close(pipe[1])!;
-		defer sys::close(pipe[0])!;
+		sys::close(wr)!;
+		defer sys::close(rd)!;
 		let errno: int = 0;
-		match (sys::read(pipe[0], &errno, size(int))) {
+		match (sys::read(rd, &errno, size(int))) {
 		case let err: sys::errno =>
 			return errors::errno(err);
 		case let n: size =>
@@ -163,14 +157,14 @@ fn platform_start(cmd: *command) (process | errors::error) = {
 			};
 		};
 	case void =>
-		sys::close(pipe[0])!;
+		sys::close(rd)!;
 		let err = platform_exec(cmd);
 		if (!(err is errors::opaque_)) {
 			sys::exit(1);
 		};
 		let err = err as errors::opaque_;
 		let err = &err.data: *sys::errno;
-		sys::write(pipe[1], err, size(int))!;
+		sys::write(wr, err, size(int))!;
 		sys::exit(1);
 	};
 };

@@ -80,7 +80,7 @@ export fn wait(
 ) (status | error) = {
 	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (sys::wait(*proc, &st.status, flags)) {
+	match (sys::waitpid(*proc, &st.status, flags)) {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	case let pid: sys::pid_t =>
@@ -114,7 +114,7 @@ export fn waitany(
 export fn waitall() (uint | error | !(process, exit_status)) = {
 	let st = status { ... };
 	for (let i = 0u; true; i += 1) {
-		match (sys::wait(sys::WAIT_ANY, &st.status, 0)) {
+		match (sys::waitpid(sys::WAIT_ANY, &st.status, 0)) {
 		case let err: sys::errno =>
 			if (err == sys::ECHILD) {
 				return i;
@@ -139,7 +139,7 @@ export fn peek(
 ) (status | void | error) = {
 	let ru = sys::rusage { ... };
 	let st = status { ... };
-	match (sys::wait(*proc, &st.status, sys::WNOHANG | flags)) {
+	match (sys::waitpid(*proc, &st.status, sys::WNOHANG | flags)) {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	case let pid: sys::pid_t =>
@@ -150,7 +150,7 @@ export fn peek(
 			assert(pid == *proc: sys::pid_t);
 		};
 	};
-	getrusage(sys::RUSAGE_CHILDREN, &ru)!;
+	sys::getrusage(sys::RUSAGE_CHILDREN, &ru)!;
 	rusage(&st, &ru);
 	return st;
 };
@@ -161,7 +161,7 @@ export fn peekany(
 	flags: wait_flag = wait_flag::NONE,
 ) ((process, status) | void | error) = {
 	let st = status { ... };
-	match (sys::wait4(sys::WAIT_ANY, &st.status, sys::WNOHANG | flags)) {
+	match (sys::waitpid(sys::WAIT_ANY, &st.status, sys::WNOHANG | flags)) {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	case let pid: sys::pid_t =>
