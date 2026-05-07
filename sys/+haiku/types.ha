@@ -217,7 +217,7 @@ export type sigact = struct {
 	},
 	sa_mask: sigset,
 	sa_flags: int,
-	sa_userdata: *opaque,
+	sa_userdata: nullable *opaque,
 };
 
 export type siginfo = struct {
@@ -463,6 +463,54 @@ export def SIGVTALRM: int = 27;
 export def SIGXCPU: int = 28;
 export def SIGXFSZ: int = 29;
 export def SIGBUS: int = 30;
+
+export def SI_USER: int = 0;
+export def SI_QUEUE: int = 1;
+export def SI_TIMER: int = 2;
+export def SI_ASYNCIO: int = 3;
+export def SI_MESGQ: int = 4;
+
+export def ILL_ILLOPC: int = 10;
+export def ILL_ILLOPN: int = 11;
+export def ILL_ILLADR: int = 12;
+export def ILL_ILLTRP: int = 13;
+export def ILL_PRVOPC: int = 14;
+export def ILL_PRVREG: int = 15;
+export def ILL_COPROC: int = 16;
+export def ILL_BADSTK: int = 17;
+
+export def FPE_INTDIV: int = 20;
+export def FPE_INTOVF: int = 21;
+export def FPE_FLTDIV: int = 22;
+export def FPE_FLTOVF: int = 23;
+export def FPE_FLTUND: int = 24;
+export def FPE_FLTRES: int = 25;
+export def FPE_FLTINV: int = 26;
+export def FPE_FLTSUB: int = 27;
+
+export def SEGV_MAPERR: int = 30;
+export def SEGV_ACCERR: int = 31;
+
+export def BUS_ADRALN: int = 40;
+export def BUS_ADRERR: int = 41;
+export def BUS_OBJERR: int = 42;
+
+export def TRAP_BRKPT: int = 50;
+export def TRAP_TRACE: int = 51;
+
+export def CLD_EXITED: int = 60;
+export def CLD_KILLED: int = 61;
+export def CLD_DUMPED: int = 62;
+export def CLD_TRAPPED: int = 63;
+export def CLD_STOPPED: int = 64;
+export def CLD_CONTINUED: int = 65;
+
+export def POLL_IN: int = 70;
+export def POLL_OUT: int = 71;
+export def POLL_MSG: int = 72;
+export def POLL_ERR: int = 73;
+export def POLL_PRI: int = 74;
+export def POLL_HUP: int = 75;
 
 export def PRIO_PROCESS: int = 0;
 export def PRIO_PGRP: int = 1;
