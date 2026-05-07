@@ -213,8 +213,8 @@ $(HARECACHE)/cmd_hare_build.ssa: $(cmd_hare_build_ha) $(HARECACHE)/crypto_sha256
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/cmd_hare_build.td.tmp -N cmd::hare::build $(cmd_hare_build_ha)
 
-unix_ha =
-$(HARECACHE)/unix.ssa: $(unix_ha)
+unix_ha = unix/+haiku/creds.ha unix/+haiku/nice.ha unix/+haiku/pipe.ha unix/+haiku/rlimit.ha unix/+haiku/umask.ha
+$(HARECACHE)/unix.ssa: $(unix_ha) $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix.td.tmp -N unix $(unix_ha)
