@@ -772,3 +772,108 @@ export fn getrusage(who: int, rusage: *rusage) (void | errno) = {
 	let ret = libc_getrusage(who, rusage);
 	check_error(ret == -1)?;
 };
+
+@symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) int;
+
+export fn accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) (int | errno) = {
+	let res = libc_accept(sock, addr, addrlen);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("sendmsg") fn libc_sendmsg(sock: int, msghdr: const *msghdr, flags: int) i64;
+
+export fn sendmsg(sock: int, msghdr: const *msghdr, flags: int) (size | errno) = {
+	let res = libc_sendmsg(sock, msghdr, flags);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("recvmsg") fn libc_recvmsg(sock: int, msghdr: const *msghdr, flags: int) i64;
+
+export fn recvmsg(sock: int, msghdr: const *msghdr, flags: int) (size | errno) = {
+	let res = libc_recvmsg(sock, msghdr, flags);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("shutdown") fn libc_shutdown(s: int, how: int) int;
+
+export fn shutdown(s: int, how: int) (void | errno) = {
+	let res = libc_shutdown(s, how);
+	check_error(res == -1)?;
+};
+
+export @symbol("arc4random_buf") fn arc4random_buf(
+	buf: *opaque,
+	nbytes: size
+) void;
+
+@symbol("ioctl") fn libc_ioctl(fd: int, req: u64, arg: u64) int;
+
+export type ioctl_arg = (nullable *opaque | u64);
+
+export fn ioctl(fd: int, req: u64, arg: ioctl_arg) (int | errno) = {
+	let res = match (arg) {
+	case let u: u64 =>
+		yield libc_ioctl(fd, req, u);
+	case let ptr: nullable *opaque =>
+		yield libc_ioctl(fd, req, ptr: uintptr: u64);
+	};
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("posix_openpt") fn libc_posix_openpt(flags: int) int;
+
+export fn posix_openpt(flags: int) (int | errno) = {
+	let res = libc_posix_openpt(flags);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("grantpt") fn libc_grantpt(fd: int) int;
+
+export fn grantpt(fd: int) (int | errno) = {
+	let res = libc_grantpt(fd);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("unlockpt") fn libc_unlockpt(fd: int) int;
+
+export fn unlockpt(fd: int) (int | errno) = {
+	let res = libc_unlockpt(fd);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("ptsname") fn libc_ptsname(master: int) nullable *[*]u8;
+
+export fn ptsname(master: int) (*[*]u8 | errno) = {
+	let res = libc_ptsname(master);
+	check_error(res == null)?;
+	return res: *[*]u8;
+};
+
+@symbol("isatty") fn libc_isatty(fd: int) int;
+
+export fn isatty(fd: int) (bool | errno) = {
+	let res = libc_isatty(fd);
+	check_error(res == -1)?;
+	return res == 1;
+};
+
+@symbol("tcgetattr") fn libc_tcgetattr(fd: int, tios: *termios) int;
+
+export fn tcgetattr(fd: int, tios: *termios) (void | errno) = {
+	let res = libc_tcgetattr(fd, tios);
+	check_error(res == -1)?;
+};
+
+@symbol("tcsetattr") fn libc_tcsetattr(fd: int, opt: int, tios: const *termios) int;
+
+export fn tcsetattr(fd: int, opt: int, tios: const *termios) (void | errno) = {
+	let res = libc_tcsetattr(fd, opt, tios);
+	check_error(res == -1)?;
+};
