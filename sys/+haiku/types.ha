@@ -146,6 +146,8 @@ export def CLOCK_REALTIME: clockid_t = -1;
 export def CLOCK_PROCESS_CPUTIME_ID: clockid_t = -2;
 export def CLOCK_THREAD_CPUTIME_ID: clockid_t = -3;
 
+export def TIMER_ABSTIME: int = 1;
+
 export def F_DUPFD: int = 0x0001;
 export def F_GETFD: int = 0x0002;
 export def F_SETFD: int = 0x0004;

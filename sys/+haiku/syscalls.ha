@@ -190,3 +190,47 @@ export fn fdatasync(fd: int) (void | errno) = {
 	check_error(res == -1)?;
 	return res;
 };
+
+@symbol("nanosleep") fn libc_nanosleep(
+	timeout: *const timespec,
+	remainder: nullable *timespec,
+) int;
+
+export fn nanosleep(
+	timeout: *const timespec,
+	remainder: nullable *timespec,
+) (void | errno) = {
+	let res = libc_nanosleep(timeout, remainder);
+	check_error(res == -1)?;
+};
+
+@symbol("clock_nanosleep") fn libc_clock_nanosleep(
+	clock: clockid_t,
+	flags: int,
+	timeout: *const timespec,
+	remainder: nullable *timespec,
+) int;
+
+export fn clock_nanosleep(
+	clock: clockid_t,
+	flags: int,
+	timeout: *const timespec,
+	remainder: nullable *timespec,
+) (void | errno) = {
+	let res = libc_clock_nanosleep(clock, flags, timeout, remainder);
+	check_error(res == -1)?;
+};
+
+@symbol("clock_gettime") fn libc_clock_gettime(clock: int, now: *timespec) int;
+
+export fn clock_gettime(clock: int, now: *timespec) (void | errno) = {
+	let res = libc_clock_gettime(clock, now);
+	check_error(res == -1)?;
+};
+
+@symbol("clock_settime") fn libc_clock_settime(clock: int, now: *const timespec) int;
+
+export fn clock_settime(clock: int, now: *const timespec) (void | errno) = {
+	let res = libc_clock_settime(clock, now);
+	check_error(res == -1)?;
+};

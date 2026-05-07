@@ -59,7 +59,7 @@ $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/sys.td
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/errors.td.tmp -N errors $(errors_ha)
 
 io_ha = io/+haiku/dup.ha io/+haiku/mmap.ha io/+haiku/platform_file.ha io/+haiku/sync.ha io/+haiku/vector.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/types.ha io/unread.ha io/util.ha io/zero.ha
-$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/sys.td
+$(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/sys.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/io.td.tmp -N io $(io_ha)
@@ -112,8 +112,8 @@ $(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/strings.td 
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/path.td.tmp -N path $(path_ha)
 
-time_ha = time/arithm.ha time/duration.ha time/instant.ha
-$(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/math.td $(HARECACHE)/types.td
+time_ha = time/+haiku/functions.ha time/arithm.ha time/duration.ha time/instant.ha
+$(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/errors.td $(HARECACHE)/math.td $(HARECACHE)/sys.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time.td.tmp -N time $(time_ha)
