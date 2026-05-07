@@ -58,7 +58,7 @@ $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/sys.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/errors.td.tmp -N errors $(errors_ha)
 
-io_ha = io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/types.ha io/unread.ha io/util.ha io/zero.ha
+io_ha = io/+haiku/platform_file.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/types.ha io/unread.ha io/util.ha io/zero.ha
 $(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
