@@ -111,8 +111,8 @@ $(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/strings.td 
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/path.td.tmp -N path $(path_ha)
 
-time_ha = time/arithm.ha time/duration.ha time/instant.ha
-$(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/math.td $(HARECACHE)/types.td
+time_ha = time/+haiku/functions.ha time/arithm.ha time/duration.ha time/instant.ha
+$(HARECACHE)/time.ssa: $(time_ha) $(HARECACHE)/errors.td $(HARECACHE)/math.td $(HARECACHE)/sys.td $(HARECACHE)/types.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/time.td.tmp -N time $(time_ha)
