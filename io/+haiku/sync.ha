@@ -22,8 +22,10 @@ export fn fsync(fd: file) (void | error) = {
 // successfully retrieved. If the file size has changed, for example, this will
 // block until the inode is updated; but it would not block on an update to its
 // mtime.
+//
+// Note: On Haiku this is equivalent to [[fsync]].
 export fn fdatasync(fd: file) (void | error) = {
-	match (sys::fdatasync(fd)) {
+	match (sys::fsync(fd)) {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	case void =>

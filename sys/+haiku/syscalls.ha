@@ -274,14 +274,6 @@ export fn fsync(fd: int) (void | errno) = {
 	return res;
 };
 
-@symbol("fdatasync") fn libc_fdatasync(fd: int) int;
-
-export fn fdatasync(fd: int) (void | errno) = {
-	let res = libc_fdatasync(fd);
-	check_error(res == -1)?;
-	return res;
-};
-
 @symbol("nanosleep") fn libc_nanosleep(
 	timeout: *const timespec,
 	remainder: nullable *timespec,
@@ -588,7 +580,9 @@ export fn readdir(d: *dir) (nullable *dirent | errno) = {
 	case let d: *dirent =>
 		return d;
 	case null =>
-		check_error(true)?;
+		if (get_errno() != 0) {
+			return get_errno(): errno;
+		};
 		return null;
 	};
 };
@@ -689,7 +683,7 @@ export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
 	check_error(res == -1)?;
 };
 
-@symbol("pipe2") fn libc_pipe(pipefd: *[2]int) int;
+@symbol("pipe") fn libc_pipe(pipefd: *[2]int) int;
 
 export fn pipe(pipefd: *[2]int) (void | errno) = {
 	let res = libc_pipe(pipefd);
@@ -777,4 +771,12 @@ export fn sigprocmask(
 ) (void | errno) = {
 	let res = libc_sigprocmask(how, set, old);
 	check_error(res == -1)?;
+};
+
+@symbol("isatty") fn libc_isatty(fd: int) int;
+
+export fn isatty(fd: int) (bool | errno) = {
+	let res = libc_isatty(fd);
+	check_error(res == -1)?;
+	return res == 1;
 };

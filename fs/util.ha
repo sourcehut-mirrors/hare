@@ -129,10 +129,10 @@ fn rmdirall_path(fs: *fs, buf: *path::buffer) (void | error) = {
 	for (let ent => next(it)?) {
 		path::push(buf, ent.name)!;
 
-		switch (ent.ftype & mode::DIR) {
-		case mode::DIR =>
+		const st = stat(fs, path::string(buf))?;
+		if (isdir(st.mode)) {
 			rmdirall_path(fs, buf)?;
-		case =>
+		} else {
 			remove(fs, path::string(buf))?;
 		};
 		path::pop(buf);

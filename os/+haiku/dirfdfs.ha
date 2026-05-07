@@ -195,6 +195,7 @@ type os_iterator = struct {
 fn iter_finish(iter: *fs::iterator) void = {
 	let iter = iter: *os_iterator;
 	sys::closedir(iter.dir)!;
+	free(iter.iter.path);
 	free(iter);
 };
 
@@ -203,13 +204,21 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 	const dent = match (sys::readdir(iter.dir)) {
 	case let err: sys::errno =>
 		return errno_to_fs(err);
+	case let dent: nullable *sys::dirent =>
+		yield dent;
+	};
+	const dent = match (dent) {
 	case null =>
 		return done;
 	case let dent: *sys::dirent =>
 		yield dent;
 	};
+	const name = c::tostr(&dent.d_name[0]: const *c::char)!;
+	if (name == "." || name == "..") {
+		return iter_next(iter);
+	};
 	return fs::dirent {
-		name = c::tostr(&dent.d_name[0]: const *c::char)!,
+		name = name,
 		...
 	};
 };
@@ -236,6 +245,7 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 		iter = fs::iterator {
 			next = &iter_next,
 			finish = &iter_finish,
+			path = strings::dup(path)!,
 		},
 		dir = d,
 		...
@@ -492,6 +502,8 @@ fn errno_to_fs(err: sys::errno) fs::error = {
 		return errors::unsupported;
 	case sys::EXDEV =>
 		return fs::cannotrename;
+	case sys::EROFS =>
+		return errors::rofs;
 	case =>
 		return errors::errno(err);
 	};

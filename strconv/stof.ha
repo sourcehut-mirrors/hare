@@ -39,11 +39,11 @@ fn fast_parse(s: str, b: base) (fast_parsed_float | invalid) = {
 		i += 1;
 	};
 
-	let (expchr, max_ndmant, isdigit) = switch (b) {
+	let (expchr, max_ndmant) = switch (b) {
 	case base::DEC =>
-		yield ('e', 19, &ascii::isdigit);
+		yield ('e', 19);
 	case base::HEX =>
-		yield ('p', 16, &ascii::isxdigit);
+		yield ('p', 16);
 	case => abort("unreachable");
 	};
 
@@ -51,11 +51,15 @@ fn fast_parse(s: str, b: base) (fast_parsed_float | invalid) = {
 	let nd = 0, ndmant = 0, dp = 0;
 	let mant = 0u64, exp = 0i32;
 	for (i < len(s); i += 1) {
+		const isdigit =
+			if (b == base::DEC) ascii::isdigit(buf[i]: rune)
+			else ascii::isxdigit(buf[i]: rune);
+
 		if (buf[i] == '.') {
 			if (sawdot) return i: invalid;
 			sawdot = true;
 			dp = nd;
-		} else if (isdigit(buf[i]: rune)) {
+		} else if (isdigit) {
 			sawdigits = true;
 			if (buf[i] == '0' && nd == 0) {
 				dp -= 1;

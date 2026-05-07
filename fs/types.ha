@@ -25,6 +25,7 @@ export type error = !(
 	errors::busy |
 	errors::invalid |
 	errors::unsupported |
+	errors::rofs |
 	utf8::invalid |
 	wrongtype |
 	cannotrename |
@@ -49,6 +50,8 @@ export fn strerror(err: error) const str = {
 		return "Device is busy";
 	case errors::unsupported =>
 		return "Operation not supported";
+	case errors::rofs =>
+		return "Read-only filesystem";
 	case let err: utf8::invalid =>
 		return utf8::strerror(err);
 	case let err: io::error =>
@@ -157,10 +160,6 @@ export type dirent = struct {
 	// The name of this entry. Not fully qualified: for example,
 	// "foo/bar/baz.txt" would store "baz.txt" here.
 	name: str,
-
-	// The type of this entry. The permission bits may be unset. May be zero
-	// if the underlying OS or filesystem does not report the entry type.
-	ftype: mode,
 };
 
 // Duplicates a [[dirent]] object. Call [[dirent_finish]] to get rid of it
@@ -346,4 +345,6 @@ export type iterator = struct {
 	next: *nextfunc,
 	// Frees resources associated with the iterator.
 	finish: nullable *finishfunc,
+	// Path originally added iterated from
+	path: str,
 };

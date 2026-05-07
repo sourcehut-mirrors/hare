@@ -194,7 +194,7 @@ export fn strerror(err: errno) str = {
 	case EPIPE =>
 		return "Broken pipe";
 	case =>
-		return "Unknown error";
+		return unknown_errno(err);
 	};
 };
 
@@ -374,7 +374,7 @@ export fn errname(err: errno) str = {
 	case EPIPE =>
 		return "EPIPE";
 	case =>
-		return "EUNKNOWN";
+		return unknown_errno(err);
 	};
 };
 
