@@ -721,3 +721,18 @@ export fn setrlimit(resource: int, rlp: const *rlimit) (void | errno) = {
 export fn umask(mode: mode_t) (mode_t | errno) = {
 	return libc_umask(mode);
 };
+
+@symbol("waitpid") fn libc_waitpid(pid: pid_t, status: nullable *int, options: int) pid_t;
+
+export fn waitpid(pid: pid_t, status: nullable *int, options: int) (pid_t | errno) = {
+	let res = libc_waitpid(pid, status, options);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("getrusage") fn libc_getrusage(who: int, rusage: *rusage) int;
+
+export fn getrusage(who: int, rusage: *rusage) (void | errno) = {
+	let ret = libc_getrusage(who, rusage);
+	check_error(ret == -1)?;
+};

@@ -1,0 +1,240 @@
+// SPDX-License-Identifier: MPL-2.0
+// (c) Hare authors <https://harelang.org>
+
+use errors;
+use fmt;
+use sys;
+use time;
+use unix;
+use unix::signal;
+
+// Stores information about a child process.
+export type process = unix::pid;
+
+// Returns the currently running [[process]].
+export fn self() process = {
+	return unix::getpid();
+};
+
+// Stores information about an exited process.
+export type status = struct {
+	status: int,
+	// Not all of these members are supported on all operating systems.
+	// Only utime and stime are guaranteed to be available.
+	rusage: struct {
+		utime: time::instant,
+		stime: time::instant,
+		maxrss: i64,
+		ixrss: i64,
+		idrss: i64,
+		isrss: i64,
+		minflt: i64,
+		majflt: i64,
+		nswap: i64,
+		inblock: i64,
+		oublock: i64,
+		msgsnd: i64,
+		msgrcv: i64,
+		nsignals: i64,
+		nvcsw: i64,
+		nivcsw: i64,
+	},
+};
+
+fn rusage(st: *status, ru: *sys::rusage) void = {
+	st.rusage.utime = time::instant {
+		sec = ru.ru_utime.tv_sec,
+		nsec = ru.ru_utime.tv_usec * time::MICROSECOND: i64,
+	};
+	st.rusage.stime = time::instant {
+		sec = ru.ru_stime.tv_sec,
+		nsec = ru.ru_stime.tv_usec * time::MICROSECOND: i64,
+	};
+	st.rusage.maxrss = ru.ru_maxrss;
+	st.rusage.ixrss = ru.ru_ixrss;
+	st.rusage.idrss = ru.ru_idrss;
+	st.rusage.isrss = ru.ru_isrss;
+	st.rusage.minflt = ru.ru_minflt;
+	st.rusage.majflt = ru.ru_majflt;
+	st.rusage.nswap = ru.ru_nswap;
+	st.rusage.inblock = ru.ru_inblock;
+	st.rusage.oublock = ru.ru_oublock;
+	st.rusage.msgsnd = ru.ru_msgsnd;
+	st.rusage.msgrcv = ru.ru_msgrcv;
+	st.rusage.nsignals = ru.ru_nsignals;
+	st.rusage.nvcsw = ru.ru_nvcsw;
+	st.rusage.nivcsw = ru.ru_nivcsw;
+};
+
+// Flags accepted by the [[wait]] family of functions.
+export type wait_flag = enum int {
+	NONE = 0,
+	CONTINUED = sys::WCONTINUED,
+	UNTRACED = sys::WUNTRACED,
+};
+
+// Waits for a process to complete, then returns its status information.
+export fn wait(
+	proc: *process,
+	flags: wait_flag = wait_flag::NONE,
+) (status | error) = {
+	let ru = sys::rusage { ... };
+	let st = status { ... };
+	match (sys::wait(*proc, &st.status, flags)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case let pid: sys::pid_t =>
+		assert(pid == *proc: sys::pid_t);
+	};
+	sys::getrusage(sys::RUSAGE_CHILDREN, &ru)!;
+	rusage(&st, &ru);
+	return st;
+};
+
+// Waits for the first child process to complete, then returns its process info
+// and status
+export fn waitany(
+	flags: wait_flag = wait_flag::NONE,
+) ((process, status) | error) = {
+	let ru = sys::rusage { ... };
+	let st = status { ... };
+	match (sys::waitpid(sys::WAIT_ANY, &st.status, flags)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case let pid: sys::pid_t =>
+		sys::getrusage(sys::RUSAGE_CHILDREN, &ru)!;
+		rusage(&st, &ru);
+		return (pid: process, st);
+	};
+};
+
+// Waits for all children to terminate succesfully. If a child process exits
+// with a nonzero status, returns its process info and exit status immediately,
+// not waiting for the remaining children.
+export fn waitall() (uint | error | !(process, exit_status)) = {
+	let st = status { ... };
+	for (let i = 0u; true; i += 1) {
+		match (sys::wait(sys::WAIT_ANY, &st.status, 0)) {
+		case let err: sys::errno =>
+			if (err == sys::ECHILD) {
+				return i;
+			} else {
+				return errors::errno(err);
+			};
+		case let pid: sys::pid_t =>
+			match (check(&st)) {
+			case void => void;
+			case let es: !exit_status =>
+				return (pid: process, es);
+			};
+		};
+	};
+};
+
+// Checks for process completion, returning its status information on
+// completion, or void if it is still running.
+export fn peek(
+	proc: *process,
+	flags: wait_flag = wait_flag::NONE,
+) (status | void | error) = {
+	let ru = sys::rusage { ... };
+	let st = status { ... };
+	match (sys::wait(*proc, &st.status, sys::WNOHANG | flags)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case let pid: sys::pid_t =>
+		switch (pid) {
+		case 0 =>
+			return;
+		case =>
+			assert(pid == *proc: sys::pid_t);
+		};
+	};
+	getrusage(sys::RUSAGE_CHILDREN, &ru)!;
+	rusage(&st, &ru);
+	return st;
+};
+
+// Checks if any child process has completed, returning its process info and
+// status if so.
+export fn peekany(
+	flags: wait_flag = wait_flag::NONE,
+) ((process, status) | void | error) = {
+	let st = status { ... };
+	match (sys::wait4(sys::WAIT_ANY, &st.status, sys::WNOHANG | flags)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case let pid: sys::pid_t =>
+		switch (pid) {
+		case 0 =>
+			return;
+		case =>
+			return (pid: process, st);
+		};
+	};
+};
+
+// The exit status code of a process.
+export type exited = int;
+
+// The signal number which caused a process to terminate.
+export type signaled = signal::sig;
+
+// The exit status of a process.
+export type exit_status = (exited | signaled);
+
+// Returns a human friendly string describing the exit status. The string is
+// statically allocated; use [[strings::dup]] to extend its lifetime.
+export fn exitstr(status: exit_status) const str = {
+	static let buf: [64]u8 = [0...];
+	match (status) {
+	case let i: exited =>
+		switch (i) {
+		case 0 =>
+			return "exited normally";
+		case =>
+			return fmt::bsprintf(buf,
+				"exited with status {}", i: int)!;
+		};
+	case let s: signaled =>
+		return fmt::bsprintf(buf, "exited with signal {}",
+			signal::signame(s))!;
+	};
+};
+
+// Returns the exit status of a completed process.
+export fn exit(stat: *status) exit_status = {
+	if (sys::wifexited(stat.status)) {
+		return sys::wexitstatus(stat.status): exited;
+	};
+	if (sys::wifsignaled(stat.status)) {
+		return sys::wtermsig(stat.status): signaled;
+	};
+	abort("Unexpected exit status");
+};
+
+// Checks the exit status of a completed process, returning void if successful,
+// or its status code as an error type if not.
+export fn check(stat: *status) (void | !exit_status) = {
+	if (sys::wifexited(stat.status) && sys::wexitstatus(stat.status) == 0) {
+		return;
+	};
+	return exit(stat);
+};
+
+// Terminates a process. On Haiku, this sends [[unix::signal::sig::TERM]] to
+// the process.
+export fn kill(proc: process) (void | errors::error) = {
+	return sig(proc, signal::sig::TERM);
+};
+
+// Sends a signal to a child process. This function is only supported on
+// Unix-like systems.
+export fn sig(proc: process, sig: signal::sig) (void | errors::error) = {
+	match (sys::kill(proc, sig)) {
+	case let errno: sys::errno =>
+		return errors::errno(errno);
+	case void =>
+		return;
+	};
+};
