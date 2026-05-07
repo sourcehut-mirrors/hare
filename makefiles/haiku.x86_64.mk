@@ -58,7 +58,7 @@ $(HARECACHE)/errors.ssa: $(errors_ha) $(HARECACHE)/sys.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/errors.td.tmp -N errors $(errors_ha)
 
-io_ha = io/+haiku/platform_file.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/types.ha io/unread.ha io/util.ha io/zero.ha
+io_ha = io/+haiku/dup.ha io/+haiku/mmap.ha io/+haiku/platform_file.ha io/+haiku/sync.ha io/+haiku/vector.ha io/arch+x86_64.ha io/copy.ha io/drain.ha io/empty.ha io/file.ha io/handle.ha io/limit.ha io/stream.ha io/tee.ha io/types.ha io/unread.ha io/util.ha io/zero.ha
 $(HARECACHE)/io.ssa: $(io_ha) $(HARECACHE)/bytes.td $(HARECACHE)/errors.td $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -106,8 +106,8 @@ $(HARECACHE)/memio.ssa: $(memio_ha) $(HARECACHE)/bytes.td $(HARECACHE)/encoding_
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/memio.td.tmp -N memio $(memio_ha)
 
-path_ha = path/buffer.ha path/error.ha path/ext_stack.ha path/iter.ha path/posix.ha path/prefix.ha path/stack.ha
-$(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/strings.td
+path_ha = path/+haiku.ha path/buffer.ha path/error.ha path/ext_stack.ha path/iter.ha path/posix.ha path/prefix.ha path/stack.ha
+$(HARECACHE)/path.ssa: $(path_ha) $(HARECACHE)/bytes.td $(HARECACHE)/strings.td $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/path.td.tmp -N path $(path_ha)
