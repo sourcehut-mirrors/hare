@@ -172,6 +172,8 @@ export type st_flock = struct {
 	l_pid: pid_t,
 };
 
+export type dir = opaque;
+
 export type dirent = struct {
 	d_dev: dev_t,
 	d_pdev: dev_t,
@@ -544,3 +546,41 @@ export def RLIMIT_NOFILE: int = 4;
 export def RLIMIT_STACK: int = 5;
 export def RLIMIT_AS: int = 6;
 export def RLIMIT_NOVMON: int = 7;
+
+export def _SYS_NAMELEN = 32;
+
+export type utsname = struct {
+	sysname: [_SYS_NAMELEN]u8,
+	nodename: [_SYS_NAMELEN]u8,
+	release: [_SYS_NAMELEN]u8,
+	version: [_SYS_NAMELEN]u8,
+	machine: [_SYS_NAMELEN]u8,
+};
+
+export type system_info = struct {
+	boot_time: i64,
+	cpu_count: u32,
+	max_pages: u64,
+	used_pages: u64,
+	cached_pages: u64,
+	block_cache_pages: u64,
+	ignored_pages: u64,
+	needed_memory: u64,
+	free_memory: u64,
+	max_swap_pages: u64,
+	free_swap_pages: u64,
+	page_faults: u32,
+	max_sems: u32,
+	used_sems: u32,
+	max_ports: u32,
+	used_ports: u32,
+	max_threads: u32,
+	used_threads: u32,
+	max_teams: u32,
+	used_teams: u32,
+	kernel_name: [NAME_MAX]u8,
+	kernel_build_date: [32]u8,
+	kernel_build_time: [32]u8,
+	kernel_version: i64,
+	abi: u32,
+};
