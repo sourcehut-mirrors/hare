@@ -318,13 +318,6 @@ export fn clock_settime(clock: int, now: *const timespec) (void | errno) = {
 	check_error(res == -1)?;
 };
 
-@symbol("getpriority") fn libc_getpriority(which: int, who: id_t) int;
-
-export fn getpriority(which: int, who: id_t) (int | errno) = {
-	let res = libc_getpriority(which, who);
-	check_error(res == -1)?;
-};
-
 @symbol("uname") fn libc_uname(u: *utsname) int;
 
 export fn uname(u: *utsname) (void | errno) = {
@@ -339,6 +332,21 @@ export fn get_system_info(info: *system_info) (void | errno) = {
 	check_error(res != 0)?;
 };
 
+@symbol("pipe") fn libc_pipe(pipefd: *[2]int) int;
+
+export fn pipe(pipefd: *[2]int) (void | errno) = {
+	let res = libc_pipe(pipefd);
+	check_error(res == -1)?;
+};
+
+@symbol("getpriority") fn libc_getpriority(which: int, who: id_t) int;
+
+export fn getpriority(which: int, who: id_t) (int | errno) = {
+	let res = libc_getpriority(which, who);
+	check_error(res == -1)?;
+	return res;
+};
+
 @symbol("setpriority") fn libc_setpriority(
 	which: int,
 	who: id_t,
@@ -347,13 +355,6 @@ export fn get_system_info(info: *system_info) (void | errno) = {
 
 export fn setpriority(which: int, who: id_t, prio: int) (void | errno) = {
 	let res = libc_setpriority(which, who, prio);
-	check_error(res == -1)?;
-};
-
-@symbol("pipe") fn libc_pipe(pipefd: *[2]int) int;
-
-export fn pipe(pipefd: *[2]int) (void | errno) = {
-	let res = libc_pipe(pipefd);
 	check_error(res == -1)?;
 };
 
@@ -733,4 +734,41 @@ export fn access(path: path, amode: int) (bool | errno) = {
 export fn chroot(path: path) (void | errno) = {
 	let res = libc_chroot(cpath(path)?);
 	check_error(res == -1)?;
+};
+
+@symbol("fork") fn libc_fork() int;
+
+export fn fork() (int | void | errno) = {
+	let res = libc_fork();
+	if (res == -1) {
+		return get_errno();
+	};
+	if (res == 0) {
+		return;
+	};
+	return res;
+};
+
+@symbol("execve") fn libc_execve(path: *const u8, argv: *[*]nullable *const u8,
+		envp: *[*]nullable *const u8) int;
+
+export fn execve(path: path, argv: *[*]nullable *const u8,
+		envp: *[*]nullable *const u8) errno = {
+	let res = libc_execve(cpath(path)?, argv, envp);
+	return get_errno();
+};
+
+@symbol("waitpid") fn libc_waitpid(pid: pid_t, status: nullable *int, options: int) pid_t;
+
+export fn waitpid(pid: pid_t, status: nullable *int, options: int) (pid_t | errno) = {
+	let res = libc_waitpid(pid, status, options);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("getrusage") fn libc_getrusage(who: int, rusage: *rusage) int;
+
+export fn getrusage(who: int, rusage: *rusage) (void | errno) = {
+	let ret = libc_getrusage(who, rusage);
+	check_error(ret == -1)?;
 };
