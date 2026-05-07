@@ -220,7 +220,7 @@ $(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/io.td $(H
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/shlex.td.tmp -N shlex $(shlex_ha)
 
-unix_tty_ha = unix/tty/types.ha
+unix_tty_ha = unix/tty/+haiku/isatty.ha unix/tty/+haiku/open.ha unix/tty/+haiku/pgid.ha unix/tty/+haiku/pty.ha unix/tty/+haiku/termios.ha unix/tty/+haiku/winsize.ha unix/tty/types.ha
 $(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/errors.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
