@@ -158,7 +158,8 @@ export type dirent = struct {
 	// "foo/bar/baz.txt" would store "baz.txt" here.
 	name: str,
 
-	// The type of this entry. The permission bits may be unset.
+	// The type of this entry. The permission bits may be unset. May be zero
+	// if the underlying OS or filesystem does not report the entry type.
 	ftype: mode,
 };
 
