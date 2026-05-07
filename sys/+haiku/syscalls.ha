@@ -369,3 +369,45 @@ export fn setrlimit(resource: int, rlp: const *rlimit) (void | errno) = {
 export fn umask(mode: mode_t) (mode_t | errno) = {
 	return libc_umask(mode);
 };
+
+export @symbol("sigaction") fn libc_sigaction(
+	sig: int,
+	act: *const sigact,
+	oact: nullable *sigact
+) int;
+
+export fn sigaction(
+	signum: int,
+	act: *const sigact,
+	old: nullable *sigact,
+) (void | errno) = {
+	let res = libc_sigaction(signum, act, old);
+	check_error(res == -1)?;
+};
+
+export @symbol("sigaltstack") fn libc_sigaltstack(
+	ss: const nullable *stack_t, oss: nullable *stack_t,
+) int;
+
+export fn sigaltstack(
+	ss: const nullable *stack_t,
+	oss: nullable *stack_t,
+) (void | errno) = {
+	let res = libc_sigaltstack(ss, oss);
+	check_error(res == -1)?;
+};
+
+@symbol("sigprocmask") fn libc_sigprocmask(
+	how: int,
+	set: nullable *const sigset,
+	old: nullable *sigset
+) int;
+
+export fn sigprocmask(
+	how: int,
+	set: nullable *const sigset,
+	old: nullable *sigset
+) (void | errno) = {
+	let res = libc_sigprocmask(how, set, old);
+	check_error(res == -1)?;
+};
