@@ -4,7 +4,7 @@ TDENV = env HARE_TD_sys=$(HARECACHE)/sys.td HARE_TD_rt=$(HARECACHE)/rt.td HARE_T
 RTSCRIPT = rt/+haiku/hare.sc
 OBJS = $(HARECACHE)/sys.o $(HARECACHE)/rt.o $(HARECACHE)/types.o $(HARECACHE)/bytes.o $(HARECACHE)/encoding_utf8.o $(HARECACHE)/sort_cmp.o $(HARECACHE)/strings.o $(HARECACHE)/ascii.o $(HARECACHE)/errors.o $(HARECACHE)/io.o $(HARECACHE)/bufio.o $(HARECACHE)/crypto_math.o $(HARECACHE)/endian.o $(HARECACHE)/hash.o $(HARECACHE)/crypto_sha256.o $(HARECACHE)/math.o $(HARECACHE)/memio.o $(HARECACHE)/path.o $(HARECACHE)/time.o $(HARECACHE)/fs.o $(HARECACHE)/types_c.o $(HARECACHE)/os.o $(HARECACHE)/strconv.o $(HARECACHE)/fmt.o $(HARECACHE)/encoding_hex.o $(HARECACHE)/math_random.o $(HARECACHE)/sort.o $(HARECACHE)/hare_lex.o $(HARECACHE)/hare_ast.o $(HARECACHE)/hare_parse.o $(HARECACHE)/hare_unparse.o $(HARECACHE)/hare_module.o $(HARECACHE)/unix.o $(HARECACHE)/unix_signal.o $(HARECACHE)/os_exec.o $(HARECACHE)/shlex.o $(HARECACHE)/unix_tty.o $(HARECACHE)/cmd_hare_build.o $(HARECACHE)/dirs.o $(HARECACHE)/getopt.o $(HARECACHE)/cmd_hare.o
 
-sys_ha = sys/+haiku/+x86_64.ha sys/+haiku/errno.ha sys/+haiku/libc.ha sys/+haiku/signal.ha sys/+haiku/socket.ha sys/+haiku/syscalls.ha sys/+haiku/types.ha sys/u64tos.ha sys/unknown_errno.ha
+sys_ha = sys/+haiku/+x86_64.ha sys/+haiku/errno.ha sys/+haiku/signal.ha sys/+haiku/socket.ha sys/+haiku/syscalls.ha sys/+haiku/types.ha sys/u64tos.ha sys/unknown_errno.ha
 $(HARECACHE)/sys.ssa: $(sys_ha)
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
@@ -221,7 +221,7 @@ $(HARECACHE)/shlex.ssa: $(shlex_ha) $(HARECACHE)/ascii.td $(HARECACHE)/io.td $(H
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/shlex.td.tmp -N shlex $(shlex_ha)
 
 unix_tty_ha = unix/tty/+haiku/isatty.ha unix/tty/+haiku/open.ha unix/tty/+haiku/pgid.ha unix/tty/+haiku/pty.ha unix/tty/+haiku/termios.ha unix/tty/+haiku/winsize.ha unix/tty/types.ha
-$(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/errors.td $(HARECACHE)/io.td $(HARECACHE)/sys.td
+$(HARECACHE)/unix_tty.ssa: $(unix_tty_ha) $(HARECACHE)/errors.td $(HARECACHE)/fs.td $(HARECACHE)/io.td $(HARECACHE)/os.td $(HARECACHE)/sys.td $(HARECACHE)/types_c.td $(HARECACHE)/unix.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/unix_tty.td.tmp -N unix::tty $(unix_tty_ha)

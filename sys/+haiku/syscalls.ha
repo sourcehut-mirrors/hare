@@ -811,3 +811,39 @@ export fn shutdown(s: int, how: int) (void | errno) = {
 	let res = libc_shutdown(s, how);
 	check_error(res == -1)?;
 };
+
+@symbol("ioctl") fn libc_ioctl(fd: int, req: u64, arg: u64) int;
+
+export type ioctl_arg = (nullable *opaque | u64);
+
+export fn ioctl(fd: int, req: u64, arg: ioctl_arg) (int | errno) = {
+	let res = match (arg) {
+	case let u: u64 =>
+		yield libc_ioctl(fd, req, u);
+	case let ptr: nullable *opaque =>
+		yield libc_ioctl(fd, req, ptr: uintptr: u64);
+	};
+	check_error(res == -1)?;
+	return res;
+};
+
+export @symbol("arc4random_buf") fn arc4random_buf(
+	buf: *opaque,
+	nbytes: size
+) void;
+
+@symbol("posix_openpt") fn libc_posix_openpt(flags: int) int;
+
+export fn posix_openpt(flags: int) (int | errno) = {
+	let res = libc_posix_openpt(flags);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("ptsname") fn libc_ptsname(master: int) nullable *[*]u8;
+
+export fn ptsname(master: int) (*[*]u8 | errno) = {
+	let res = libc_ptsname(master);
+	check_error(res == null)?;
+	return res: *[*]u8;
+};
