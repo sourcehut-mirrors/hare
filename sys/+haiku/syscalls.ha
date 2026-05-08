@@ -780,3 +780,34 @@ export fn isatty(fd: int) (bool | errno) = {
 	check_error(res == -1)?;
 	return res == 1;
 };
+
+@symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr_t, addrlen: nullable *socklen_t) int;
+
+export fn accept(sock: int, addr: nullable *sockaddr_t, addrlen: nullable *socklen_t) (int | errno) = {
+	let res = libc_accept(sock, addr, addrlen);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("sendmsg") fn libc_sendmsg(sock: int, msghdr: const *msghdr, flags: int) i64;
+
+export fn sendmsg(sock: int, msghdr: const *msghdr, flags: int) (size | errno) = {
+	let res = libc_sendmsg(sock, msghdr, flags);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("recvmsg") fn libc_recvmsg(sock: int, msghdr: const *msghdr, flags: int) i64;
+
+export fn recvmsg(sock: int, msghdr: const *msghdr, flags: int) (size | errno) = {
+	let res = libc_recvmsg(sock, msghdr, flags);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("shutdown") fn libc_shutdown(s: int, how: int) int;
+
+export fn shutdown(s: int, how: int) (void | errno) = {
+	let res = libc_shutdown(s, how);
+	check_error(res == -1)?;
+};
