@@ -59,7 +59,7 @@ const platforms: [_]platform = [
 			[],
 			[],
 			[],
-			["-z", "noexecstack"],
+			["-z", "noexecstack", "-lnetwork"],
 		],
 	},
 ];
