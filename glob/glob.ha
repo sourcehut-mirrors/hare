@@ -142,7 +142,7 @@ fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 	if (gen.flgs & flag::NOESCAPE != 0) {
 		flgs |= fnmatch::flag::NOESCAPE;
 	};
-	let it = match(os::iter(if (len(dir) > 0) dir else ".")) {
+	let it = match (os::iter(if (len(dir) > 0) dir else ".")) {
 	case let i: *fs::iterator =>
 		yield i;
 	case let e: fs::error =>
@@ -153,11 +153,18 @@ fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 	};
 	defer fs::finish(it);
 
+	let buf = path::init(it.path)!;
+
 	for (true) match (fs::next(it)) {
 	case done =>
 		break;
 	case let de: fs::dirent =>
-		if (patm && !fs::isdir(de.ftype) && !fs::islink(de.ftype)) {
+		path::push(&buf, de.name)!;
+		defer path::pop(&buf);
+
+		// If we can read the dir we can stat its contents
+		const st = os::stat(path::string(&buf))!;
+		if (patm && !fs::isdir(st.mode) && !fs::islink(st.mode)) {
 			continue;
 		};
 		if (!fnmatch::fnmatch(pat, de.name, flgs)) {
@@ -177,12 +184,12 @@ fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 		case size => yield;
 		};
 		if (patm || gen.flgs & flag::MARK != 0) {
-			let m = fs::isdir(de.ftype);
+			let m = fs::isdir(st.mode);
 			// POSIX does not specify the behavior when a pathname
 			// that matches the pattern is a symlink to a
 			// directory. But in major implementation a slash
 			// character is appended in this case.
-			if (fs::islink(de.ftype)) {
+			if (fs::islink(st.mode)) {
 				match (os::realpath(memio::string(b)!)) {
 				case let r: str =>
 					match (os::stat(r)) {
