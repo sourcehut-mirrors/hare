@@ -14,7 +14,7 @@ HAREFLAGS =
 HARECFLAGS = -m '.main'
 QBEFLAGS =
 ASFLAGS =
-LDLINKFLAGS = -z noexecstack
+LDLINKFLAGS = -z noexecstack -lnetwork
 
 # commands used by the build script
 HAREC = harec
