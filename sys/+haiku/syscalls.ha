@@ -847,3 +847,17 @@ export fn ptsname(master: int) (*[*]u8 | errno) = {
 	check_error(res == null)?;
 	return res: *[*]u8;
 };
+
+@symbol("tcgetattr") fn libc_tcgetattr(fd: int, tios: *termios) int;
+
+export fn tcgetattr(fd: int, tios: *termios) (void | errno) = {
+	let res = libc_tcgetattr(fd, tios);
+	check_error(res == -1)?;
+};
+
+@symbol("tcsetattr") fn libc_tcsetattr(fd: int, opt: int, tios: const *termios) int;
+
+export fn tcsetattr(fd: int, opt: int, tios: const *termios) (void | errno) = {
+	let res = libc_tcsetattr(fd, opt, tios);
+	check_error(res == -1)?;
+};
