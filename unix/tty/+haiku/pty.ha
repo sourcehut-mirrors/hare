@@ -11,19 +11,27 @@ use types::c;
 // Opens an available pseudoterminal and returns the file descriptors of the
 // master and slave.
 export fn openpty() ((io::file, io::file) | fs::error) = {
-	let master = match (sys::posix_openpt(sys::O_RDWR)) {
+	let master = match (sys::posix_openpt(sys::O_RDWR | sys::O_NOCTTY)) {
 	case let fd: int =>
 		yield fd: io::file;
 	case let err: sys::errno =>
 		return errors::errno(err);
 	};
+	sys::grantpt(master)!;
+	sys::unlockpt(master)!;
 	let slave_path = match (sys::ptsname(master)) {
 	case let name: *[*]u8 =>
 		yield c::tostr(name: *c::char)!;
 	case let err: sys::errno =>
 		return errors::errno(err);
 	};
-	let slave = os::open(slave_path, fs::flag::RDWR)?;
+	const st = os::stat(slave_path)!;
+	let slave = match (sys::openat(sys::AT_FDCWD, slave_path, sys::O_RDWR | sys::O_NOCTTY, 0)) {
+	case let fd: int =>
+		yield fd: io::file;
+	case let err: sys::errno =>
+		return errors::errno(err);
+	};
 	return (master, slave);
 };
 

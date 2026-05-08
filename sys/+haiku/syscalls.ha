@@ -996,6 +996,22 @@ export fn posix_openpt(flags: int) (int | errno) = {
 	return res;
 };
 
+@symbol("grantpt") fn libc_grantpt(fd: int) int;
+
+export fn grantpt(fd: int) (int | errno) = {
+	let res = libc_grantpt(fd);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("unlockpt") fn libc_unlockpt(fd: int) int;
+
+export fn unlockpt(fd: int) (int | errno) = {
+	let res = libc_unlockpt(fd);
+	check_error(res == -1)?;
+	return res;
+};
+
 @symbol("ptsname") fn libc_ptsname(master: int) nullable *[*]u8;
 
 export fn ptsname(master: int) (*[*]u8 | errno) = {
