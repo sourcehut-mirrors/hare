@@ -836,6 +836,13 @@ export fn bind(
 	check_error(res == -1)?;
 };
 
+@symbol("listen") fn libc_listen(s: int, backlog: int) int;
+
+export fn listen(sockfd: int, backlog: u32) (void | errno) = {
+	let res = libc_listen(sockfd, backlog: int);
+	check_error(res == -1)?;
+};
+
 @symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) int;
 
 export fn accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) (int | errno) = {
