@@ -1010,3 +1010,21 @@ export fn tcsetattr(fd: int, opt: int, tios: const *termios) (void | errno) = {
 	let res = libc_tcsetattr(fd, opt, tios);
 	check_error(res == -1)?;
 };
+
+@symbol("ppoll") fn libc_ppoll(
+	fds: *[*]pollfd,
+	nfds: nfds_t,
+	timeout: const nullable *timespec,
+	mask: const nullable *sigset,
+) int;
+
+export fn ppoll(
+	fds: *[*]pollfd,
+	nfds: nfds_t,
+	timeout: const nullable *timespec,
+	sigmask: const nullable *sigset,
+) (int | errno) = {
+	let ret = libc_ppoll(fds, nfds, timeout, sigmask);
+	check_error(ret == -1)?;
+	return ret;
+};
