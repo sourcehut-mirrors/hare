@@ -781,12 +781,86 @@ export fn isatty(fd: int) (bool | errno) = {
 	return res == 1;
 };
 
+@symbol("socketpair") fn libc_socketpair(
+	domain: int,
+	type_: int,
+	protocol: int,
+	sv: *[*]int
+) int;
+
+export fn socketpair(
+	domain: int,
+	type_: int,
+	protocol: int,
+	sv: *[*]int
+) (void | errno) = {
+	let res = libc_socketpair(domain, type_, protocol, sv);
+	check_error(res == -1)?;
+};
+
+@symbol("socket") fn libc_socket(domain: int, t: int, protocol: int) int;
+
+export fn socket(domain: int, t: int, protocol: int) (int | errno) = {
+	let res = libc_socket(domain, t, protocol);
+	check_error(res == -1)?;
+	return res;
+};
+
+@symbol("connect") fn libc_connect(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) int;
+
+export fn connect(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) (void | errno) = {
+	let res = libc_connect(sockfd, addr, addrlen);
+	check_error(res == -1)?;
+};
+
+@symbol("bind") fn libc_bind(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) int;
+
+export fn bind(
+	sockfd: int,
+	addr: *const sockaddr,
+	addrlen: u32
+) (void | errno) = {
+	let res = libc_bind(sockfd, addr, addrlen);
+	check_error(res == -1)?;
+};
+
 @symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) int;
 
 export fn accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) (int | errno) = {
 	let res = libc_accept(sock, addr, addrlen);
 	check_error(res == -1)?;
 	return res;
+};
+
+@symbol("setsockopt") fn libc_setsockopt(
+	s: int,
+	level: int,
+	optname: int,
+	optval: *opaque,
+	optlen: u32
+) int;
+
+export fn setsockopt(
+	sockfd: int,
+	level: int,
+	optname: int,
+	optval: *opaque,
+	optlen: u32
+) (void | errno) = {
+	let res = libc_setsockopt(sockfd, level, optname, optval, optlen);
+	check_error(res == -1)?;
 };
 
 @symbol("sendmsg") fn libc_sendmsg(sock: int, msghdr: const *msghdr, flags: int) i64;
@@ -803,6 +877,81 @@ export fn recvmsg(sock: int, msghdr: const *msghdr, flags: int) (size | errno) =
 	let res = libc_recvmsg(sock, msghdr, flags);
 	check_error(res == -1)?;
 	return res: size;
+};
+
+@symbol("sendto") fn libc_sendto(
+	s: int,
+	msg: *opaque,
+	length: size,
+	flags: int,
+	to: nullable *sockaddr,
+	tolen: socklen_t
+) i64;
+
+export fn sendto(
+	sockfd: int,
+	buf: *opaque,
+	length: size,
+	flags: int,
+	dest_addr: nullable *sockaddr,
+	addrlen: u32
+) (size | errno) = {
+	let res = libc_sendto(sockfd, buf, length, flags, dest_addr, addrlen);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("recvfrom") fn libc_recvfrom(
+	s: int,
+	buf: *opaque,
+	length: size,
+	flags: int,
+	from: nullable *sockaddr,
+	fromlen: nullable *u32,
+) i64;
+
+export fn recvfrom(
+	sockfd: int,
+	buf: *opaque,
+	length: size,
+	flags: int,
+	from: nullable *sockaddr,
+	fromlen: nullable *u32
+) (size | errno) = {
+	let res = libc_recvfrom(sockfd, buf, length, flags, from, fromlen);
+	check_error(res == -1)?;
+	return res: size;
+};
+
+@symbol("getpeername") fn libc_getpeername(
+	s: int,
+	name: *sockaddr,
+	namelen: *u32
+) int;
+
+export fn getpeername(
+	sockfd: int,
+	addr: *sockaddr,
+	addrlen: *u32
+) (void | errno) = {
+	let res = libc_getpeername(sockfd, addr, addrlen);
+	check_error(res == -1)?;
+};
+
+@symbol("getsockname") fn libc_getsockname(
+	sockfd: int,
+	addr: nullable *sockaddr,
+	addrlen: nullable *u32
+) int;
+
+export fn getsockname(
+	sockfd: int,
+	addr: nullable *sockaddr,
+	addrlen: nullable *u32
+) (void | errno) = {
+	let res = libc_getsockname(sockfd, addr, addrlen);
+	check_error(res == -1)?;
+
 };
 
 @symbol("shutdown") fn libc_shutdown(s: int, how: int) int;
