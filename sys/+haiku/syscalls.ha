@@ -781,9 +781,9 @@ export fn isatty(fd: int) (bool | errno) = {
 	return res == 1;
 };
 
-@symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr_t, addrlen: nullable *socklen_t) int;
+@symbol("accept") fn libc_accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) int;
 
-export fn accept(sock: int, addr: nullable *sockaddr_t, addrlen: nullable *socklen_t) (int | errno) = {
+export fn accept(sock: int, addr: nullable *sockaddr, addrlen: nullable *socklen_t) (int | errno) = {
 	let res = libc_accept(sock, addr, addrlen);
 	check_error(res == -1)?;
 	return res;
