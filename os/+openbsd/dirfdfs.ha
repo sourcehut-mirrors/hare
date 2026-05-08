@@ -228,30 +228,8 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 		if (name == "." || name == "..") {
 			continue;
 		};
-
-		let ftype: fs::mode = switch (de.d_type) {
-		case sys::DT_UNKNOWN =>
-			yield fs::mode::UNKNOWN;
-		case sys::DT_FIFO =>
-			yield fs::mode::FIFO;
-		case sys::DT_CHR =>
-			yield fs::mode::CHR;
-		case sys::DT_DIR =>
-			yield fs::mode::DIR;
-		case sys::DT_BLK =>
-			yield fs::mode::BLK;
-		case sys::DT_REG =>
-			yield fs::mode::REG;
-		case sys::DT_LNK =>
-			yield fs::mode::LINK;
-		case sys::DT_SOCK =>
-			yield fs::mode::SOCK;
-		case =>
-			yield fs::mode::UNKNOWN;
-		};
 		return fs::dirent {
 			name = name,
-			ftype = ftype,
 		};
 	};
 };
@@ -259,6 +237,7 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 fn iter_finish(iter: *fs::iterator) void = {
 	let iter = iter: *os_iterator;
 	sys::close(iter.fd)!;
+	free(iter.iter.path);
 	free(iter.buf);
 	free(iter);
 };
@@ -285,6 +264,7 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 		iter = fs::iterator {
 			next = &iter_next,
 			finish = &iter_finish,
+			path = strings::dup(path)!,
 		},
 		fd = fd,
 		buf = buf[..fs.getdents_bufsz],
