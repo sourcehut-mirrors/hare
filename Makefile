@@ -44,7 +44,7 @@ HARE_DEFINES = \
 $(BINOUT)/hare: $(OBJS)
 	@mkdir -p -- "$(BINOUT)"
 	@printf 'LD\t%s\n' "$@"
-	@$(LD) $(LDLINKFLAGS) -T $(RTSCRIPT) -o $@ $(OBJS)
+	@$(LD) $(LDLINKFLAGS) -T rt/hare.sc -o $@ $(OBJS)
 
 HARE_BUILD_ENV = HAREPATH=. HAREC="$(HAREC)" QBE="$(QBE)" AS="$(AS)" \
 	LD="$(LD)" HARECFLAGS="$(HARECFLAGS)" QBEFLAGS="$(QBEFLAGS)" \
