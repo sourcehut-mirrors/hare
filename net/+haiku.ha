@@ -11,9 +11,9 @@ export type socket = io::file;
 // Optional flags to [[accept]] to be set on the returned [[socket]].
 // See the O_CLOEXEC and O_NONBLOCK sections of open(2) for details.
 // Note that CLOEXEC is on by default, and NOCLOEXEC flag disables it.
-export type sockflag = enum int {
-	NOCLOEXEC = sys::SOCK_CLOEXEC,
-	NONBLOCK = sys::SOCK_NONBLOCK
+export type sockflag = enum uint {
+	NOCLOEXEC = 1 << 0,
+	NONBLOCK = 1 << 1,
 };
 
 // Accepts the next connection from a socket. Blocks until a new connection is
