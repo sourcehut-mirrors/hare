@@ -61,7 +61,7 @@ export fn reset(signum: sig) void = {
 
 // Unregisters all signal handlers.
 export fn resetall() void = {
-	// sig::KILL and sig::STOP deliberately omitted; see sigaction(2)
+	// sig::KILL, sig::STOP, sig::KILLTHR deliberately omitted; see sigaction(2)
 	reset(sig::HUP);
 	reset(sig::INT);
 	reset(sig::QUIT);
@@ -80,7 +80,6 @@ export fn resetall() void = {
 	reset(sig::USR1);
 	reset(sig::USR2);
 	reset(sig::WINCH);
-	reset(sig::KILLTHR);
 	reset(sig::TRAP);
 	reset(sig::POLL);
 	reset(sig::PROF);
