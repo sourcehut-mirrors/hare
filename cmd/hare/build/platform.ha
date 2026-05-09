@@ -50,6 +50,18 @@ const platforms: [_]platform = [
 			["-z", "nobtcfi"],
 		],
 	},
+	platform {
+		name = "Haiku",
+		need_libc = true,
+		debug_supported = false,
+		default_flags = [
+			[],
+			[],
+			[],
+			[],
+			["-z", "noexecstack", "-lnetwork", "-lbsd"],
+		],
+	},
 ];
 
 export fn get_platform(name: str) (*platform | unknown_platform) = {
