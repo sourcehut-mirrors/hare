@@ -32,6 +32,8 @@ export fn errno(errno: sys::errno) error = {
 		return again;
 	case sys::ENETUNREACH =>
 		return netunreachable;
+	case sys::EROFS =>
+		return rofs;
 	case => void;
 	};
 

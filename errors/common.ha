@@ -40,6 +40,9 @@ export type again = !void;
 // Network unreachable
 export type netunreachable = !void;
 
+// Read-only filesystem
+export type rofs = !void;
+
 // A tagged union of all error types.
 export type error = !(
 	busy |
@@ -55,5 +58,6 @@ export type error = !(
 	interrupted |
 	again |
 	netunreachable |
+	rofs |
 	opaque_
 );

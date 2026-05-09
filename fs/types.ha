@@ -26,6 +26,7 @@ export type error = !(
 	errors::busy |
 	errors::invalid |
 	errors::unsupported |
+	errors::rofs |
 	utf8::invalid |
 	wrongtype |
 	cannotrename |

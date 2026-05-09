@@ -39,6 +39,8 @@ export fn strerror(err: (error | nomem)) const str = {
 		return "Try again";
 	case netunreachable =>
 		return "Network unreachable";
+	case rofs =>
+		return "Read-only filesystem";
 	case let op: opaque_ =>
 		return op.strerror(&op.data);
 	case nomem =>

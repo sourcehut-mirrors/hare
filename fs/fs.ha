@@ -246,6 +246,7 @@ export fn mkdirs(fs: *fs, path: str, mode: mode) (void | error) = {
 	if (path != parent) {
 		match (mkdirs(fs, parent, mode)) {
 		case errors::exists => void;
+		case errors::rofs => void;
 		case void => void;
 		case let err: error =>
 			return err;
