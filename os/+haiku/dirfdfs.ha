@@ -188,7 +188,7 @@ fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 };
 
 type os_iterator = struct {
-	iter: fs::iterator,
+	fs::iterator,
 	dir: *sys::dir,
 };
 
@@ -203,13 +203,21 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 	const dent = match (sys::readdir(iter.dir)) {
 	case let err: sys::errno =>
 		return errno_to_fs(err);
+	case let dent: nullable *sys::dirent =>
+		yield dent;
+	};
+	const dent = match (dent) {
 	case null =>
 		return done;
 	case let dent: *sys::dirent =>
 		yield dent;
 	};
+	const name = c::tostr(&dent.d_name[0]: const *c::char)!;
+	if (name == "." || name == "..") {
+		return iter_next(iter);
+	};
 	return fs::dirent {
-		name = c::tostr(&dent.d_name[0]: const *c::char)!,
+		name = name,
 		...
 	};
 };
@@ -233,10 +241,7 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 	};
 
 	match (alloc(os_iterator {
-		iter = fs::iterator {
-			next = &iter_next,
-			finish = &iter_finish,
-		},
+		fs = fs,
 		dir = d,
 		...
 	})) {
@@ -456,6 +461,8 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
+			iter_next = &iter_next,
+			iter_finish = &iter_finish,
 			stat = &fs_stat,
 			fstat = &fs_fstat,
 			readlink = &fs_readlink,
@@ -492,6 +499,8 @@ fn errno_to_fs(err: sys::errno) fs::error = {
 		return errors::unsupported;
 	case sys::EXDEV =>
 		return fs::cannotrename;
+	case sys::EROFS =>
+		return errors::rofs;
 	case =>
 		return errors::errno(err);
 	};
