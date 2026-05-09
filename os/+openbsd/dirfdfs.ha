@@ -189,7 +189,7 @@ fn fs_rename(fs: *fs::fs, oldpath: str, newpath: str) (void | fs::error) = {
 };
 
 type os_iterator = struct {
-	iter: fs::iterator,
+	fs::iterator,
 	fd: int,
 	buf_pos: int,
 	buf_end: int,
@@ -251,7 +251,7 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 		};
 		return fs::dirent {
 			name = name,
-			ftype = ftype,
+			_type = ftype,
 		};
 	};
 };
@@ -281,16 +281,12 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 		abort("out of memory");
 	};
 
-	let iter = alloc(os_iterator {
-		iter = fs::iterator {
-			next = &iter_next,
-			finish = &iter_finish,
-		},
+	return alloc(os_iterator {
+		fs = fs,
 		fd = fd,
 		buf = buf[..fs.getdents_bufsz],
 		...
 	})!;
-	return &iter.iter;
 };
 
 fn fs_stat(fs: *fs::fs, path: str) (fs::filestat | fs::error) = {
@@ -501,6 +497,8 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
+			iter_next = &iter_next,
+			iter_finish = &iter_finish,
 			stat = &fs_stat,
 			fstat = &fs_fstat,
 			readlink = &fs_readlink,

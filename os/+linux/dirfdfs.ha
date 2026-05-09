@@ -69,6 +69,8 @@ fn static_dirfdopen(fd: io::file, filesystem: *os_filesystem) *fs::fs = {
 			remove = &fs_remove,
 			rename = &fs_rename,
 			iter = &fs_iter,
+			iter_next = &iter_next,
+			iter_finish = &iter_finish,
 			stat = &fs_stat,
 			fstat = &fs_fstat,
 			readlink = &fs_readlink,
@@ -429,7 +431,7 @@ fn fs_close(fs: *fs::fs) void = {
 
 // Based on musl's readdir
 type os_iterator = struct {
-	iter: fs::iterator,
+	fs::iterator,
 	fd: int,
 	buf_pos: size,
 	buf_end: size,
@@ -457,16 +459,12 @@ fn fs_iter(fs: *fs::fs, path: str) (*fs::iterator | fs::error) = {
 	case null =>
 		abort("out of memory");
 	};
-	let iter = alloc(os_iterator {
-		iter = fs::iterator {
-			next = &iter_next,
-			finish = &iter_finish,
-		},
+	return alloc(os_iterator {
+		fs = fs,
 		fd = fd,
 		buf = buf[..fs.getdents_bufsz],
 		...
 	})!;
-	return &iter.iter;
 };
 
 fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
@@ -514,7 +512,7 @@ fn iter_next(iter: *fs::iterator) (fs::dirent | done | fs::error) = {
 	};
 	return fs::dirent {
 		name = name,
-		ftype = ftype,
+		_type = ftype,
 	};
 };
 

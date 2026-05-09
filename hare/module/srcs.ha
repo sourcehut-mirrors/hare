@@ -281,7 +281,8 @@ fn _findsrcs(
 		path::push(buf, d.name)?;
 		defer path::pop(buf);
 
-		if (fs::isdir(d.ftype)) {
+		const ftype = fs::dirent_type(iter, &d)?;
+		if (fs::isdir(ftype)) {
 			if (tagindex(strings::toutf8(d.name)) != 0) {
 				continue;
 			};
@@ -298,7 +299,7 @@ fn _findsrcs(
 
 			_findsrcs(buf, in_tags, srcs, res,
 				tagdepth+len(wanttags))?;
-		} else if (fs::isfile(d.ftype)) {
+		} else if (fs::isfile(ftype)) {
 			_findsrcs(buf, in_tags, srcs, res, tagdepth)?;
 		};
 	};

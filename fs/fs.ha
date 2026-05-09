@@ -4,6 +4,7 @@
 use errors;
 use io;
 use path;
+use strings;
 use time;
 
 // Closes a filesystem. The fs cannot be used after this function is called.
@@ -154,16 +155,31 @@ export fn iter(fs: *fs, path: str) (*iterator | error) = {
 	case null =>
 		return errors::unsupported;
 	case let f: *iterfunc =>
-		return f(fs, path);
+		let iter = f(fs, path)?;
+		iter.fs = fs;
+		iter.path = strings::dup(path)!;
+		return iter;
 	};
+};
+
+// Returns the next directory entry from an iterator, or done if none remain.
+// '.' and '..' are skipped. It is a programming error to call this again after
+// it has returned void. Calling this again after an error is safe. The list is
+// not guaranteed to be complete when an error has been returned. The file stat
+// returned may only have the type bits set on the file mode; callers should
+// call [[stat]] to obtain the detailed file mode.
+export fn next(iter: *iterator) (dirent | done | error) = {
+	const iter_next = iter.fs.iter_next as *nextfunc;
+	return iter_next(iter)?;
 };
 
 // Frees state associated with an [[iterator]].
 export fn finish(iter: *iterator) void = {
-	match (iter.finish) {
+	free(iter.path);
+	match (iter.fs.iter_finish) {
 	case null => void;
 	case let f: *finishfunc =>
-		return f(iter);
+		f(iter);
 	};
 };
 
@@ -364,11 +380,3 @@ export fn symlink(fs: *fs, target: str, path: str) (void | error) = {
 		return f(fs, target, path);
 	};
 };
-
-// Returns the next directory entry from an iterator, or done if none remain.
-// '.' and '..' are skipped. It is a programming error to call this again after
-// it has returned void. Calling this again after an error is safe. The list is
-// not guaranteed to be complete when an error has been returned. The file stat
-// returned may only have the type bits set on the file mode; callers should
-// call [[stat]] to obtain the detailed file mode.
-export fn next(iter: *iterator) (dirent | done | error) = iter.next(iter);

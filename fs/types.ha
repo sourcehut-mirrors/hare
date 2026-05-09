@@ -4,6 +4,7 @@
 use encoding::utf8;
 use errors;
 use io;
+use path;
 use strings;
 use time;
 
@@ -158,8 +159,24 @@ export type dirent = struct {
 	// "foo/bar/baz.txt" would store "baz.txt" here.
 	name: str,
 
-	// The type of this entry. The permission bits may be unset.
-	ftype: mode,
+	// The type of this entry.
+	//
+	// Filesystems should populate this if available (not all filesystems or
+	// targets support this field). Users should not access it directly; see
+	// [[dirent_type]] instead.
+	_type: mode,
+};
+
+// Returns the inode type of a [[dirent]] (i.e. file, directory, other). Does
+// not include mode bits.
+export fn dirent_type(iter: *iterator, ent: *dirent) (mode | error) = {
+	if (mode_type(ent._type) != mode::UNKNOWN) {
+		return ent._type;
+	};
+	let buf = path::init(iter.path, ent.name)!;
+	const st = stat(iter.fs, path::string(&buf))?;
+	ent._type = st.mode;
+	return ent._type;
 };
 
 // Duplicates a [[dirent]] object. Call [[dirent_finish]] to get rid of it
@@ -280,7 +297,16 @@ export type fs = struct {
 	//
 	// The iterator must return all entries without error. If an error would
 	// occur, it should be identified here and returned upfront.
+	//
+	// If iter is implemented, iter_next must also be implemented.
 	iter: nullable *iterfunc,
+
+	// Returns the next member of a directory iterator, or done if there are
+	// none remaining.
+	iter_next: nullable *nextfunc,
+
+	// Frees resources associated with an iterator.
+	iter_finish: nullable *finishfunc,
 
 	// Obtains information about a file or directory. If the target is a
 	// symbolic link, information is returned about the link, not its
@@ -336,13 +362,15 @@ export type nextfunc = fn(iter: *iterator) (dirent | done | error);
 // A function which frees state associated with an [[iterator]].
 export type finishfunc = fn(iter: *iterator) void;
 
-// A directory iterator. To implement a directory iterator for a filesystem,
-// subtype this struct to store any necessary state and populate the pointers
-// with your implementation.
+// A directory iterator.
 export type iterator = struct {
-	// Returns the next member of the directory, or done if there are none
-	// remaining.
-	next: *nextfunc,
-	// Frees resources associated with the iterator.
-	finish: nullable *finishfunc,
+	// Filesystem used by the iterator.
+	fs: *fs,
+	// Path initially passed to [[iter]].
+	path: str,
+};
+
+// Returns the path passed to [[iter]] when an [[iterator]] was created.
+export fn iter_path(iter: *iterator) const str = {
+	return iter.path;
 };
