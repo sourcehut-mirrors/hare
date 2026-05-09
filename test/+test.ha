@@ -91,8 +91,8 @@ fn colored() bool = {
 		&& tty::isatty(os::stdout_file);
 };
 
-@symbol("__test_array_start") const test_start: [*]test;
-@symbol("__test_array_end") const test_end: [*]test;
+@symbol("__hare_test_array_start") const test_start: [*]test;
+@symbol("__hare_test_array_end") const test_end: [*]test;
 
 export @symbol("__test_main") fn main() size = {
 	const ntest = (&test_end: uintptr - &test_start: uintptr): size / size(test);
