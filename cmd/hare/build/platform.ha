@@ -53,7 +53,7 @@ const platforms: [_]platform = [
 	platform {
 		name = "Haiku",
 		need_libc = true,
-		debug_supported = false,
+		debug_supported = true,
 		default_flags = [
 			[],
 			[],
