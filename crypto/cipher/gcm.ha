@@ -60,11 +60,10 @@ export fn gcm() gcmstream = {
 
 // Initialises the gcmstream. The data will be encrypted to or encrypted from
 // the given 'handle' The implementation only supports a block cipher 'b' with a
-// block size of 16 bytes. The initialization vector (nonce) 'iv' may have any
-// size up to 2**61 bytes. 12 bytes is the recommended size, if efficiency is
-// critical. The additional data 'ad' will be authenticated but not encrypted
-// and may have a maximum length of 2**61 - 1 bytes. 'ad' will not be written to
-// the underlying handle.
+// block size of 16 bytes. The initialization vector (nonce) 'iv' must not be
+// empty. The recommended size is 12 bytes if efficiency is critical.
+// The additional data 'ad' will be authenticated but not encrypted.
+// 'ad' will not be written to the underlying handle.
 export fn gcm_init(
 	s: *gcmstream,
 	handle: io::handle,
@@ -73,7 +72,7 @@ export fn gcm_init(
 	ad: const []u8
 ) void = {
 	assert(blocksz(b) == GCMBLOCKSZ);
-	assert(len(iv): u64 <= (types::U64_MAX >> 3));
+	assert(len(iv) >= 1, "IV of zero length");
 
 	s.handle = handle;
 	s.block = b;
