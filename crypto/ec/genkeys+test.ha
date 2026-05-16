@@ -31,6 +31,6 @@ fn edgecases(c: *curve) void = {
 	sub1[len(sub1) - 1] -= 1;
 
 	let rnd = memio::fixed(sub1);
-	assert(keygen(c, priv, &rnd): size == scalarsz);
+	assert(keygen(c, priv, &rnd) as size == scalarsz);
 	assert(bytes::equal(sub1, priv));
 };
