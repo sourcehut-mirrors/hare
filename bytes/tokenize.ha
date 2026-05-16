@@ -390,10 +390,11 @@ fn tokenize_test(
 //
 // The caller must ensure that 'delimiter' is not an empty slice.
 export fn cut(in: []u8, delim: ([]u8 | u8)) ([]u8, []u8) = {
-	let ln = if (delim is u8) {
+	let ln = match (delim) {
+	case u8 =>
 		yield 1z;
-	} else {
-		let ln = len(delim: []u8);
+	case let delim: []u8 =>
+		let ln = len(delim);
 		assert(ln > 0, "bytes::cut called with empty delimiter");
 		yield ln;
 	};
@@ -411,10 +412,11 @@ export fn cut(in: []u8, delim: ([]u8 | u8)) ([]u8, []u8) = {
 //
 // The caller must ensure that 'delimiter' is not an empty slice.
 export fn rcut(in: []u8, delim: ([]u8 | u8)) ([]u8, []u8) = {
-	let ln = if (delim is u8) {
+	let ln = match (delim) {
+	case u8 =>
 		yield 1z;
-	} else {
-		let ln = len(delim: []u8);
+	case let delim: []u8 =>
+		let ln = len(delim);
 		assert(ln > 0, "bytes::rcut called with empty delimiter");
 		yield ln;
 	};
