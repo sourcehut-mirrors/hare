@@ -82,10 +82,12 @@ fn init_colors() (void | error) = {
 			yield &primary_color;
 		case =>
 			static let err: [64]u8 = [0...];
-			if (len(k) > len(err)) {
+			match (fmt::bsprint(err, k)) {
+			case nomem =>
 				return "": haredoc_colors_error;
+			case let s: str =>
+				return s: haredoc_colors_error;
 			};
-			return fmt::bsprint(err, k): haredoc_colors_error;
 		};
 
 		*out = if (v == "_" && k == "normal") "0" else v;
