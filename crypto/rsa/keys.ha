@@ -31,7 +31,7 @@ export type pubparams = struct {
 // derives 'dp' and 'dq'. All big integer values are in big-endian order.
 export type privparams = struct {
 	// Bit length of the modulus n. If unknown, the modulus can be provided
-	// to the init function, which derivces the length.
+	// to the init function, which derives the length.
 	nbitlen: size,
 
 	// First prime factor.
