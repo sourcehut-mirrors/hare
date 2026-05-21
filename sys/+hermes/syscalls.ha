@@ -18,60 +18,52 @@ export fn check_u64(r: (u64, u64)) (u64 | errno) = {
 	return res;
 };
 
-@symbol("sys_log") fn _log(data: *[*]u8, n: size) (u64, u64);
-
-export fn log(data: *[*]u8, n: size) (void | errno) = {
-	check_void(_log(data, n))?;
-};
-
-export @symbol("sys_schedule") fn schedule() void;
-
-@symbol("sys_cpu_stat") fn _cpu_stat(_: u32, _: *cpustat, _: size) (u64, u64);
-
-export fn cpu_stat(id: u32, buf: *cpustat) (void | errno) = {
-	return check_void(_cpu_stat(id, buf, size(cpustat)))?;
-};
-
-@symbol("sys_ident") fn _ident(_: caddr) (u64, u64);
-
-export fn ident(addr: caddr) (ctype | errno) = {
-	return check_u64(_ident(addr))?: ctype;
-};
-
-@symbol("sys_signal") fn _signal(_: caddr, _: u32) (u64, u64);
-
-export fn signal(addr: caddr, word: u32) (void | errno) = {
-	check_void(_signal(addr, word))?;
-};
-
-@symbol("sys_wait") fn _wait(_: caddr) (u64, u64);
-
-export fn wait(addr: caddr) (u64 | errno) = {
-	return check_u64(_wait(addr))?: u64;
-};
-
-export @symbol("sys_call") fn call(user: u64, ...) (u64, u64);
-
-@symbol("sys_reply") fn _reply(
+export @symbol("sys_reply") fn sys_reply(
 	r1: u64,
 	r2: u64,
 	addr: caddr = 0,
 	flags: reply_flag = reply_flag::NONE,
 ) (u64, u64);
 
-export fn reply(
-	r1: u64,
-	r2: u64,
-	addr: caddr = 0,
-	flags: reply_flag = reply_flag::NONE,
-) (void | errno) = {
-	check_void(_reply(r1, r2, addr, flags))?;
+// Yields the current time slice to the scheduler.
+export @symbol("sys_schedule") fn schedule() void;
+
+@symbol("sys_log") fn sys_log(data: *[*]u8, n: size) (u64, u64);
+
+export fn log(data: *[*]u8, n: size) (void | errno) = {
+	check_void(sys_log(data, n))?;
 };
 
-@symbol("sys_poll") fn _poll(vectors: *[*]poll_cap, nvec: size) (u64, u64);
+@symbol("sys_cpu_stat") fn sys_cpu_stat(_: u32, _: *cpustat, _: size) (u64, u64);
+
+export fn cpu_stat(id: u32, buf: *cpustat) (void | errno) = {
+	return check_void(sys_cpu_stat(id, buf, size(cpustat)))?;
+};
+
+@symbol("sys_ident") fn sys_ident(_: caddr) (u64, u64);
+
+export fn ident(addr: caddr) (ctype | errno) = {
+	return check_u64(sys_ident(addr))?: ctype;
+};
+
+@symbol("sys_signal") fn sys_signal(_: caddr, _: u32) (u64, u64);
+
+export fn signal(addr: caddr, word: u32) (void | errno) = {
+	check_void(sys_signal(addr, word))?;
+};
+
+@symbol("sys_wait") fn sys_wait(_: caddr) (u64, u64);
+
+export fn wait(addr: caddr) (u64 | errno) = {
+	return check_u64(sys_wait(addr))?: u64;
+};
+
+export @symbol("sys_call") fn call(user: u64, ...) (u64, u64);
+
+export @symbol("sys_poll") fn sys_poll(vectors: *[*]poll_cap, nvec: size) (u64, u64);
 
 export fn poll(vectors: []poll_cap) (size | errno) = {
-	return check_u64(_poll(vectors: *[*]poll_cap, len(vectors)))?: size;
+	return check_u64(sys_poll(vectors: *[*]poll_cap, len(vectors)))?: size;
 };
 
 export @symbol("sys_recv_cap") fn sys_recv_cap(

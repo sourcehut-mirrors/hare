@@ -19,7 +19,7 @@ export fn start_hermes(iv: *[*]uintptr) never = {
 		case elf::at::BOOTINFO =>
 			boot_info = aux.a_ptr: *sys::bootinfo;
 		case elf::at::IPC_BUF =>
-			ipcbuf = aux.a_ptr: *[sys::PAGESIZE]u8;
+			sys::ipcbuf = aux.a_ptr: *[sys::PAGESIZE]u8;
 		case => void;
 		};
 	};

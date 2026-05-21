@@ -11,6 +11,3 @@ export let auxv: *[*]elf::auxv64 = @undefined;
 
 // Bootinfo structure from the auxillary vector, if present.
 export let boot_info: nullable *sys::bootinfo = null;
-
-// Address of IPC buffer, if configured.
-export let ipcbuf: nullable *[sys::PAGESIZE]u8 = null;
