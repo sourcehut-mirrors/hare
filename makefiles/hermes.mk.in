@@ -1,0 +1,26 @@
+# proto::io::
+proto/io/file.gen.ha: $(PROTOS)/io/file.xml
+	$(GENPROTO) < $<
+
+protos: proto/io/file.gen.ha
+$(HARECACHE)/io.ssa: proto/io/file.gen.ha
+
+# proto::system::
+proto/system/mman.gen.ha: $(PROTOS)/system/mman.xml
+	$(GENPROTO) < $<
+
+proto/system/process.gen.ha: $(PROTOS)/system/process.xml
+	$(GENPROTO) < $<
+
+protos: proto/system/process.gen.ha
+protos: proto/system/mman.gen.ha
+$(HARECACHE)/rt.ssa: proto/system/process.gen.ha proto/system/mman.gen.ha
+$(HARECACHE)/os.ssa: proto/system/process.gen.ha
+ 
+clean-protos:
+	rm -f proto/io/*.gen.ha
+	rm -f proto/io/*.gen*.s
+	rm -f proto/system/*.gen.ha
+	rm -f proto/system/*.gen*.s
+
+.PHONY: protos clean-protos
