@@ -4,3 +4,5 @@ config.mk
 docs/*.1
 docs/*.5
 docs/html
+*.gen.ha
+*.gen*.s
