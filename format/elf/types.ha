@@ -563,6 +563,8 @@ export type shf = enum u32 {
 	ALLOC = 0x2,
 	// Section contains executable instructions
 	EXECINSTR = 0x4,
+	// Section contians thread-local storage
+	TLS = 0x400,
 	// Environment-specific use
 	MASKOS = 0x0F000000,
 	// Processor-specific use
