@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use proto::system;
+
 export type segment_allocator = struct {
 	segmalloc: *fn(n: size) nullable *opaque,
 	segfree: *fn(p: *opaque, s: size) void,
@@ -30,4 +32,27 @@ fn segmalloc(n: size) nullable *opaque = {
 // Frees a segment allocated with segmalloc.
 fn segfree(p: *opaque, s: size) void = {
 	get_allocator().segfree(p, s);
+};
+
+const proc_allocator = segment_allocator {
+	segmalloc = &proc_segmalloc,
+	segfree = &proc_segfree,
+};
+
+fn proc_segmalloc(n: size) nullable *opaque = {
+	assert(process_svc != ~0);
+	match (system::mman_mmap(process_svc, n, 0,
+		system::map_prot::READ | system::map_prot::WRITE)) {
+	case let vaddr: uintptr =>
+		return vaddr: *opaque;
+	case nomem =>
+		return null;
+	case =>
+		abort("Unexpected error from process_mmap");
+	};
+};
+
+fn proc_segfree(p: *opaque, s: size) void = {
+	assert(process_svc != ~0);
+	system::mman_munmap(process_svc, s, p: uintptr)!;
 };
