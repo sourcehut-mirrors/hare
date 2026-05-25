@@ -11,3 +11,6 @@ export let auxv: *[*]elf::auxv64 = @undefined;
 
 // Bootinfo structure from the auxillary vector, if present.
 export let boot_info: nullable *sys::bootinfo = null;
+
+// Process service.
+export let process_svc: sys::caddr = ~0;
