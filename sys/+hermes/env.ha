@@ -2,4 +2,4 @@
 // (c) Hare authors <https://harelang.org>
 
 // Address of IPC buffer, if configured.
-export let ipcbuf: nullable *[PAGESIZE]u8 = null;
+export @threadlocal let ipcbuf: nullable *[PAGESIZE]u8 = null;
