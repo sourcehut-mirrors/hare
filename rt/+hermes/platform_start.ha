@@ -2,6 +2,7 @@
 // (c) Hare authors <https://harelang.org>
 
 use format::elf;
+use proto::system;
 use sys;
 
 export fn start_hermes(iv: *[*]uintptr) never = {
@@ -20,6 +21,13 @@ export fn start_hermes(iv: *[*]uintptr) never = {
 			boot_info = aux.a_ptr: *sys::bootinfo;
 		case elf::at::IPC_BUF =>
 			sys::ipcbuf = aux.a_ptr: *[sys::PAGESIZE]u8;
+		case elf::at::SERVICE =>
+			const svc_id = (aux.a_val >> 32): u32;
+			const addr = aux.a_val: u32;
+			if (svc_id == system::PROCESS_ID) {
+				process_svc = addr;
+				set_allocator(&proc_allocator);
+			};
 		case => void;
 		};
 	};

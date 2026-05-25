@@ -16,7 +16,7 @@ protos: proto/system/process.gen.ha
 protos: proto/system/mman.gen.ha
 $(HARECACHE)/rt.ssa: proto/system/process.gen.ha proto/system/mman.gen.ha
 $(HARECACHE)/os.ssa: proto/system/process.gen.ha
- 
+
 clean-protos:
 	rm -f proto/io/*.gen.ha
 	rm -f proto/io/*.gen*.s
