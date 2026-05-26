@@ -274,6 +274,7 @@ export fn main() void = {
 	if (y == x) z;
 	if (z == q) r else p;
 	if (a == b) c else if (d == e) f else g;
+	if (let q: int = y) 10;
 };
 ");
 };

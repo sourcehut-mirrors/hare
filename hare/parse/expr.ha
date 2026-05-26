@@ -839,7 +839,15 @@ fn free_expr(lexer: *lex::lexer) (ast::expr | error) = {
 fn if_expr(lexer: *lex::lexer) (ast::expr | error) = {
 	const start = want(lexer, ltok::IF)?;
 	want(lexer, ltok::LPAREN)?;
-	const cond = alloc(expr(lexer)?)!;
+
+	const cond = match (try(lexer, ltok::LET, ltok::CONST)) {
+	case let tok: lex::token =>
+		lex::unlex(lexer, tok);
+		yield alloc(binding(lexer, false)?)!;
+	case void =>
+		yield alloc(expr(lexer)?)!;
+	};
+
 	want(lexer, ltok::RPAREN)?;
 	const tbranch = alloc(expr(lexer)?)!;
 	const fbranch: nullable *ast::expr = match (try(lexer, ltok::ELSE)?) {
