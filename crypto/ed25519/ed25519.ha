@@ -70,7 +70,7 @@ export fn privkey_init(priv: []u8, seed: []u8) void = {
 	priv[SEEDSZ..PRIVKEYSZ] = A_bytes[..];
 };
 
-// Derive the public key for a given private key. '
+// Derive the public key for a given private key.
 export fn privkey_getpubkey(priv: []u8) pubkey = {
 	assert(len(priv) == PRIVKEYSZ);
 	let pk: pubkey = [0...];
