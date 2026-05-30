@@ -134,3 +134,86 @@ fn type_testloc(srcs: str...) void = for (let i = 0z; i < len(srcs); i += 1) {
 	type_testloc("(foo | bar)", "(foo | ...bar)");
 	type_testloc("(foo, bar)");
 };
+
+@test fn binding_name_loc() void = {
+	// Test that binding name locations are tracked correctly.
+	// "{ let foo = bar; }"
+	//        ^~~ name at col 7-9
+	let buf = memio::fixed(strings::toutf8("{ let foo = bar; }"));
+	let sc = bufio::newscanner(&buf);
+	defer bufio::finish(&sc);
+	let lexer = lex::init(&sc, "<test>");
+	defer lex::finish(&lexer);
+	let exp = match (expr(&lexer)) {
+	case let exp: ast::expr =>
+		yield exp;
+	case let err: error =>
+		fmt::errorln(strerror(err))!;
+		abort();
+	};
+	defer ast::expr_finish(&exp);
+
+	let ce = exp.expr as ast::compound_expr;
+	let be = ce.exprs[0].expr as ast::binding_expr;
+	assert(len(be.bindings) == 1);
+	assert(len(be.bindings[0].names) == 1);
+	assert(be.bindings[0].names[0].0 == "foo");
+	assert(be.bindings[0].names[0].1.start.col == 7);
+	assert(be.bindings[0].names[0].1.end.col == 9);
+};
+
+@test fn binding_unpack_loc() void = {
+	// Test tuple unpacking name locations.
+	// "{ let (hello, there) = hello_there; }"
+	//                ^~~~~ there at col 15-19
+	//         ^~~~~ hello at col 8-12
+	let buf = memio::fixed(strings::toutf8("{ let (hello, there) = z; }"));
+	let sc = bufio::newscanner(&buf);
+	defer bufio::finish(&sc);
+	let lexer = lex::init(&sc, "<test>");
+	defer lex::finish(&lexer);
+	let exp = match (expr(&lexer)) {
+	case let exp: ast::expr =>
+		yield exp;
+	case let err: error =>
+		fmt::errorln(strerror(err))!;
+		abort();
+	};
+	defer ast::expr_finish(&exp);
+
+	let ce = exp.expr as ast::compound_expr;
+	let be = ce.exprs[0].expr as ast::binding_expr;
+	assert(len(be.bindings) == 1);
+	assert(len(be.bindings[0].names) == 2);
+	assert(be.bindings[0].names[0].0 == "hello");
+	assert(be.bindings[0].names[1].0 == "there");
+	assert(be.bindings[0].names[0].1.start.col == 8);
+	assert(be.bindings[0].names[0].1.end.col == 12);
+	assert(be.bindings[0].names[1].1.start.col == 15);
+	assert(be.bindings[0].names[1].1.end.col == 19);
+};
+
+@test fn match_case_name_loc() void = {
+	// Test match case binding name location.
+	// "match (x) { case let ni: int => y; }"
+	//                       ^ n at col 22-23
+	let buf = memio::fixed(strings::toutf8("match (x) { case let ni: int => y; }"));
+	let sc = bufio::newscanner(&buf);
+	defer bufio::finish(&sc);
+	let lexer = lex::init(&sc, "<test>");
+	defer lex::finish(&lexer);
+	let exp = match (expr(&lexer)) {
+	case let exp: ast::expr =>
+		yield exp;
+	case let err: error =>
+		fmt::errorln(strerror(err))!;
+		abort();
+	};
+	defer ast::expr_finish(&exp);
+
+	let me = exp.expr as ast::match_expr;
+	assert(len(me.cases) == 1);
+	assert(me.cases[0].name.0 == "ni");
+	assert(me.cases[0].name.1.start.col == 22);
+	assert(me.cases[0].name.1.end.col == 23);
+};

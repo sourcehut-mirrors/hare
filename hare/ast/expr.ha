@@ -136,7 +136,7 @@ export type binarithm_expr = struct {
 // 	(foo, _, foo2): (int, int, int) = bar
 // 	_ = bar
 export type binding = struct {
-	names: []str, // empty slice for _
+	names: [](str, location), // empty slice for _
 	_type: nullable *_type,
 	init: *expr,
 };
@@ -333,7 +333,7 @@ export type len_expr = *expr;
 //	case type => exprs
 //	case let name: type => exprs
 export type match_case = struct {
-	name: str,
+	name: (str, location), // empty string for default case
 	_type: nullable *_type, // null for default case
 	exprs: []*expr,
 };
@@ -517,7 +517,10 @@ export fn expr_finish(e: nullable *expr) void = {
 			free(b.rvalue);
 		case let b: binding_expr =>
 			for (const bind .. b.bindings) {
-				strings::freeall(bind.names);
+				for (const name .. bind.names) {
+					free(name.0);
+				};
+				free(bind.names);
 				type_finish(bind._type);
 				free(bind._type);
 				expr_finish(bind.init);
@@ -617,7 +620,7 @@ export fn expr_finish(e: nullable *expr) void = {
 			expr_finish(m.value);
 			free(m.value);
 			for (let i = 0z; i < len(m.cases); i += 1) {
-				free(m.cases[i].name);
+				free(m.cases[i].name.0);
 				type_finish(m.cases[i]._type);
 				free(m.cases[i]._type);
 				const exprs = m.cases[i].exprs;

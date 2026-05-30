@@ -313,16 +313,18 @@ fn binarithm(
 	return lvalue;
 };
 
-fn binding_unpack(lexer: *lex::lexer) ([]str | error) = {
-	let names: []str = [];
+fn binding_unpack(lexer: *lex::lexer) ([](str, ast::location) | error) = {
+	let names: [](str, ast::location) = [];
 	for (true) {
+		const start = mkloc(lexer);
 		const (tok, value, _) = want(lexer, ltok::NAME,
 			ltok::UNDERSCORE)?;
-		if (tok == ltok::UNDERSCORE) {
-			append(names, "")!;
+		const name = if (tok == ltok::UNDERSCORE) {
+			yield "";
 		} else {
-			append(names, value as str)!;
+			yield value as str;
 		};
+		append(names, (name, loc_from(lexer, start)))!;
 		if (len(names) == 1) {
 			want(lexer, ltok::COMMA)?;
 		} else {
@@ -352,11 +354,12 @@ fn binding(lexer: *lex::lexer, is_static: bool) (ast::expr | error) = {
 
 	let bindings: []ast::binding = [];
 	for (true) {
+		const start = mkloc(lexer);
 		const (tok, value, _) = want(lexer, ltok::NAME,
 			ltok::LPAREN, ltok::UNDERSCORE)?;
-		const names: []str = switch (tok) {
+		const names: [](str, ast::location) = switch (tok) {
 		case ltok::NAME =>
-			yield alloc([value as str])!;
+			yield alloc([(value as str, loc_from(lexer, start))])!;
 		case ltok::UNDERSCORE =>
 			yield [];
 		case ltok::LPAREN =>
@@ -712,11 +715,12 @@ fn for_expr(lexer: *lex::lexer) (ast::expr | error) = {
 		let bindings: []ast::binding = [];
 
 		for (true) {
+			const start = mkloc(lexer);
 			const (tok, value, _) = want(lexer,
 				ltok::NAME, ltok::LPAREN, ltok::UNDERSCORE)?;
-			const binding_names: []str = switch (tok) {
+			const binding_names: [](str, ast::location) = switch (tok) {
 			case ltok::NAME =>
-				yield alloc([value as str])!;
+				yield alloc([(value as str, loc_from(lexer, start))])!;
 			case ltok::UNDERSCORE =>
 				yield [];
 			case ltok::LPAREN =>
@@ -1268,16 +1272,18 @@ fn switch_expr(lexer: *lex::lexer) (ast::expr | error) = {
 fn match_case(lexer: *lex::lexer) (ast::match_case | error) = {
 	want(lexer, ltok::CASE)?;
 	let tok = lex::lex(lexer)?;
-	let loc = tok.2;
-	let name: str = "", typ: nullable *ast::_type = null;
+	let type_loc = tok.2;
+	let name: (str, ast::location) = ("", ast::location { ... }), typ: nullable *ast::_type = null;
 	switch (tok.0) {
 	case ltok::NULL =>
 		typ = alloc(ast::_type {
-			loc = loc_from(lexer, loc),
+			loc = loc_from(lexer, type_loc),
 			repr = ast::builtin_type::NULL,
 		})!;
 	case ltok::LET =>
-		name = want(lexer, ltok::NAME)?.1 as str;
+		const name_start = mkloc(lexer);
+		const name_tok = want(lexer, ltok::NAME)?;
+		name = (name_tok.1 as str, loc_from(lexer, name_start));
 		want(lexer, ltok::COLON)?;
 		typ = alloc(_type(lexer)?)!;
 	case ltok::ARROW =>

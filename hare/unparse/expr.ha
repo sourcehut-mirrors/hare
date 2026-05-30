@@ -725,11 +725,11 @@ fn binding_expr(
 		case 0 =>
 			z += syn(ctx, "_", synkind::OPERATOR)?;
 		case 1 =>
-			z += syn(ctx, binding.names[0], synkind::IDENT)?;
+			z += syn(ctx, binding.names[0].0, synkind::IDENT)?;
 		case =>
 			z += syn(ctx, "(", synkind::PUNCTUATION)?;
 			for (let i = 0z; i < len(binding.names); i += 1) {
-				let name = binding.names[i];
+				let name = binding.names[i].0;
 				if (name != "") {
 					z += syn(ctx, name, synkind::IDENT)?;
 				} else {
@@ -894,15 +894,15 @@ fn match_expr(
 	for (let item .. e.cases) {
 		z += newline(ctx)?;
 		z += syn(ctx, "case", synkind::KEYWORD)?;
-		if (len(item.name) > 0) {
+		if (len(item.name.0) > 0) {
 			z += space(ctx)?;
 			z += syn(ctx, "let", synkind::KEYWORD)?;
 			z += space(ctx)?;
-			z += syn(ctx, item.name, synkind::IDENT)?;
+			z += syn(ctx, item.name.0, synkind::IDENT)?;
 		};
 		match (item._type) {
 		case let typ: *ast::_type =>
-			if (len(item.name) > 0) {
+			if (len(item.name.0) > 0) {
 				z += syn(ctx, ":", synkind::PUNCTUATION)?;
 			};
 			z += space(ctx)?;
