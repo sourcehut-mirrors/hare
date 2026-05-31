@@ -2,7 +2,9 @@
 // (c) Hare authors <https://harelang.org>
 
 use bufio;
+use bytes;
 use cmd::hare::build;
+use crypto::sha256;
 use errors;
 use fmt;
 use fs;
@@ -11,6 +13,7 @@ use hare::ast;
 use hare::lex;
 use hare::module;
 use hare::parse;
+use hash;
 use io;
 use memio;
 use os::exec;
@@ -190,20 +193,33 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 
 	let dest = os::stdout_file;
 	if (output != "-") {
-		match (os::stat(output)) {
-		case let output_stat: fs::filestat =>
-			let output_mtime = output_stat.mtime;
-			match (os::stat(built)) {
-			case let built_stat: fs::filestat =>
-				let built_mtime = built_stat.mtime;
-				// Avoid replacing the destination file if it's
-				// already up-to-date
-				if (time::compare(output_mtime, built_mtime) >= 0) {
-					return;
-				};
-			case fs::error => void;
-			};
-		case fs::error => void;
+		// Avoid replacing the destination file if it's
+		// already the same binary
+
+		let h = sha256::sha256();
+		defer hash::close(&h);
+
+		let srchash: [sha256::SZ]u8 = [0...];
+		match (os::open(built)) {
+		case let e: fs::error => void;
+		case let this: io::file =>
+			defer io::close(this)!;
+			io::copy(&h, this)!;
+			hash::sum(&h, srchash);
+			hash::reset(&h);
+		};
+
+		let dsthash: [sha256::SZ]u8 = [1...];
+		match (os::open(output)) {
+		case let e: fs::error => void;
+		case let this: io::file =>
+			defer io::close(this)!;
+			io::copy(&h, this)!;
+			hash::sum(&h, dsthash);
+		};
+
+		if (bytes::equal(srchash, dsthash)) {
+			return;
 		};
 
 		let mode: fs::mode = 0o644;
