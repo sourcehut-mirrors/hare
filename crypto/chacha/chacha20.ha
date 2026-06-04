@@ -22,11 +22,50 @@ export def BLOCKSZ: size = 64;
 def ROUNDS: size = 20;
 const magic: [4]u32 = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
 
+// (X)ChaCha20 core state matrix.
+export type state = [16]u32;
+
+// Initializes a ChaCha20 state matrix.
+export fn init(state: *state, key: []u8, nonce: []u8) void = {
+	assert(len(key) == KEYSZ);
+	assert(len(nonce) == NONCESZ);
+
+	state[0] = magic[0];
+	state[1] = magic[1];
+	state[2] = magic[2];
+	state[3] = magic[3];
+	state[4] = endian::legetu32(key[0..4]);
+	state[5] = endian::legetu32(key[4..8]);
+	state[6] = endian::legetu32(key[8..12]);
+	state[7] = endian::legetu32(key[12..16]);
+	state[8] = endian::legetu32(key[16..20]);
+	state[9] = endian::legetu32(key[20..24]);
+	state[10] = endian::legetu32(key[24..28]);
+	state[11] = endian::legetu32(key[28..32]);
+	state[13] = endian::legetu32(nonce[0..4]);
+	state[14] = endian::legetu32(nonce[4..8]);
+	state[15] = endian::legetu32(nonce[8..12]);
+};
+
+// Generate one keystream block and increment the block counter.
+export fn block(state: *state, dest: []u8, rounds: size = 20) void = {
+	assert(len(dest) == BLOCKSZ);
+
+	let next = *state;
+	hblock(next, state, rounds);
+
+	for (let i = 0z; i < 16; i += 1) {
+		endian::leputu32(dest[i*4..i*4+4], state[i] + next[i]);
+	};
+
+	state[12] += 1;
+};
+
 // A ChaCha20 or XChaCha20 [[crypto::cipher::xorstream]] depending on
 // intialisation.
 export type stream = struct {
 	cipher::xorstream,
-	state: [16]u32,
+	state: state,
 	xorbuf: [BLOCKSZ]u8,
 	xorused: size,
 	rounds: size,
@@ -57,24 +96,8 @@ export fn chacha20_init(
 ) void = {
 	assert(len(key) == KEYSZ);
 	assert(len(nonce) == NONCESZ);
-
+	init(&s.state, key, nonce);
 	s.h = h;
-
-	s.state[0] = magic[0];
-	s.state[1] = magic[1];
-	s.state[2] = magic[2];
-	s.state[3] = magic[3];
-	s.state[4] = endian::legetu32(key[0..4]);
-	s.state[5] = endian::legetu32(key[4..8]);
-	s.state[6] = endian::legetu32(key[8..12]);
-	s.state[7] = endian::legetu32(key[12..16]);
-	s.state[8] = endian::legetu32(key[16..20]);
-	s.state[9] = endian::legetu32(key[20..24]);
-	s.state[10] = endian::legetu32(key[24..28]);
-	s.state[11] = endian::legetu32(key[28..32]);
-	s.state[13] = endian::legetu32(nonce[0..4]);
-	s.state[14] = endian::legetu32(nonce[4..8]);
-	s.state[15] = endian::legetu32(nonce[8..12]);
 };
 
 // Initialise a XChacha20 stream.
@@ -152,11 +175,7 @@ fn keybuf(s: *cipher::xorstream) []u8 = {
 	let s = s: *stream;
 
 	if (s.xorused >= BLOCKSZ) {
-		block((s.xorbuf: []u8: *[*]u32)[..16], &s.state,
-			s.rounds);
-		// TODO on big endian systems s.xorbuf values need to
-		// be converted from little endian.
-		s.state[12] += 1;
+		block(&s.state, s.xorbuf, s.rounds);
 		s.xorused = 0;
 	};
 
@@ -167,14 +186,6 @@ fn advance(s: *cipher::xorstream, n: size) void = {
 	let s = s: *stream;
 	assert(n <= len(s.xorbuf));
 	s.xorused += n;
-};
-
-fn block(dest: []u32, state: *[16]u32, rounds: size) void = {
-	hblock(dest, state, rounds);
-
-	for (let i = 0z; i < 16; i += 1) {
-		dest[i] += state[i];
-	};
 };
 
 fn hblock(dest: []u32, state: *[16]u32, rounds: size) void = {
