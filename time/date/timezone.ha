@@ -29,7 +29,8 @@ export type timezone = struct {
 	// The base timescale (e.g. time::chrono::utc).
 	tsc: *chrono::timescale,
 
-	// The textual identifier (e.g. "Europe/Amsterdam").
+	// The textual identifier under the TZDB (e.g. "Europe/Amsterdam").
+	// This is empty if the timezone is not from the TZDB.
 	name: str,
 
 	// The duration of a day in this timezone (e.g. 24 * time::HOUR).
@@ -180,10 +181,12 @@ export fn fixedzone(
 // This is set during the program's initialization. In order of preference, the
 // TZ environment variable is used, if set; the file at [[LOCALTIME_PATH]], if
 // present; or, as a last resort, [[UTC]] is used as a default.
+//
+// If set using the file at [[LOCALTIME_PATH]], the .name field will be empty.
 export const LOCAL: locality = &TZ_UTC;
 
 @init fn init_tz_local() void = {
-	let path = match (os::getenv("TZ")) {
+	match (os::getenv("TZ")) {
 	case let s: str =>
 		// remove POSIX prefix ':'
 		let s =
@@ -192,36 +195,23 @@ export const LOCAL: locality = &TZ_UTC;
 			else
 				s;
 
-		yield match (path::init(s)) {
+		const path = match (path::init(s)) {
 		case => return;
 		case let p: path::buffer =>
 			yield path::string(&p);
 		};
 
+		match (tzdb(path)) {
+		case => void;
+		case let loc: locality =>
+			LOCAL = loc;
+		};
 	case void =>
-		let s = match (os::realpath(LOCALTIME_PATH)) {
-		case => return;
-		case let s: str =>
-			yield s;
+		match (local()) {
+		case => void;
+		case let loc: locality =>
+			LOCAL = loc;
 		};
-
-		let p = match (path::init(s)) {
-		case => return;
-		case let p: path::buffer =>
-			yield p;
-		};
-
-		yield match (path::trimprefix(&p, TZDB_PATH)) {
-		case => return;
-		case let s: str =>
-			yield s;
-		};
-	};
-
-	match (tzdb(path)) {
-	case => void;
-	case let loc: locality =>
-		LOCAL = loc;
 	};
 };
 

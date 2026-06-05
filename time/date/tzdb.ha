@@ -71,6 +71,47 @@ export fn tzdb(tzid: str) (locality | tzdberror | nomem) = {
 	};
 };
 
+// Loads a [[timezone]] from the system's timezone file as a [[locality]]. Each
+// call returns a new instance. The caller must free the return value. See
+// [[timezone_free]].
+//
+// The loaded timezones are assigned an empty name, the [[time::chrono::utc]]
+// timescale, and the [[EARTH_DAY]] day-length
+fn local() (locality | tzdberror | nomem) = {
+	let file = os::open(LOCALTIME_PATH)?;
+
+	static let buf: [os::BUFSZ]u8 = [0...];
+	const bufstrm = bufio::init(file, buf, []);
+
+	let ok = false;
+	let name = strings::dup("")?;
+	defer if (!ok) free(name);
+	let loc = alloc(timezone {
+		tsc = &chrono::utc,
+		daylength = EARTH_DAY,
+		petz = PETZ_EMPTY,
+		name = name,
+		...
+	})?;
+	defer if (!ok) free(loc);
+
+	match (load_tzif(&bufstrm, loc)) {
+	case void =>
+		io::close(&bufstrm)?;
+		io::close(file)?;
+		ok = true;
+		return loc;
+	case invalidtzif =>
+		_ = io::close(&bufstrm);
+		_ = io::close(file);
+		return invalidtzif;
+	case let err: io::error =>
+		_ = io::close(&bufstrm);
+		_ = io::close(file);
+		return err;
+	};
+};
+
 // Loads TZif (Time Zone Information Format) data onto a given [[timezone]],
 // initializing the fields ".phases", ".transitions", and ".petz".
 //
