@@ -50,6 +50,7 @@ F:	*aarch64*
 
 CRYPTOGRAPHIC LIBRARY
 M:	Armin Preiml <apreiml@strohwolke.at>
+R:	Runxi Yu <me@runxiyu.org>
 F:	crypto/
 P:	crypto/conventions.txt
 
