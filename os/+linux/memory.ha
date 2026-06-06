@@ -16,7 +16,7 @@ export type mcl = enum uint {
 export fn mlock(
 	addr: *opaque,
 	length: size,
-	flags: mcl,
+	flags: mcl = 0,
 ) (void | errors::error) = {
 	match (sys::mlock2(addr, length, flags)) {
 	case let err: sys::errno =>
