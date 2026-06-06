@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: MPL-2.0
+// (c) Hare authors <https://harelang.org>
+
+use errors;
+use sys;
+
+// Flags for the [[mlock]] family of operations.
+export type mcl = enum uint {
+	CURRENT = 1,
+	FUTURE = 2,
+};
+
+// Locks a region of memory so that it will not be written to swap.
+export fn mlock(
+	addr: *opaque,
+	length: size,
+) (void | errors::error) = {
+	match (sys::mlock(addr, length)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case void =>
+		return;
+	};
+};
+
+// Unlocks memory previously locked with [[mlock]].
+export fn munlock(addr: *opaque, length: size) (void | errors::error) = {
+	match (sys::munlock(addr, length)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case void =>
+		return;
+	};
+};
+
+// Locks the entire process's address space so that it will not be written to
+// swap.
+export fn mlockall(flags: mcl) (void | errors::error) = {
+	match (sys::mlockall(flags: int)) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case void =>
+		return;
+	};
+};
+
+// Unlocks all locked memory in the process's address space.
+export fn munlockall() (void | errors::error) = {
+	match (sys::munlockall()) {
+	case let err: sys::errno =>
+		return errors::errno(err);
+	case void =>
+		return;
+	};
+};

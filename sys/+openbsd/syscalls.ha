@@ -1313,7 +1313,25 @@ export fn sysctl(
 };
 
 // mlock
+@symbol("mlock") fn libc_mlock(addr: *const opaque, len_: size) int;
+
+export fn mlock(addr: *const opaque, length: size) (void | errno) = {
+	let res = libc_mlock(addr, length);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // munlock
+@symbol("munlock") fn libc_munlock(addr: *const opaque, len_: size) int;
+
+export fn munlock(addr: *const opaque, length: size) (void | errno) = {
+	let res = libc_munlock(addr, length);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // getpgid
 
 @symbol("getpgid") fn libc_getpgid(pid: pid_t) pid_t;
@@ -1404,7 +1422,25 @@ export fn kqueue1(flags: int) (int | errno) = {
 };
 
 // mlockall
+@symbol("mlockall") fn libc_mlockall(flags: int) int;
+
+export fn mlockall(flags: int) (void | errno) = {
+	let res = libc_mlockall(flags);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // munlockall
+@symbol("munlockall") fn libc_munlockall() int;
+
+export fn munlockall() (void | errno) = {
+	let res = libc_munlockall();
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // getresuid
 // setresuid
 // getresgid
