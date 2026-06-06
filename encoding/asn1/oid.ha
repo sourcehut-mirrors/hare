@@ -30,9 +30,13 @@ export type oiddb = struct {
 // Numeric id of an oid which is unique within an [[oiddb]].
 export type oid = u32;
 
+// Buf size estimation for reading raw oids.
+export def OIDBUFSZ: size = 64;
+
 // Reads an oid if present in 'db'. Returns [[badformat]] if the oid is unknown.
 export fn read_oid(d: *decoder, db: *oiddb) (oid | error) = {
-	let raw = read_rawoid(d)?;
+	let oidbuf: [OIDBUFSZ]u8 = [0...];
+	let raw = read_rawoid(d, oidbuf)?;
 
 	match (oid_from_der(db, raw)) {
 	case let o: oid =>
@@ -42,19 +46,16 @@ export fn read_oid(d: *decoder, db: *oiddb) (oid | error) = {
 	};
 };
 
-// Reads any [[oid]] and returns the DER encoded form. The returned value is
-// borrowed from a static buffer.
-export fn read_rawoid(d: *decoder) ([]u8 | error) = {
-	def OIDBUFSZ: size = 64; // estimated
-	static let oidbuf: [OIDBUFSZ]u8 = [0...];
-
+// Reads any [[oid]] and returns the DER encoded form. The result is borrowed
+// from 'buf'. See [[OIDBUFSZ]] for a size estimation.
+export fn read_rawoid(d: *decoder, buf: []u8) ([]u8 | error) = {
 	const dh = next(d)?;
 	expect_utag(dh, utag::OID)?;
 	if (dsz(dh) < 2) {
 		return invalid;
 	};
-	const n = read_bytes(d, oidbuf)?;
-	return oidbuf[..n];
+	const n = read_bytes(d, buf)?;
+	return buf[..n];
 };
 
 // Writes given [[oid]] from the [[oiddb]] 'db'.

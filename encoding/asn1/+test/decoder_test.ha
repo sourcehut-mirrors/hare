@@ -331,6 +331,7 @@ fn newdatetime(s: str, tag: utag) []u8 = {
 	assert(read_oid(&d([0x06, 0x03, 0x55, 0x04, 0x03]), &db)! == 1);
 	assert(stroid(&db, 1) == "id-at-commonName");
 
+	let buf: [OIDBUFSZ]u8 = [0...];
 	assert(bytes::equal([0x55, 0x04, 0x03],
-			read_rawoid(&d([0x06, 0x03, 0x55, 0x04, 0x03]))!));
+			read_rawoid(&d([0x06, 0x03, 0x55, 0x04, 0x03]), buf)!));
 };
