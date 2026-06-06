@@ -26,6 +26,8 @@ const magic: [4]u32 = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574];
 export type state = [16]u32;
 
 // Initializes a ChaCha20 state matrix.
+//
+// The block counter is initialized to zero.
 export fn init(state: *state, key: []u8, nonce: []u8) void = {
 	assert(len(key) == KEYSZ);
 	assert(len(nonce) == NONCESZ);
@@ -42,6 +44,7 @@ export fn init(state: *state, key: []u8, nonce: []u8) void = {
 	state[9] = endian::legetu32(key[20..24]);
 	state[10] = endian::legetu32(key[24..28]);
 	state[11] = endian::legetu32(key[28..32]);
+	state[12] = 0;
 	state[13] = endian::legetu32(nonce[0..4]);
 	state[14] = endian::legetu32(nonce[4..8]);
 	state[15] = endian::legetu32(nonce[8..12]);
