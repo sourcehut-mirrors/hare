@@ -706,3 +706,12 @@ export fn kqueue() (int | errno) = {
 export fn kevent(kq: int, changelist: const *kevent_t, nchanges: int, eventlist: *kevent_t, nevents: int, timeout: const nullable *timespec) (int | errno) = {
 	return wrap_return(syscall6(SYS_kevent, kq: u64, changelist: uintptr, nchanges: u64, eventlist: uintptr, nevents: u64, timeout: uintptr))?: int;
 };
+
+export fn statvfs(path: path, buf: *vfsstat) (void | errno) = {
+	let path = kpath(path)?;
+	wrap_return(syscall2(SYS_statvfs, path: uintptr: u64, buf: uintptr: u64))?;
+};
+
+export fn fstatvfs(fd: int, buf: *vfsstat) (void | errno) = {
+	wrap_return(syscall2(SYS_fstatvfs, fd: u64, buf: uintptr: u64))?;
+};

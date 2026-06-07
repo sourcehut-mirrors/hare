@@ -81,7 +81,21 @@ export fn fstatat(fd: int, path: path, _stat: *st, flag: int) (void | errno) = {
 	_stat.flags = sb.st_flags;
 };
 
-export fn fstatvfs1(fd: int, _statvfs: *statvfs, flag: int) (void | errno) = {
+export fn statvfs(path: path, buf: *vfsstat) (void | errno) = {
+	statvfs1(path, buf, ST_WAIT)?;
+};
+
+export fn statvfs1(path: path, buf: *vfsstat, flags: int) (void | errno) = {
+	let path = kpath(path)?;
+	wrap_return(syscall3(SYS___statvfs190, path: uintptr: u64,
+		buf: uintptr: u64, flags: u64))?;
+};
+
+export fn fstatvfs(fd: int, buf: *vfsstat) (void | errno) = {
+	fstatvfs1(fd, buf, ST_WAIT)?;
+};
+
+export fn fstatvfs1(fd: int, _statvfs: *vfsstat, flag: int) (void | errno) = {
 	wrap_return(syscall3(SYS___fstatvfs190, fd: u64,
 		_statvfs: uintptr: u64, flag: u64))?;
 };

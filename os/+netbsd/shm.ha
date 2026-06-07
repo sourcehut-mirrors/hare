@@ -16,13 +16,13 @@ fn shm_check_fs() bool = {
 	case let fd: io::file =>
 		defer io::close(fd)!;
 
-		let sv = sys::statvfs{...};
+		let sv = sys::vfsstat{...};
 		let st = sys::st{...};
 
 		if (sys::fstatvfs1(fd, &sv, sys::MNT_NOWAIT) is sys::errno)
 			return false;
 
-		if (strings::fromutf8(sv.f_fstypename)! == sys::MOUNT_SHMFS)
+		if (strings::fromutf8(sv.fstypename)! == sys::MOUNT_SHMFS)
 			return false;
 
 		if (sys::fstat(fd, &st) is sys::errno)

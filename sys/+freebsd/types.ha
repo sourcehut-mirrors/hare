@@ -599,3 +599,62 @@ export def NOTE_NSECONDS: u32 = 0x00000008;
 export def NOTE_ABSTIME: u32 = 0x00000010;
 
 export def KQUEUE_CLOEXEC: u32 = 0x00000001;
+
+
+export def PC_LINK_MAX: int = 0;
+export def PC_MAX_CANON: int = 1;
+export def PC_MAX_INPUT: int = 2;
+export def PC_NAME_MAX: int = 3;
+export def PC_PATH_MAX: int = 4;
+export def PC_PIPE_BUF: int = 5;
+export def PC_CHOWN_RESTRICTED: int = 6;
+export def PC_NO_TRUNC: int = 7;
+export def PC_VDISABLE: int = 8;
+export def PC_SYNC_IO: int = 9;
+export def PC_ASYNC_IO: int = 10;
+export def PC_PRIO_IO: int = 11;
+export def PC_SOCK_MAXBUF: int = 12;
+export def PC_FILESIZEBITS: int = 13;
+export def PC_REC_INCR_XFER_SIZE: int = 14;
+export def PC_REC_MAX_XFER_SIZE: int = 15;
+export def PC_REC_MIN_XFER_SIZE: int = 16;
+export def PC_REC_XFER_ALIGN: int = 17;
+export def PC_ALLOC_SIZE_MIN: int = 18;
+export def PC_SYMLINK_MAX: int = 19;
+export def PC_2_SYMLINKS: int = 20;
+
+// File system status flags
+export def ST_RDONLY: u64 = 1 << 0;
+export def ST_NOSUID: u64 = 1 << 1;
+
+export type fsid_t = struct {
+	val: [2]i32,
+};
+
+export def MFSNAMELEN: size = 16;
+export def MNAMELEN: size = 1024;
+
+export type fsstat = struct {
+	version: u32,
+	_type: u32,
+	flags: u64,
+	bsize: u64,
+	iosize: u64,
+	blocks: u64,
+	bfree: u64,
+	bavail: i64,
+	files: u64,
+	ffree: i64,
+	syncwrites: u64,
+	asyncwrites: u64,
+	syncreads: u64,
+	asyncreads: u64,
+	spare: [10]u64,
+	namemax: u32,
+	owner: uid_t,
+	fsid: fsid_t,
+	charspare: [80]u8,
+	fstypename: [MFSNAMELEN]u8,
+	mntfromname: [MNAMELEN]u8,
+	mntonname: [MNAMELEN]u8,
+};

@@ -7,13 +7,16 @@ export type dev_t = u64;
 export type ino_t = u64;
 export type nlink_t = u64;
 export type id_t = uint;
-export type pid_t = u64;
+export type pid_t = u64; // TODO: Should be i32
 export type lwpid_t = i32;
 export type uid_t = u32;
 export type gid_t = u32;
 export type off_t = i64;
 export type blkcnt_t = i64;
 export type blksize_t = i32;
+export type fsblkcnt_t = u64;
+export type fsblksize_t = u64;
+export type fsfilcnt_t = u64;
 export type fflags_t = u32;
 export type mode_t = u32;
 export type nfds_t = uint;
@@ -141,73 +144,72 @@ export type stat = struct {
 };
 
 export type fsid_t = struct {
-	__fsid_val: [2]u32,
+	val: [2]i32,
 };
 
-export def VFS_NAMELEN: int = 32;
-export def VFS_MNAMELEN: int = 1024;
+export def VFS_NAMELEN: size = 32;
+export def VFS_MNAMELEN: size = 1024;
 
-export type statvfs = struct {
-	// copy of mount exported flags
-	f_flag:		u64,
-	// file system block size
-	f_bsize:	u64,
-	// fundamental file system block size
-	f_frsize:	u64,
-	// optimal file system block size
-	f_iosize:	u64,
+export type vfsstat = struct {
+	// Copy of mount exported flags
+	flag: u64,
+	// File system block size
+	bsize: u64,
+	// File system fragment size
+	frsize: u64,
+	// Optimal file system block size
+	iosize: u64,
 
-	// The following are in units of f_frsize
+	// The following are in units of frsize
 
-	// number of blocks in file system,
-	f_blocks:	u64,
-	// free blocks avail in file system
-	f_bfree:	u64,
-	// free blocks avail to non-root
-	f_bavail:	u64,
-	// blocks reserved for root
-	f_bresvd:	u64,
+	// Number of blocks in file system
+	blocks: fsblkcnt_t,
+	// Free blocks avail in file system
+	bfree: fsblkcnt_t,
+	// Free blocks avail to non-root
+	bavail: fsblkcnt_t,
+	// Blocks reserved for root
+	bresvd: fsblkcnt_t,
 
-	// total file nodes in file system
-	f_files:	u64,
-	// free file nodes in file system
-	f_ffree:	u64,
-	// free file nodes avail to non-root
-	f_favail:	u64,
-	// file nodes reserved for root
-	f_fresvd:	u64,
+	// Total file nodes in file system
+	files: fsfilcnt_t,
+	// Free file nodes in file system
+	ffree: fsfilcnt_t,
+	// Free file nodes avail to non-root
+	favail: fsfilcnt_t,
+	// File nodes reserved for root
+	fresvd: fsfilcnt_t,
 
-	// count of sync reads since mount
-	f_syncreads:	u64,
-	// count of sync writes since mount
-	f_syncwrites:	u64,
+	// Count of sync reads since mount
+	syncreads: u64,
+	// Count of sync writes since mount
+	syncwrites: u64,
 
-	// count of async reads since mount
-	f_asyncreads:	u64,
-	// count of async writes since mount
-	f_asyncwrites:	u64,
+	// Count of async reads since mount
+	asyncreads: u64,
+	// Count of async writes since mount
+	asyncwrites: u64,
 
-	// NetBSD compatible fsid
-	f_fsidx:	fsid_t,
-	// Posix compatible fsid
-	f_fsid:		u64,
-	// maximum filename length
-	f_namemax:	u64,
-	// user that mounted the file system
-	f_owner:	uid_t,
-	_:		u32, // padding
+	// NetBSD compatible file system ID
+	fsidx: fsid_t,
+	// POSIX compliant file system ID
+	fsid: u64,
+	// Maximum filename length
+	namemax: u64,
+	// User that mounted the file system
+	owner: uid_t,
 
 	// spare space
-	f_spare:	[4]u64,
+	spare: [4]u64,
 
 	// fs type name
-	f_fstypename:	[VFS_NAMELEN]u8,
+	fstypename: [VFS_NAMELEN]u8,
 	// directory on which mounted
-	f_mntonname:	[VFS_MNAMELEN]u8,
+	mntonname: [VFS_MNAMELEN]u8,
 	// mounted file system
-	f_mntfromname:	[VFS_MNAMELEN]u8,
+	mntfromname: [VFS_MNAMELEN]u8,
 	// disk label name if avail
-	f_mntfromlabel:	[VFS_MNAMELEN]u8,
+	mntfromlabel: [VFS_MNAMELEN]u8,
 };
 
 export type dirent = struct {
@@ -648,12 +650,57 @@ export def SHUT_RDWR: int = 2;
 // non-existent device
 export def NODEV: int = -1;
 
-// synchronously wait for I/O to complete
-export def MNT_WAIT:	int = 1;
-// start all I/O, but do not wait for it
-export def MNT_NOWAIT:	int = 2;
-// push data not written by filesystem syncer
-export def MNT_LAZY:	int = 3;
+// Read only filesystem
+export def MNT_RDONLY: uint = 0x00000001;
+// File system written synchronously
+export def MNT_SYNCHRONOUS: uint = 0x00000002;
+// Can't exec from filesystem
+export def MNT_NOEXEC: uint = 0x00000004;
+// Don't honor setuid bits on fs
+export def MNT_NOSUID: uint = 0x00000008;
+// Don't interpret special files
+export def MNT_NODEV: uint = 0x00000010;
+// Union with underlying filesystem
+export def MNT_UNION: uint = 0x00000020;
+// File system written asynchronously
+export def MNT_ASYNC: uint = 0x00000040;
+// Don't write core dumps to this FS
+export def MNT_NOCOREDUMP: uint = 0x00008000;
+// Only update access time if mod/ch
+export def MNT_RELATIME: uint = 0x00020000;
+// Don't show entry in df
+export def MNT_IGNORE: uint = 0x00100000;
+// Uses NFS4 Access Control Lists
+export def MNT_NFS4ACLS: uint = 0x00200000;
+// Use DISCARD/TRIM if supported
+export def MNT_DISCARD: uint = 0x00800000;
+// Enable extended attributes
+export def MNT_EXTATTR: uint = 0x01000000;
+// Use logging
+export def MNT_LOG: uint = 0x02000000;
+// Never update access times in fs
+export def MNT_NOATIME: uint = 0x04000000;
+// Mounted by automountd(8)
+export def MNT_AUTOMOUNTED: uint = 0x10000000;
+// Recognize symlink permission
+export def MNT_SYMPERM: uint = 0x20000000;
+// Never update mod times for devs
+export def MNT_NODEVMTIME: uint = 0x40000000;
+// Use soft dependencies
+export def MNT_SOFTDEP: uint = 0x80000000;
+// Shared with EXKERB
+export def MNT_POSIX1EACLS: uint = 0x00000800;
+export def MNT_ACLS: uint = MNT_POSIX1EACLS;
+
+// Synchronously wait for I/O to complete
+export def MNT_WAIT: int = 1;
+// Start all I/O, but do not wait for it
+export def MNT_NOWAIT: int = 2;
+// Push data not written by filesystem syncer
+export def MNT_LAZY: int = 3;
+
+export def ST_WAIT = MNT_WAIT;
+export def ST_NOWAIT = MNT_NOWAIT;
 
 // Efficient memory file-system
 export def MOUNT_TMPFS =	"tmpfs";

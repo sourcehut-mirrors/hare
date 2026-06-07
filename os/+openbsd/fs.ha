@@ -96,3 +96,70 @@ export fn mkfile(path: str, mode: fs::mode) (void | fs::error) = {
 	};
 	io::close(file)?;
 };
+
+export type fsblkcnt = u64;
+export type fsfilcnt = u64;
+
+export type vfsstat = struct {
+	bsize: u64,
+	frsize: u64,
+	blocks: fsblkcnt,
+	bfree: fsblkcnt,
+	bavail: fsblkcnt,
+	files: fsfilcnt,
+	ffree: fsfilcnt,
+	favail: fsfilcnt,
+	fsid: u64,
+	flag: u64,
+	namemax: u64,
+};
+
+fn fsstat_to_vfsstat(fs: *sys::fsstat) vfsstat = {
+	static let vfs = vfsstat { ... };
+	vfs = vfsstat { ... };
+	vfs.bsize = fs.iosize;
+	vfs.frsize = fs.bsize;
+	vfs.blocks = fs.blocks;
+	vfs.bfree = fs.bfree;
+	if (fs.bavail < 0) {
+		vfs.bavail = 0;
+	} else {
+		vfs.bavail = fs.bavail: fsblkcnt;
+	};
+	vfs.files = fs.files;
+	vfs.ffree = fs.ffree;
+	if (fs.favail < 0) {
+		vfs.favail = 0;
+	} else {
+		vfs.favail = fs.favail: fsfilcnt;
+	};
+	vfs.fsid = *(&fs.fsid: *u64);
+	vfs.flag = 0;
+	if (fs.flags & sys::MNT_RDONLY > 0) {
+		vfs.flag |= sys::ST_RDONLY;
+	} else if (fs.flags & sys::MNT_NOSUID > 0) {
+		vfs.flag |= sys::ST_NOSUID;
+	};
+	vfs.namemax = fs.namemax;
+	return vfs;
+};
+
+// Queries file system information mounted at the given path.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn statvfs(path: str) (vfsstat | sys::errno) = {
+	static let buf = sys::fsstat { ... };
+	sys::statfs(path, &buf)?;
+	return fsstat_to_vfsstat(&buf);
+};
+
+// Like [[statvfs]], but accepts a file descriptor.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn fstatvfs(fd: io::file) (vfsstat | sys::errno) = {
+	static let buf = sys::fsstat { ... };
+	sys::fstatfs(fd, &buf)?;
+	return fsstat_to_vfsstat(&buf);
+};

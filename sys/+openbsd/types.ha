@@ -299,9 +299,11 @@ export type siginfo = struct {
 	},
 };
 
-export type sigval = union {
-	sival_int: int,
-	sival_ptr: *opaque,
+export type sigval = struct {
+	union {
+		sival_int: int,
+		sival_ptr: *opaque,
+	},
 };
 
 export type stack_t = struct {
@@ -839,4 +841,105 @@ export type kevent = struct {
 	fflags: uint,
 	data: i64,
 	udata: nullable *opaque,
+};
+
+// Mount flags
+export def MNT_RDONLY: u64 = 0x00000001;
+export def MNT_NOSUID: u64 = 0x00000008;
+
+// File system status flags
+export def ST_RDONLY: u64 = 0x00000001;
+export def ST_NOSUID: u64 = 0x00000002;
+
+export type fsid_t = struct {
+	val: [2]i32,
+};
+
+export def MAXFIDSZ: size = 16;
+
+export type fid = struct {
+	// Length of data in bytes
+	len_data: u16,
+	_: u16,
+	data: [MAXFIDSZ]u8,
+};
+
+export type fhandle = struct {
+	// File system id of mount point
+	fsid: fsid_t,
+	// File system specific id
+	fid: fid,
+};
+
+// Per-filesystem mount options
+export type mount_info = struct {
+	union {
+		// TODO:
+		// ufs_args: ufs_args,
+		// mfs_args: mfs_args,
+		// nfs_args: nfs_args,
+		// iso_args: iso_args,
+		// msdosfs_args: msdosfs_args,
+		// ntfs_args: ntfs_args,
+		// tmpfs_args: tmpfs_args,
+
+		// 64-bit alignment and room to grow
+		_: [160]u8,
+	},
+};
+
+export def MFSNAMELEN: size = 16;
+export def MNAMELEN: size = 90;
+
+export type fsstat = struct {
+	// Copy of mount flags
+	flags: u32,
+	// File system block size
+	bsize: u32,
+	// Optimal transfer block size
+	iosize: u32,
+
+	// Unit is f_bsize
+
+	// Total data blocks in file system
+	blocks: u64,
+	// Free blocks in fs
+	bfree: u64,
+	// Free blocks avail to non-superuser
+	bavail: i64,
+
+	// Total file nodes in file system
+	files: u64,
+	// Free file nodes in fs
+	ffree: u64,
+	// Free file nodes avail to non-root
+	favail: i64,
+
+	// Count of sync writes since mount
+	syncwrites: u64,
+	// Count of sync reads since mount
+	syncreads: u64,
+	// Count of async writes since mount
+	asyncwrites: u64,
+	// Count of async reads since mount
+	asyncreads: u64,
+
+	// File system id
+	fsid: fsid_t,
+	// Maximum filename length
+	namemax: u32,
+	// User that mounted the file system
+	owner: uid_t,
+	// Last mount [-u] time
+	ctime: u64,
+
+	fstypename: [MFSNAMELEN]u8,
+	// Directory on which mounted
+	mntonname: [MNAMELEN]u8,
+	// Mounted file system
+	mntfromname: [MNAMELEN]u8,
+	// Special for mount request
+	mntfromspec: [MNAMELEN]u8,
+	// Per-filesystem mount options
+	mount_info: mount_info,
 };

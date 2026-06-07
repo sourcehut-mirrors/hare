@@ -17,6 +17,9 @@ export type timer_t = *opaque;
 export type clock_t = i64;
 export type si_band_t = i64;
 export type rlim_t = u64;
+export type fsword_t = u64;
+export type fsblkcnt_t = u64;
+export type fsfilcnt_t = u64;
 
 export def NGROUPS_MAX: size = 32;
 export def NSIG: int = 64;
@@ -1431,3 +1434,152 @@ export def SCHED_FLAG_UTIL_CLAMP_MAX: u64 = 0x40;
 // Combinations of sched_flags fields.
 export def SCHED_FLAG_KEEP_ALL = SCHED_FLAG_KEEP_POLICY | SCHED_FLAG_KEEP_PARAMS;
 export def SCHED_FLAG_UTIL_CLAMP = SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX;
+
+// File system types used by [[fsstat]].
+export def ADFS_SUPER_MAGIC: fsword_t = 0xadf5;
+export def AFFS_SUPER_MAGIC: fsword_t = 0xadff;
+export def AFS_SUPER_MAGIC: fsword_t = 0x5346414f;
+// Anonymous inode FS
+// (for pseudofiles that have no name; e.g., epoll, signalfd, bpf)
+export def ANON_INODE_FS_MAGIC: fsword_t = 0x09041934;
+export def AUTOFS_SUPER_MAGIC: fsword_t = 0x0187;
+export def BDEVFS_MAGIC: fsword_t = 0x62646576;
+export def BEFS_SUPER_MAGIC: fsword_t = 0x42465331;
+export def BFS_MAGIC: fsword_t = 0x1badface;
+export def BINFMTFS_MAGIC: fsword_t = 0x42494e4d;
+export def BPF_FS_MAGIC: fsword_t = 0xcafe4a11;
+export def BTRFS_SUPER_MAGIC: fsword_t = 0x9123683e;
+export def BTRFS_TEST_MAGIC: fsword_t = 0x73727279;
+// Cgroup pseudo FS
+export def CGROUP_SUPER_MAGIC: fsword_t = 0x27e0eb;
+// Cgroup v2 pseudo FS
+export def CGROUP2_SUPER_MAGIC: fsword_t = 0x63677270;
+export def CIFS_MAGIC_NUMBER: fsword_t = 0xff534d42;
+export def CODA_SUPER_MAGIC: fsword_t = 0x73757245;
+export def COH_SUPER_MAGIC: fsword_t = 0x012ff7b7;
+export def CRAMFS_MAGIC: fsword_t = 0x28cd3d45;
+export def DEBUGFS_MAGIC: fsword_t = 0x64626720;
+// Linux 2.6.17 and earlier
+export def DEVFS_SUPER_MAGIC: fsword_t = 0x1373;
+export def DEVPTS_SUPER_MAGIC: fsword_t = 0x1cd1;
+export def ECRYPTFS_SUPER_MAGIC: fsword_t = 0xf15f;
+export def EFIVARFS_MAGIC: fsword_t = 0xde5e81e4;
+export def EFS_SUPER_MAGIC: fsword_t = 0x00414a53;
+// Linux 2.0 and earlier
+export def EXT_SUPER_MAGIC: fsword_t = 0x137d;
+export def EXT2_OLD_SUPER_MAGIC: fsword_t = 0xef51;
+export def EXT2_SUPER_MAGIC: fsword_t = 0xef53;
+export def EXT3_SUPER_MAGIC: fsword_t = 0xef53;
+export def EXT4_SUPER_MAGIC: fsword_t = 0xef53;
+export def F2FS_SUPER_MAGIC: fsword_t = 0xf2f52010;
+export def FUSE_SUPER_MAGIC: fsword_t = 0x65735546;
+// Unused
+export def FUTEXFS_SUPER_MAGIC: fsword_t = 0xbad1dea;
+export def HFS_SUPER_MAGIC: fsword_t = 0x4244;
+export def HOSTFS_SUPER_MAGIC: fsword_t = 0x00c0ffee;
+export def HPFS_SUPER_MAGIC: fsword_t = 0xf995e849;
+export def HUGETLBFS_MAGIC: fsword_t = 0x958458f6;
+export def ISOFS_SUPER_MAGIC: fsword_t = 0x9660;
+export def JFFS2_SUPER_MAGIC: fsword_t = 0x72b6;
+export def JFS_SUPER_MAGIC: fsword_t = 0x3153464a;
+// Original minix FS
+export def MINIX_SUPER_MAGIC: fsword_t = 0x137f;
+// 30 char minix FS
+export def MINIX_SUPER_MAGIC2: fsword_t = 0x138f;
+// Minix V2 FS
+export def MINIX2_SUPER_MAGIC: fsword_t = 0x2468;
+// Minix V2 FS, 30 char names
+export def MINIX2_SUPER_MAGIC2: fsword_t = 0x2478;
+// Minix V3 FS, 60 char names
+export def MINIX3_SUPER_MAGIC: fsword_t = 0x4d5a;
+// POSIX message queue FS
+export def MQUEUE_MAGIC: fsword_t = 0x19800202;
+export def MSDOS_SUPER_MAGIC: fsword_t = 0x4d44;
+export def MTD_INODE_FS_MAGIC: fsword_t = 0x11307854;
+export def NCP_SUPER_MAGIC: fsword_t = 0x564c;
+export def NFS_SUPER_MAGIC: fsword_t = 0x6969;
+export def NILFS_SUPER_MAGIC: fsword_t = 0x3434;
+export def NSFS_MAGIC: fsword_t = 0x6e736673;
+export def NTFS_SB_MAGIC: fsword_t = 0x5346544e;
+export def OCFS2_SUPER_MAGIC: fsword_t = 0x7461636f;
+export def OPENPROM_SUPER_MAGIC: fsword_t = 0x9fa1;
+export def OVERLAYFS_SUPER_MAGIC: fsword_t = 0x794c7630;
+export def PIPEFS_MAGIC: fsword_t = 0x50495045;
+// /proc FS
+export def PROC_SUPER_MAGIC: fsword_t = 0x9fa0;
+export def PSTOREFS_MAGIC: fsword_t = 0x6165676c;
+export def QNX4_SUPER_MAGIC: fsword_t = 0x002f;
+export def QNX6_SUPER_MAGIC: fsword_t = 0x68191122;
+export def RAMFS_MAGIC: fsword_t = 0x858458f6;
+export def REISERFS_SUPER_MAGIC: fsword_t = 0x52654973;
+export def ROMFS_MAGIC: fsword_t = 0x7275;
+export def SECURITYFS_MAGIC: fsword_t = 0x73636673;
+export def SELINUX_MAGIC: fsword_t = 0xf97cff8c;
+export def SMACK_MAGIC: fsword_t = 0x43415d53;
+export def SMB_SUPER_MAGIC: fsword_t = 0x517b;
+export def SMB2_MAGIC_NUMBER: fsword_t = 0xfe534d42;
+export def SOCKFS_MAGIC: fsword_t = 0x534f434b;
+export def SQUASHFS_MAGIC: fsword_t = 0x73717368;
+export def SYSFS_MAGIC: fsword_t = 0x62656572;
+export def SYSV2_SUPER_MAGIC: fsword_t = 0x012ff7b6;
+export def SYSV4_SUPER_MAGIC: fsword_t = 0x012ff7b5;
+export def TMPFS_MAGIC: fsword_t = 0x01021994;
+export def TRACEFS_MAGIC: fsword_t = 0x74726163;
+export def UDF_SUPER_MAGIC: fsword_t = 0x15013346;
+export def UFS_MAGIC: fsword_t = 0x00011954;
+export def USBDEVICE_SUPER_MAGIC: fsword_t = 0x9fa2;
+export def V9FS_MAGIC: fsword_t = 0x01021997;
+export def VXFS_SUPER_MAGIC: fsword_t = 0xa501fcf5;
+export def XENFS_SUPER_MAGIC: fsword_t = 0xabba1974;
+export def XENIX_SUPER_MAGIC: fsword_t = 0x012ff7b4;
+export def XFS_SUPER_MAGIC: fsword_t = 0x58465342;
+// Linux 2.0 and earlier
+export def _XIAFS_SUPER_MAGIC: fsword_t = 0x012fd16d;
+
+// File system status flags
+
+// This filesystem is mounted read-only
+export def ST_RDONLY: fsword_t = 1 << 0;
+// The set-user-ID and set-group-ID bits are ignored by exec for executable files on this filesystem
+export def ST_NOSUID: fsword_t = 1 << 1;
+// Disallow access to device special files on this filesystem
+export def ST_NODEV: fsword_t = 1 << 2;
+// Execution of programs is disallowed on this filesystem
+export def ST_NOEXEC: fsword_t = 1 << 3;
+// Writes are synched to the filesystem immediately
+export def ST_SYNCHRONOUS: fsword_t = 1 << 4;
+// Mandatory locking is permitted on the filesystem
+export def ST_MANDLOCK: fsword_t = 1 << 6;
+// Write on file/directory/symlink
+export def ST_WRITE: fsword_t = 1 << 7;
+// Append-only file
+export def ST_APPEND: fsword_t = 1 << 8;
+// Immutable file
+export def ST_IMMUTABLE: fsword_t = 1 << 9;
+// Do not update access times
+export def ST_NOATIME: fsword_t = 1 << 10;
+// Do not update directory access times
+export def ST_NODIRATIME: fsword_t = 1 << 11;
+// Update atime relative to mtime/ctime
+export def ST_RELATIME: fsword_t = 1 << 12;
+// Symbolic links are not followed when resolving paths (since Linux 5.10)
+export def ST_NOSYMFOLLOW: fsword_t = 1 << 13;
+
+export type fsid_t = struct {
+	val: [2]i32,
+};
+
+export type fsstat = struct {
+	_type: fsword_t,
+	bsize: fsword_t,
+	blocks: fsblkcnt_t,
+	bfree: fsblkcnt_t,
+	bavail: fsblkcnt_t,
+	files: fsfilcnt_t,
+	ffree: fsfilcnt_t,
+	fsid: fsid_t,
+	namelen: fsword_t,
+	frsize: fsword_t,
+	flags: fsword_t,
+	_: [4]fsword_t,
+};

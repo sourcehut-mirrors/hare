@@ -5,6 +5,7 @@ use errors;
 use fs;
 use sys;
 use types::c;
+use io;
 
 export type setxattr_flag = enum int {
 	NONE = 0,
@@ -177,4 +178,51 @@ export fn removexattr(path: str, name: str) (void | fs::error) = {
 	case void =>
 		return void;
 	};
+};
+
+export type fsblkcnt = sys::fsblkcnt_t;
+export type fsfilcnt = sys::fsfilcnt_t;
+
+export type vfsstat = struct {
+	_: u64,
+	bsize: u64,
+	blocks: fsblkcnt,
+	bfree: fsblkcnt,
+	bavail: fsblkcnt,
+	files: fsfilcnt,
+	ffree: fsfilcnt,
+	fsid: u64,
+	namemax: u64,
+	frsize: u64,
+	flag: u64,
+	favail: fsfilcnt,
+	_: [3]u64,
+};
+
+// Queries file system information mounted at the given path.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn statvfs(path: str) (vfsstat | sys::errno) = {
+	static let buf = sys::fsstat { ... };
+	sys::statfs(path, &buf)?;
+	if (buf.frsize == 0)
+		buf.frsize = buf.bsize;
+	return *(&buf: *vfsstat);
+};
+
+// Like [[statvfs]], but accepts a file descriptor.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn fstatvfs(fd: io::file) (vfsstat | sys::errno) = {
+	static let buf = sys::fsstat { ... };
+	sys::fstatfs(fd, &buf)?;
+	if (buf.frsize == 0)
+		buf.frsize = buf.bsize;
+	return *(&buf: *vfsstat);
+};
+
+@test fn vfsstat() void = {
+	assert(size(vfsstat) == size(sys::fsstat));
 };

@@ -511,8 +511,29 @@ export fn chroot(path: path) (void | errno) = {
 };
 
 // getfsstat
+
 // statfs
+
+@symbol("statfs") fn libc_statfs(path: *const u8, buf: *fsstat) int;
+
+export fn statfs(path: path, buf: *fsstat) (void | errno) = {
+	let res = libc_statfs(cpath(path)?, buf);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // fstatfs
+
+@symbol("fstatfs") fn libc_fstatfs(fd: int, buf: *fsstat) int;
+
+export fn fstatfs(fd: int, buf: *fsstat) (void | errno) = {
+	let res = libc_fstatfs(fd, buf);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+};
+
 // fhstatfs
 // vfork
 // gettimeofday

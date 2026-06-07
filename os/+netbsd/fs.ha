@@ -4,6 +4,8 @@
 use fs;
 use sys;
 use types::c;
+use io;
+use unix;
 
 @init fn init_cwd() void = {
 	static let cwd_fs = os_filesystem { ... };
@@ -70,6 +72,57 @@ export fn access(path: str, mode: amode) (bool | fs::error) = {
 	case let err: sys::errno =>
 		return errno_to_fs(err);
 	};
+};
+
+export type fsblkcnt = sys::fsblkcnt_t;
+export type fsfilcnt = sys::fsfilcnt_t;
+export type fsid = sys::fsid_t;
+
+export type vfsstat = struct {
+	flag: u64,
+	bsize: u64,
+	frsize: u64,
+	_: u64,
+	blocks: fsblkcnt,
+	bfree: fsblkcnt,
+	bavail: fsblkcnt,
+	_: fsblkcnt,
+	files: fsfilcnt,
+	ffree: fsfilcnt,
+	favail: fsfilcnt,
+	_: fsfilcnt,
+	_: [4]u64,
+	_: fsid,
+	fsid: u64,
+	namemax: u64,
+	_: unix::uid,
+	_: [4]u64,
+	_: [sys::VFS_NAMELEN]u8,
+	_: [sys::VFS_MNAMELEN*3]u8,
+};
+
+// Queries file system information mounted at the given path.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn statvfs(path: str) (vfsstat | sys::errno) = {
+	static let buf = sys::vfsstat { ... };
+	sys::statvfs(path, &buf)?;
+	return *(&buf: *vfsstat);
+};
+
+// Like [[statvfs]], but accepts a file descriptor.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn fstatvfs(fd: io::file) (vfsstat | sys::errno) = {
+	static let buf = sys::vfsstat { ... };
+	sys::fstatvfs(fd, &buf)?;
+	return *(&buf: *vfsstat);
+};
+
+@test fn vfsstat() void = {
+	assert(size(vfsstat) == size(sys::vfsstat));
 };
 
 // TODO: NetBSD

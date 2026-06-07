@@ -1201,3 +1201,12 @@ export fn sched_setattr(pid: pid_t, attr: *sched_attr, flags: uint) (void | errn
 export fn sched_yield() void = {
 	syscall0(SYS_sched_yield);
 };
+
+export fn statfs(path: path, buf: *fsstat) (void | errno) = {
+	let path = kpath(path)?;
+	wrap_return(syscall2(SYS_statfs, path: uintptr: u64, buf: uintptr: u64))?;
+};
+
+export fn fstatfs(fd: int, buf: *fsstat) (void | errno) = {
+	wrap_return(syscall2(SYS_fstatfs, fd: u64, buf: uintptr: u64))?;
+};

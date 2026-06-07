@@ -710,3 +710,21 @@ export fn kqueuex(flags: uint) (int | errno) = {
 export fn kevent(kq: int, changelist: const *kevent_t, nchanges: int, eventlist: *kevent_t, nevents: int, timeout: const nullable *timespec) (int | errno) = {
 	return wrap_return(syscall6(SYS_kevent, kq: u64, changelist: uintptr, nchanges: u64, eventlist: uintptr, nevents: u64, timeout: uintptr))?: int;
 };
+
+export fn pathconf(path: path, name: int) (int | errno) = {
+	let path = kpath(path)?;
+	return wrap_return(syscall2(SYS_pathconf, path: uintptr: u64, name: u64))?: int;
+};
+
+export fn fpathconf(fd: int, name: int) (int | errno) = {
+	return wrap_return(syscall2(SYS_fpathconf, fd: u64, name: u64))?: int;
+};
+
+export fn statfs(path: path, buf: *fsstat) (void | errno) = {
+	let path = kpath(path)?;
+	wrap_return(syscall2(SYS_statfs, path: uintptr: u64, buf: uintptr: u64))?;
+};
+
+export fn fstatfs(fd: int, buf: *fsstat) (void | errno) = {
+	wrap_return(syscall2(SYS_fstatfs, fd: u64, buf: uintptr: u64))?;
+};

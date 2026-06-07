@@ -72,6 +72,46 @@ export fn access(path: str, mode: amode) (bool | fs::error) = {
 	};
 };
 
+export type vfsstat = struct {
+	bsize: u64,
+	frsize: u64,
+	blocks: fsblkcnt_t,
+	bfree: fsblkcnt_t,
+	bavail: fsblkcnt_t,
+	files: fsfilcnt_t,
+	ffree: fsfilcnt_t,
+	favail: fsfilcnt_t,
+	fsid: u64,
+	flag: u64,
+	namemax: u64,
+	_: [5]u64,
+	_: [32]u8,
+};
+
+// Queries file system information mounted at the given path.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn statvfs(path: str) (vfsstat | sys::errno) = {
+	static let buf = sys::vfsstat { ... };
+	sys::statvfs(path, &buf)?;
+	return *(&buf: *vfsstat);
+};
+
+// Like [[statvfs]], but accepts a file descriptor.
+//
+// The returned value is statically allocated and will be overwritten on
+// subsequent calls.
+export fn fstatvfs(fd: io::file) (vfsstat | sys::errno) = {
+	static let buf = sys::vfsstat { ... };
+	sys::fstatvfs(fd, &buf)?;
+	return *(&buf: *vfsstat);
+};
+
+@test fn vfsstat() void = {
+	assert(size(vfsstat) == size(sys::vfsstat));
+};
+
 // TODO: DragonFly
 // export fn mkfifo(path: str, mode: fs::mode) (void | fs::error) = {
 // export fn mkblk(

@@ -17,6 +17,8 @@ export type fflags_t = u32;
 export type mode_t = u16;
 export type nfds_t = uint;
 export type rlim_t = i64;
+export type fsblkcnt_t = u64;
+export type fsfilcnt_t = u64;
 
 export type intptr_t = i64;
 export type c_long = i64;
@@ -652,3 +654,54 @@ export def NOTE_CHILD: u32 = 0x00000004; // am a child process
 export def NOTE_SIGNAL: u32 = 0x08000000; //
 export def NOTE_OLDAPI: u32 = 0x04000000; // select/poll note
 export def NOTE_HUPONLY: u32 = 0x02000000; // select/poll note
+
+// File system statistics
+
+// Filesystem is read-only
+export def ST_RDONLY: u64 = 0x00000001;
+// ST_ISUID or ST_ISGID not supported
+export def ST_NOSUID: u64 = 0x00000002;
+// Field 'fsid_uuid' is valid
+export def ST_FSID_UUID: u64 = 0x40000000;
+// Field 'owner_uuid' is valid
+export def ST_OWNER_UUID: u64 = 0x80000000;
+
+export type vfsstat = struct {
+	// File system block size
+	bsize: u64,
+	// Fundamental file system block size
+	frsize: u64,
+	// Number of blocks (unit: frsize)
+	blocks: fsblkcnt_t,
+	// Free blocks in file system (unit: frsize)
+	bfree: fsblkcnt_t,
+	// Free blocks for non-root process (unit: frsize)
+	bavail: fsblkcnt_t,
+	// Total file inodes
+	files: fsfilcnt_t,
+	// Free file inodes
+	ffree: fsfilcnt_t,
+	// Free file inodes for non-root process
+	favail: fsfilcnt_t,
+	// File system id
+	fsid: u64,
+	// Bit mask of f_flag values
+	flag: u64,
+	// Maximum filename length
+	namemax: u64,
+	// User that mounted the filesystem
+	owner: uid_t,
+	// Filesystem type
+	_type: u32,
+	// Count of sync reads since mount
+	syncreads: u64,
+	// Count of sync writes since mount
+	syncwrites: u64,
+	// Count of async reads since mount
+	asyncreads: u64,
+	// Count of async writes since mount
+	asyncwrites: u64,
+	// DragonFly extensions - full uuid FSID and owner
+	fsid_uuid: [16]u8,
+	uid_uuid: [16]u8,
+};
