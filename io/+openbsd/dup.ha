@@ -17,7 +17,7 @@ export type dupflag = enum {
 export fn dup(old: file, flags: dupflag = dupflag::NONE) (file | error) = {
 	flags ^= dupflag::NOCLOEXEC; // Invert CLOEXEC
 
-	match (sys::dup2(old, -1)) {
+	match (sys::dup(old)) {
 	case let fd: int =>
 		const fl = sys::fcntl(fd, sys::F_GETFD, 0)!;
 		sys::fcntl(fd, sys::F_SETFD, fl | sys::FD_CLOEXEC)!;

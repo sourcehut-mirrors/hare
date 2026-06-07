@@ -322,6 +322,17 @@ export @symbol("getppid") fn getppid() pid_t;
 
 // lstat
 // dup
+
+@symbol("dup") fn libc_dup(oldd: int) int;
+
+export fn dup(oldfd: int) (int | errno) = {
+	let res = libc_dup(oldfd);
+	if (res == -1) {
+		return *__errno(): errno;
+	};
+	return res;
+};
+
 // fstatat
 
 @symbol("fstatat") fn libc_fstatat(fd: int, path: *const u8, sb: *stat, flag: int) int;
