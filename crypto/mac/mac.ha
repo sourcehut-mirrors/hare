@@ -38,7 +38,7 @@ export fn write(m: *mac, buf: const []u8) size = io::write(m, buf) as size;
 // information stored in the MAC function state.
 export fn sum(m: *mac, buf: []u8) void = {
 	assert(len(buf) >= m.sz,
-		"mac::finish buffer does not meet minimum required size");
+		"mac::sum buffer does not meet minimum required size");
 
 	match(m.sum) {
 	case let f: *fn(mac: *mac, buf: []u8) void =>
