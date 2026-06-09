@@ -50,7 +50,9 @@ export fn init(state: *state, key: []u8, nonce: []u8) void = {
 	state[15] = endian::legetu32(nonce[8..12]);
 };
 
-// Generate one keystream block and increment the block counter.
+// Generate one keystream block and increment the block counter. The block
+// counter wraps around on overflow; the caller must ensure that no counter
+// value is used twice with the same key and nonce.
 export fn block(state: *state, dest: []u8, rounds: size = 20) void = {
 	assert(len(dest) == BLOCKSZ);
 
@@ -72,6 +74,7 @@ export type stream = struct {
 	xorbuf: [BLOCKSZ]u8,
 	xorused: size,
 	rounds: size,
+	ctroverflow: bool,
 };
 
 // Creates a ChaCha20 or XChaCha20 stream cipher. Must be initialized with
@@ -101,6 +104,7 @@ export fn chacha20_init(
 	assert(len(nonce) == NONCESZ);
 	init(&s.state, key, nonce);
 	s.h = h;
+	s.ctroverflow = false;
 };
 
 // Initialise a XChacha20 stream.
@@ -169,6 +173,7 @@ export fn hchacha20(out: []u8, key: []u8, nonce: []u8) void = {
 // [[BLOCKSZ]].
 export fn setctr(s: *stream, counter: u32) void = {
 	s.state[12] = counter;
+	s.ctroverflow = false;
 
 	// enforce block generation
 	s.xorused = BLOCKSZ;
@@ -178,7 +183,12 @@ fn keybuf(s: *cipher::xorstream) []u8 = {
 	let s = s: *stream;
 
 	if (s.xorused >= BLOCKSZ) {
+		assert(!s.ctroverflow, "crypto::chacha: block counter overflow");
 		block(&s.state, s.xorbuf, s.rounds);
+
+		// Wrapped counter means the block just generated was the last
+		// before keystream reuse; abort if another is requested
+		s.ctroverflow = s.state[12] == 0;
 		s.xorused = 0;
 	};
 
