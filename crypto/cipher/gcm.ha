@@ -151,7 +151,6 @@ fn gcm_writer(s: *io::stream, buf: const []u8) (size | io::error) = {
 
 fn fillxorbuf(s: *gcmstream) void = {
 	assert(!s.ctroverflow, "crypto::cipher: GCM counter overflow");
-	let y: [GCMBLOCKSZ]u8 = [0...];
 	s.xorbuf[..] = s.y0[..];
 	beputu32(s.xorbuf[12..], s.y);
 	encrypt(s.block as *block, s.xorbuf, s.xorbuf);
