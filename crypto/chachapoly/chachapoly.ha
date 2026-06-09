@@ -85,8 +85,6 @@ fn geninit(
 	nonce: const []u8,
 	ad: const []u8...
 ) void = {
-	assert(len(ad) <= types::U32_MAX);
-
 	let otk: poly1305::key = [0...];
 	defer bytes::zero(otk);
 
