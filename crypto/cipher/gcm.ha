@@ -22,6 +22,7 @@ export type gcmstream = struct {
 	y0: [GCMBLOCKSZ]u8,
 	h: [GCMBLOCKSZ]u8,
 	y: u32,
+	ctroverflow: bool,
 	xorbufpos: size,
 	adlen: u64,
 	clen: u64,
@@ -98,6 +99,7 @@ export fn gcm_init(
 	};
 
 	s.y = begetu32(s.y0[12..]) + 1;
+	s.ctroverflow = false;
 
 	let ad = ad[..];
 	for (len(ad) > 0) {
@@ -148,11 +150,17 @@ fn gcm_writer(s: *io::stream, buf: const []u8) (size | io::error) = {
 };
 
 fn fillxorbuf(s: *gcmstream) void = {
+	assert(!s.ctroverflow, "crypto::cipher: GCM counter overflow");
 	let y: [GCMBLOCKSZ]u8 = [0...];
 	s.xorbuf[..] = s.y0[..];
 	beputu32(s.xorbuf[12..], s.y);
 	encrypt(s.block as *block, s.xorbuf, s.xorbuf);
 	s.y += 1;
+
+	// A counter equal to that in y0 means the block just generated was
+	// the last before the counter collides with the one used for the tag
+	// mask; abort if another block is requested
+	s.ctroverflow = s.y == begetu32(s.y0[12..]);
 	s.xorbufpos = 0;
 };
 
