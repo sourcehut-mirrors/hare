@@ -79,6 +79,11 @@ export fn gcm_init(
 	s.adlen = len(ad);
 	s.xorbufpos = GCMBLOCKSZ; // to force fill xorbuf at start
 
+	s.h[..] = [0...];
+	s.tagbuf[..] = [0...];
+	s.y0[..] = [0...];
+	s.clen = 0;
+
 	encrypt(b, s.h, s.h);
 
 	if (len(iv) == 12) {
