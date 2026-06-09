@@ -124,15 +124,14 @@ export fn seal(s: *stream, tag: []u8) void = writemac(s, tag);
 
 fn writemac(s: *stream, tag: []u8) void = {
 	assert(len(tag) == TAGSZ);
-	assert(s.msgsz <= types::U32_MAX);
 
 	polypad(&s.p, s.msgsz);
 
 	let nbuf: [8]u8 = [0...];
-	endian::leputu64(nbuf, s.adsz: u32);
+	endian::leputu64(nbuf, s.adsz: u64);
 	mac::write(&s.p, nbuf);
 
-	endian::leputu64(nbuf, s.msgsz: u32);
+	endian::leputu64(nbuf, s.msgsz: u64);
 	mac::write(&s.p, nbuf);
 
 	mac::sum(&s.p, tag[..]);
