@@ -92,7 +92,7 @@ export fn expand(
 	buf: []u8,
 ) void = {
 	assert(len(buf) >= (hash::bsz(h) + hash::sz(h)),
-		"len(buf) must be at least `hash::bsz(h)`");
+		"len(buf) must be at least `hash::bsz(h) + hash::sz(h)`");
 
 	const hashsz = hash::sz(h);
 	iexpand(h, dest, prk, info, buf[hashsz..], buf[..hashsz]);
