@@ -55,6 +55,8 @@ export fn init(p: *state, key: *key) void = {
 		p.r[i] &= 0x0ffffffc;
 	};
 
+	p.h[..] = [0...];
+
 	p.cidx = 0;
 };
 
