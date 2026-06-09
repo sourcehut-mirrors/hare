@@ -127,7 +127,6 @@ fn gcm_writer(s: *io::stream, buf: const []u8) (size | io::error) = {
 
 	let buf = buf[..];
 
-	let n: size = 0;
 	const max = if (s.xorbufpos + len(buf) > len(s.cipherbuf)) {
 		yield len(s.cipherbuf) - s.xorbufpos;
 	} else {
