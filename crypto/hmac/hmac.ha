@@ -48,6 +48,8 @@ export fn hmac(h: *hash::hash, key: const []u8, buf: []u8) state = {
 };
 
 fn init(h: *hash::hash, key: []u8, keypad: []u8) void = {
+	hash::reset(h);
+
 	const bsz = hash::bsz(h);
 
 	keypad[..] = [0...];
