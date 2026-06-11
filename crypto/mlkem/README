@@ -1,0 +1,34 @@
+mlkem: Module-Lattice-Based Key-Encapsulation Mechanism
+
+This module implements ML-KEM, a quantum-resistant key encapsulation method
+(formerly known as Kyber), as specified in NIST FIPS 203.
+
+A typical encapsulation round trip generates a decapsulation key, derives the
+corresponding encapsulation key, encapsulates a shared key, and decapsulates it
+again:
+
+	let dk: dk768 = @undefined;
+	dk768_gen(&dk);
+
+	let ek: ek768 = @undefined;
+	dk768_ek(&dk, &ek);
+
+	let ciphertext: [CT768SZ]u8 = @undefined;
+
+	let enc_key: [SHAREDKEYSZ]u8 = @undefined;
+	ek768_encap(&ek, ciphertext[..], enc_key[..]);
+
+	let dec_key: [SHAREDKEYSZ]u8 = @undefined;
+	dk768_decap(&dk, ciphertext[..], dec_key[..]);
+
+The shared keys in enc_key and dec_key are equal after successful
+decapsulation. Failed decapsulations generate a pseudorandom invalid secret
+as part of implicit rejection.
+
+This is a low-level module which implements cryptographic primitives. Direct use
+of cryptographic primitives is not recommended for non-experts, as incorrect use
+of these primitives can easily lead to the introduction of security
+vulnerabilities. Non-experts are advised to use the high-level operations
+available in the top-level [[crypto::]] module.
+
+Be advised that Hare's cryptography implementations have not been audited.
