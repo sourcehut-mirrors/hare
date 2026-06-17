@@ -162,6 +162,7 @@ type flaw = enum u32 {
 	COMPLEX_AKI = 1 << 1,
 };
 
+// DNS name that must be provided as an A-label according to RFC 6125.
 export type dnsname = str;
 export type rfc822name = str;
 
