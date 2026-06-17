@@ -20,11 +20,20 @@ use log;
 use memio;
 
 
-// Additional signature params. Implementation will follow in the next commit
-export type sigparams = void;
+// Additional signature parameters.
+export type sigparams = (void | rsapssparams);
 
-// Implementation will follow in the next commit
-fn sigparams_equal(a: sigparams, b: sigparams) bool = true;
+fn sigparams_equal(a: sigparams, b: sigparams) bool = {
+	match (a) {
+	case let p: void =>
+		return b is void;
+	case let p: rsapssparams =>
+		if (!(b is rsapssparams)) {
+			return false;
+		};
+		return rsapssparams_equal(p, b as rsapssparams);
+	};
+};
 
 export type verifyfn = fn(
 	pub: *pubkey,
@@ -81,7 +90,7 @@ export type pubkey = struct {
 	},
 };
 
-// Creates an unitialized public key.
+// Creates an uninitialized public key.
 export fn newpubkey() pubkey = pubkey {
 	vt = &invalidpubkey_vtable,
 };
@@ -108,7 +117,21 @@ fn validate_pubkey(
 	asn1::open_seq(d)?;
 	let keyoid = asn1::read_oid(d, stdoid::db)?;
 
-	// Implementation will follow in the next commit.
+	switch (keyoid) {
+	case stdoid::ED25519 =>
+		ed25519_parse(d, mem)?;
+	case stdoid::RSA_ENCRYPTION =>
+		asn1::read_null(d)?;
+		asn1::close_seq(d)?;
+		rsa_validate(d, mem)?;
+	case stdoid::RSASSA_PSS =>
+		asn1::close_seq(d)?;
+		rsa_validate(d, mem)?;
+	case stdoid::ID_EC_PUBLIC_KEY =>
+		ec_validate(d)?;
+	case =>
+		return errors::unsupported;
+	};
 
 	return h;
 };
@@ -124,7 +147,22 @@ fn pubkey_parse(p: *pubkey, mem: *memio::stream) (void | _error) = {
 	asn1::open_seq(d)!;
 	let keyoid = asn1::read_oid(d, stdoid::db)!;
 
-	// Implementation will follow in the next commit.
+	switch (keyoid) {
+	case stdoid::ED25519 =>
+		ed25519_init(p, d, mem);
+	case stdoid::RSA_ENCRYPTION =>
+		asn1::read_null(d)!;
+		asn1::close_seq(d)!;
+		rsa_init(p, d, mem)?;
+	case stdoid::RSASSA_PSS =>
+		asn1::close_seq(d)!;
+		rsa_init(p, d, mem)?;
+		// XXX store key params to pubkey?
+	case stdoid::ID_EC_PUBLIC_KEY =>
+		ec_init(p, d, mem);
+	case =>
+		abort(); // would've failed already in validate_pubkey
+	};
 
 	asn1::finish(d)!;
 };

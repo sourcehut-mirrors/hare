@@ -42,7 +42,7 @@ export type p521key = struct {
 	x: [ec::P521_SCALARSZ]u8,
 };
 
-// Creates an unitialized p256 key. The curve is also known as secp256r1 or
+// Creates an uninitialized p256 key. The curve is also known as secp256r1 or
 // prime256. The key must be initialized using [[newkey]].
 export fn p256() p256key = p256key {
 	priv = privkey {
@@ -52,7 +52,7 @@ export fn p256() p256key = p256key {
 	...
 };
 
-// Creates an unitialized p384 key. The curve is also known as secp384r1. The
+// Creates an uninitialized p384 key. The curve is also known as secp384r1. The
 // key must be initialized using [[newkey]].
 export fn p384() p384key = p384key {
 	priv = privkey {

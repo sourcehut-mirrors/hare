@@ -325,6 +325,9 @@ fn parse_sigalgo(d: *asn1::decoder) ((asn1::oid, sigparams) | _error) = {
 			stdoid::SHA512_WITH_RSAENCRYPTION =>
 		asn1::read_null(d)?;
 		return (sigid, void);
+	case stdoid::RSASSA_PSS =>
+		const params = rsa_parse_pssparams(d)?;
+		return (sigid, params);
 	case stdoid::ED25519,
 			stdoid::ECDSA_WITH_SHA1,
 			stdoid::ECDSA_WITH_SHA256,
