@@ -1,7 +1,9 @@
 x509: Provides an implementation of a subset of the X.509 RFC 5280.
 
-This module provides a certificate parser, public and private key parsers,
+This module provides a certificate parser, public and private key handling,
 and tools to verify trust paths of certificate chains.
+
+See [[cert]] for how to parse certificates.
 
 The module is work in progress. It is still missing features for certain
 certificate extensions like name constraints and policy constraints.
