@@ -1,0 +1,11 @@
+x509: Provides an implementation of a subset of the X.509 RFC 5280.
+
+This module provides a certificate parser, public and private key parsers,
+and tools to verify trust paths of certificate chains.
+
+The module is work in progress. It is still missing features for certain
+certificate extensions like name constraints and policy constraints.
+Certificate creation and support for certification revocation lists is also
+still missing.
+
+Be advised that Hare's cryptography implementations have not been audited.
