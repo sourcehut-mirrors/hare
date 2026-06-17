@@ -157,7 +157,17 @@ fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 	case done =>
 		break;
 	case let de: fs::dirent =>
-		if (patm && !fs::isdir(de.ftype) && !fs::islink(de.ftype)) {
+		const ftype = match (fs::dirent_type(it, &de)) {
+		case let m: fs::mode =>
+			yield m;
+		case let err: fs::error =>
+			return failure {
+				path = dir,
+				error = err,
+			};
+		};
+
+		if (patm && !fs::isdir(ftype) && !fs::islink(ftype)) {
 			continue;
 		};
 		if (!fnmatch::fnmatch(pat, de.name, flgs)) {
@@ -177,12 +187,12 @@ fn next_match(gen: *generator) (str | done | void | failure | nomem) = {
 		case size => yield;
 		};
 		if (patm || gen.flgs & flag::MARK != 0) {
-			let m = fs::isdir(de.ftype);
+			let m = fs::isdir(ftype);
 			// POSIX does not specify the behavior when a pathname
 			// that matches the pattern is a symlink to a
 			// directory. But in major implementation a slash
 			// character is appended in this case.
-			if (fs::islink(de.ftype)) {
+			if (fs::islink(ftype)) {
 				match (os::realpath(memio::string(b)!)) {
 				case let r: str =>
 					match (os::stat(r)) {
