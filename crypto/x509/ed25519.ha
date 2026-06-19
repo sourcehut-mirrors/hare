@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
-use memio;
+use bytes;
 use crypto::ec;
 use crypto::ecdsa;
 use crypto::ed25519;
@@ -15,6 +15,7 @@ use errors;
 use hash;
 use io;
 use log;
+use memio;
 
 fn ed25519_parse(d: *asn1::decoder, mem: *memio::stream) ([]u8 | _error) = {
 	let buf: [ed25519::PUBKEYSZ]u8 = [0...];
@@ -72,6 +73,7 @@ fn ed25519_verify(
 
 const ed25519privkey_vtable = privkey_vtable {
 	sign = &ed25519_sign,
+	finish = &ed25519_finish_privkey,
 };
 
 fn ed25519_sign(
@@ -88,3 +90,5 @@ fn ed25519_sign(
 	let rsig = ed25519::sign(priv.ed25519, msg);
 	return io::writeall(dest, rsig)?;
 };
+
+fn ed25519_finish_privkey(priv: *privkey) void = bytes::zero(priv.ed25519);

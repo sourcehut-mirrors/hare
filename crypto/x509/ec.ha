@@ -195,6 +195,22 @@ fn ec_parse_sig(dest: []u8, asn1sig: []u8) ([]u8 | asn1::error | badformat) = {
 
 const ecprivkey_vtable = privkey_vtable {
 	sign = &ec_sign,
+	finish = &ec_finish_privkey,
+};
+
+fn ec_finish_privkey(priv: *privkey) void = {
+	let pk: *ecdsa::privkey = switch (priv.t) {
+	case keytype::P256 =>
+		yield &priv.p256;
+	case keytype::P384 =>
+		yield &priv.p384;
+	case keytype::P521 =>
+		yield &priv.p521;
+	case =>
+		abort();
+	};
+
+	ecdsa::privkey_finish(pk);
 };
 
 def EC_HASHBUFSZ = sha512::SZ * 2 + sha512::BLOCKSZ;

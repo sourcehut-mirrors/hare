@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use bytes;
 use crypto::random;
 use crypto::rsa;
 use crypto::sha1;
@@ -266,7 +267,10 @@ fn rsa_verify_pss(
 
 const rsaprivkey_vtable = privkey_vtable {
 	sign = &rsa_sign,
+	finish = &rsa_finish_privkey,
 };
+
+fn rsa_finish_privkey(priv: *privkey) void = bytes::zero(priv.rsa);
 
 fn rsa_sign(
 	priv: *privkey,

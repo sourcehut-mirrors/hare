@@ -55,9 +55,11 @@ export type signfn = fn(
 	params: sigparams
 ) (size | invalid | unsupported | io::error);
 
+export type privkey_finishfn = fn(priv: *privkey) void;
 
 export type privkey_vtable = struct {
 	sign: *signfn,
+	finish: *privkey_finishfn,
 };
 
 fn invalidverify(
@@ -196,14 +198,25 @@ fn invalidsign(
 	params: sigparams,
 ) (size | invalid | unsupported | io::error) = "invalid sigfn": invalid;
 
+// do not fail to allow finish of an uninitialized key.
+fn invalidfinish(priv: *privkey) void = void;
+
 const invalidprivkey_vtable = privkey_vtable {
 	sign = &invalidsign,
+	finish = &invalidfinish,
 };
 
-// Creates an uninitialized private key.
+// Creates an uninitialized private key. Use [[privkey_finish]] to wipe private
+// key data after use.
 export fn newprivkey() privkey = privkey {
 	vt = &invalidprivkey_vtable,
 	...
+};
+
+// Wipes private key data from memory.
+export fn privkey_finish(p: *privkey) void = {
+	p.vt.finish(p);
+	p.vt = &invalidprivkey_vtable;
 };
 
 export fn privkey_sign(
