@@ -286,6 +286,10 @@ fn ec_initby_oid(
 
 	let destbuf = ecdsa::privkey_buf(pk);
 
+	if (len(keybuf) > len(destbuf)) {
+		return "invalid ec key": invalid;
+	};
+
 	let off = len(destbuf) - len(keybuf);
 	destbuf[..] = [0...];
 	destbuf[off..] = keybuf[..];

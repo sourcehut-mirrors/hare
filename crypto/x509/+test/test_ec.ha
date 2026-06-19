@@ -129,3 +129,10 @@ kMHHefX4984LYtdu6Z/51zYCh1YFKgfoMVHzWZpmo4mTX4kUwQ==
 @test fn ec_p521() void = {
 	test_sign(p521key, p521cert, stdoid::ECDSA_WITH_SHA256);
 };
+
+@test fn ec_priv_oversize() void = {
+	let priv = newprivkey();
+	let oversized: [33]u8 = [0x01...];
+	assert(!(ec_initby_oid(&priv, stdoid::PRIME256V1, oversized) is void),
+		"oversized EC scalar must be rejected properly");
+};

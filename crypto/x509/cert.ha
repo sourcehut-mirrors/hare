@@ -32,6 +32,9 @@ export def CERTBUFSZ: size = 4096;
 
 export def MAXSNSZ = 20z;
 
+// Maximum accepted size of an issuer/subject UniqueIdentifier BIT STRING.
+def MAXUIDSZ: size = 1024;
+
 export type version = enum u8 {
 	V1 = 0,
 	V2 = 1,
@@ -506,8 +509,8 @@ fn parse_uids(c: *cert, d: *asn1::decoder) (void | _error) = {
 			return "expected version > 1 when uids present": badformat;
 		};
 
-		asn1::expect_implicit(d, asn1::class::CONTEXT, 2)?;
-		asn1::skip(d, asn1::utag::BITSTRING, asn1::dsz(h))?;
+		asn1::expect_implicit(d, asn1::class::CONTEXT, i: u32)?;
+		asn1::skip(d, asn1::utag::BITSTRING, MAXUIDSZ)?;
 
 		let buf = memio::buffer(&c.h);
 		switch (h.tagid) {
