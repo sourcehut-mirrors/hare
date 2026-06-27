@@ -35,6 +35,11 @@ fn blake2s_write(st: *io::stream, buf: const []u8) (size | io::error) = {
 };
 
 fn blake2s_sum(h: *hash::hash, buf: []u8) void = {
+	let h = h: *digest2s;
+	let copy = *h;
+	let h = &copy;
+	defer hash::close(h);
+
 	let d = h: *digest2s;
 
 	// Pad the final block with zeros.
