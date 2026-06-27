@@ -294,7 +294,6 @@ fn inithash(
 	mode: mode,
 	memsize: u32,
 ) void = {
-	let u32buf: [4]u8 = [0...];
 	let h = blake2::blake2b([], 64);
 	defer hash::close(&h);
 
@@ -327,8 +326,6 @@ fn hash_leputu32(h: *hash::hash, u: u32) void = {
 
 // The variable hash function H'
 fn varhash(dest: []u8, block: []u8) void = {
-	let u32buf: [4]u8 = [0...];
-
 	if (len(dest) <= 64) {
 		let h = blake2::blake2b([], len(dest));
 		defer hash::close(&h);
