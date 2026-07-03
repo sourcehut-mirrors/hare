@@ -89,9 +89,16 @@ export fn machine() const str = {
 	return strings::fromutf8(buf[..sz - 1])!;
 };
 
+fn machine_arch() const str = {
+	static let buf: [32]u8 = [0...];
+	let sz: size = len(buf);
+	sys::sysctlbyname("hw.machine_arch", &buf, &sz, null, 0)!;
+	return strings::fromutf8(buf[..sz - 1])!;
+};
+
 // Returns the host CPU architecture.
 export fn architecture() arch = {
-	switch (machine()) {
+	switch (machine_arch()) {
 	case "aarch64" =>
 		return arch::AARCH64;
 	case "riscv64" =>
