@@ -20,7 +20,7 @@ $(HARECACHE)/rt.ssa: $(rt_ha) $(HARECACHE)/sys.td
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/rt.td.tmp -N rt $(rt_ha)
 
-rt_s = $(HARECACHE)/rt.s rt/+freebsd/start+riscv64-libc.s
+rt_s = $(HARECACHE)/rt.s rt/+freebsd/brand.s rt/+freebsd/start+riscv64-libc.s
 $(HARECACHE)/rt.o: $(rt_s)
 	@printf 'AS\t%s\n' "$@"
 	@$(AS) $(ASFLAGS) -o $@ $(rt_s)
