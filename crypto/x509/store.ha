@@ -156,7 +156,7 @@ export fn store_add_path(
 	defer fs::finish(it);
 
 	for (let n => fs::next(it)?) {
-		if (!fs::isfile(n.ftype)) {
+		if (!fs::isfile(fs::dirent_type(it, &n)?)) {
 			continue;
 		};
 
