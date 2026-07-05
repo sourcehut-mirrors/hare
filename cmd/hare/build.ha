@@ -193,9 +193,8 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 
 	let dest = os::stdout_file;
 	if (output != "-") {
-		// Avoid replacing the destination file if it's
-		// already the same binary
-
+		// avoid replacing the destination file if it's already the
+		// same binary
 		let h = sha256::sha256();
 		defer hash::close(&h);
 
