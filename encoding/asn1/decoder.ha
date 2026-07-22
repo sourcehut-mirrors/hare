@@ -735,7 +735,7 @@ export fn read_gtime(d: *decoder) (date::date | error) = {
 	let n = read_bytes(d, time[..])?;
 
 	// zone info and seconds must always be present
-	if (time[n-1] != 'Z' || n < DATESZ + ZONESZ) {
+	if (n < DATESZ + ZONESZ || time[n-1] != 'Z') {
 		return invalid;
 	};
 

@@ -318,6 +318,9 @@ fn newdatetime(s: str, tag: utag) []u8 = {
 	let derdatetime = newdatetime("20231030133710.10Z", utag::GENERALIZED_TIME);
 	assert(read_gtime(&d(derdatetime)) is error);
 
+	let derdatetime = newdatetime("", utag::GENERALIZED_TIME);
+	assert(read_gtime(&d(derdatetime)) is error);
+
 	// TODO midnight is YYYYMMDD000000Z
 };
 
