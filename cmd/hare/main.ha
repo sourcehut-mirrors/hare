@@ -68,6 +68,7 @@ const help: []getopt::help = [
 	]: []getopt::help),
 	("tool", [
 		"runs a third-party Hare tool",
+		('l', "list all installed tools"),
 		"<name> [args...]"
 	]: []getopt::help),
 	("test", [
