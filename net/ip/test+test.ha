@@ -83,6 +83,16 @@ fn subnet_test_simple(s: str) void = {
 	assert(equal(net.mask, netr.mask));
 };
 
+@test fn parse_subnet_invalid() void = {
+	let subnet_tests: []str = [
+		"192.168.1.0/+24",
+		"::/+64",
+	];
+	for (let test .. subnet_tests) {
+		assert(parsecidr(test) is invalid);
+	};
+};
+
 @test fn parse_subnet() void = {
 	let subnet_tests: []str = [
 		"192.168.1.0/0",
