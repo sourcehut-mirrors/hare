@@ -55,6 +55,12 @@ fn ip_test(s: str, expected: (addr|invalid)) void = {
 		("1980:cafe:a:babe::1", [0x19, 0x80, 0xca, 0xfe, 0x0, 0xa, 0xba, 0xbe, 0, 0, 0, 0, 0, 0, 0, 1]: addr6),
 		("a1:a2:a3:a4::b1:b2:b3:b4", invalid),
 		("", invalid),
+		("+127.0.0.1", invalid),
+		("1.2.3.+4", invalid),
+		("+01.2.3.4", invalid),
+		("+00000127.0.0.1", invalid),
+		("::+1", invalid),
+		("fe80::+1", invalid),
 	];
 	for (let (string, expected) .. tests) {
 		ip_test(string, expected);
