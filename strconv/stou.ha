@@ -14,7 +14,11 @@ fn rune_to_integer(r: rune) (u64 | void) = {
 		return (r: u32 - 'A'): u64 + 10;
 };
 
-fn parseint(s: str, base: base) ((bool, u64) | invalid | overflow) = {
+fn parseint(
+	s: str,
+	base: base,
+	signed: bool,
+) ((bool, u64) | invalid | overflow) = {
 	if (base == base::DEFAULT) {
 		base = base::DEC;
 	} else if (base == base::HEX_LOWER) {
@@ -29,9 +33,12 @@ fn parseint(s: str, base: base) ((bool, u64) | invalid | overflow) = {
 	let buf = strings::toutf8(s);
 	let i = 0z;
 
-	let sign = buf[i] == '-';
-	if (sign || buf[i] == '+') {
-		i += 1;
+	let sign = false;
+	if (signed) {
+		sign = buf[i] == '-';
+		if (sign || buf[i] == '+') {
+			i += 1;
+		};
 	};
 
 	// Require at least one digit.
@@ -68,11 +75,7 @@ fn parseint(s: str, base: base) ((bool, u64) | invalid | overflow) = {
 // contains invalid characters. Returns [[overflow]] if the number is too large
 // to be represented by a u64.
 export fn stou64(s: str, base: base = base::DEC) (u64 | invalid | overflow) = {
-	let (sign, u) = parseint(s, base)?;
-	if (sign) {
-		return overflow;
-	};
-	return u;
+	return parseint(s, base, false)?.1;
 };
 
 fn stoumax(s: str, base: base, max: u64) (u64 | invalid | overflow) = {
@@ -115,8 +118,10 @@ export fn stoz(s: str, base: base = base::DEC) (size | invalid | overflow) =
 
 @test fn stou() void = {
 	assert(stou64("") as invalid == 0);
-	assert(stou64("+") as invalid == 1);
-	assert(stou64("+a") as invalid == 1);
+	assert(stou64("+") as invalid == 0);
+	assert(stou64("+a") as invalid == 0);
+	assert(stou64("+1") as invalid == 0);
+	assert(stou64("-1") as invalid == 0);
 	assert(stou64("abc") as invalid == 0);
 	assert(stou64("1a") as invalid == 1);
 
@@ -124,7 +129,6 @@ export fn stoz(s: str, base: base = base::DEC) (size | invalid | overflow) =
 	assert(stou64("184467440737095516150") is overflow);
 	assert(stou64("184467440737095516159") is overflow);
 	assert(stou64("20496382304121724019") is overflow);
-	assert(stou64("-1") is overflow);
 
 	assert(stou64("0") as u64 == 0);
 	assert(stou64("1") as u64 == 1);

@@ -7,7 +7,7 @@ use types;
 // contains invalid characters. Returns [[overflow]] if the number is too large
 // to be represented by an i64.
 export fn stoi64(s: str, base: base = base::DEC) (i64 | invalid | overflow) = {
-	let (sign, u) = parseint(s, base)?;
+	let (sign, u) = parseint(s, base, true)?;
 	// Two's complement: I64_MIN = -I64_MAX - 1
 	let max = if (sign) types::I64_MAX: u64 + 1 else types::I64_MAX: u64;
 	if (u > max) {
