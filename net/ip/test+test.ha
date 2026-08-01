@@ -72,7 +72,7 @@ fn subnet_test_simple(s: str) void = {
 	case let a: subnet =>
 		yield a;
 	case =>
-		return;
+		abort("cannot parse subnet");
 	};
 	let fmted = string(net);
 	assert(fmted == s);
