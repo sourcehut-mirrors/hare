@@ -193,10 +193,18 @@ export fn decodestr(s: str) ([]u8 | errors::invalid | nomem) = {
 
 @test fn decode() void = {
 	let s = decodestr("cafebabedeadf00d") as []u8;
+	let s2 = decodestr("CAFEbabedeadf00d") as []u8;
 	defer free(s);
+	defer free(s2);
 	assert(bytes::equal(s, [0xCA, 0xFE, 0xBA, 0xBE, 0xDE, 0xAD, 0xF0, 0x0D]));
+	assert(bytes::equal(s2, [0xCA, 0xFE, 0xBA, 0xBE, 0xDE, 0xAD, 0xF0, 0x0D]));
 
 	assert(decodestr("this is not hex") is errors::invalid);
+	assert(decodestr("+f") is errors::invalid);
+	assert(decodestr("+ff") is errors::invalid);
+	assert(decodestr("+0+0") is errors::invalid);
+	assert(decodestr("-f") is errors::invalid);
+	assert(decodestr(" f") is errors::invalid);
 };
 
 // Outputs a dump of hex data alongside the offset and an ASCII representation
