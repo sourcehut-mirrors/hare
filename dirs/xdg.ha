@@ -43,19 +43,19 @@ fn lookup(prog: str, var: str, default: str) str = {
 // Returns a directory suitable for storing config files. The "prog" parameter
 // should be a descriptive name unique to this program. The return value is
 // statically allocated and will be overwritten on subsequent calls to any
-// function in the dirs module.
+// function in the dirs module. Aborts if inaccessible.
 export fn config(prog: str) str = lookup(prog, "XDG_CONFIG_HOME", ".config");
 
 // Returns a directory suitable for cache files. The "prog" parameter should be
 // a descriptive name unique to this program. The return value is statically
 // allocated and will be overwritten on subsequent calls to any function in the
-// dirs module.
+// dirs module. Aborts if inaccessible.
 export fn cache(prog: str) str = lookup(prog, "XDG_CACHE_HOME", ".cache");
 
 // Returns a directory suitable for persistent data files. The "prog" parameter
 // should be a descriptive name unique to this program. The return value is
 // statically allocated and will be overwritten on subsequent calls to any
-// function in the dirs module.
+// function in the dirs module. Aborts if inaccessible.
 export fn data(prog: str) str = {
 	static let buf = path::buffer { ... };
 	const fragment = path::set(&buf, ".local", "share")!;
@@ -65,7 +65,7 @@ export fn data(prog: str) str = {
 // Returns a directory suitable for storing program state data. The "prog"
 // parameter should be a descriptive name unique to this program. The return
 // value is statically allocated and will be overwritten on subsequent calls to
-// any function in the dirs module.
+// any function in the dirs module. Aborts if inaccessible.
 export fn state(prog: str) str = {
 	static let buf = path::buffer { ... };
 	const fragment = path::set(&buf, ".local", "state")!;
