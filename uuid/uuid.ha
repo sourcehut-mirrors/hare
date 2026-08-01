@@ -167,5 +167,8 @@ export fn decodestr(in: str) (uuid | invalid) = {
 		0x3d, 0xed, 0x91, 0x0c, 0x80, 0x80, 0x4b, 0xc8,
 		0xaf, 0x39, 0xb6, 0xcc, 0xce, 0xe3, 0x67, 0x41,
 	]));
+
 	assert(decodestr("hello world") is invalid);
+	assert(decodestr("+3ded910c-8080-4bc8-af39-b6cccee36741") is invalid);
+	assert(decodestr("-3ded910c-8080-4bc8-af39-b6cccee36741") is invalid);
 };
