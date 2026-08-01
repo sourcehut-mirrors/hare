@@ -55,6 +55,22 @@ export fn splitaddr(addr: str, service: str) ((str, u16) | invalid_address) = {
 	return (addr, port);
 };
 
+@test fn splitaddr() void = {
+	let tests: []((str, str), (str, u16)) = [
+		(("host:80", ""), ("host", 80)),
+		(("[::1]:80", ""), ("::1", 80)),
+	];
+	for (let test .. tests) {
+		let tuple = splitaddr(test.0.0, test.0.1) as (str, u16);
+
+		assert (tuple.0 == test.1.0);
+		assert (tuple.1 == test.1.1);
+	};
+
+	assert (splitaddr("host:+80", "") is invalid_address);
+	assert (splitaddr("[::1]:+80", "") is invalid_address);
+};
+
 // Performs DNS resolution on a given address string for a given service,
 // including /etc/hosts lookup and SRV resolution, and returns a list of
 // candidate IP addresses and the appropriate port, or an error.
