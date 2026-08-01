@@ -108,9 +108,9 @@ fn rsapssparams_equal(a: rsapssparams, b: rsapssparams) bool =
 
 fn rsa_parse_pssparams(d: *asn1::decoder) (rsapssparams | _error) = {
 	let p = rsapssparams {
-		hashfn = stdoid::ID_SHA256,
+		hashfn = stdoid::ID_SHA1,
 		maskgenfn = stdoid::ID_MGF1,
-		maskgenhashfn = stdoid::ID_SHA256,
+		maskgenhashfn = stdoid::ID_SHA1,
 		saltsz = 20,
 	};
 
