@@ -11,11 +11,11 @@ use unix;
 fn lookup(prog: str, var: str, default: str) str = {
 	static let buf = path::buffer { ... };
 	path::set(&buf)!;
-	match (os::getenv(var)) {
+	match :m (os::getenv(var)) {
 	case let s: str =>
 		const path = path::push(&buf, s, prog)!;
 		if (!path::abs(path)) {
-			yield;
+			yield :m;
 		};
 		match (os::stat(path)) {
 		case let err: fs::error =>
