@@ -131,6 +131,12 @@ use net::ip;
 	// '@' in userinfo
 	assert(parse("https://a@b@example") is invalid);
 	assert(parse("https://@@example") is invalid);
+
+	// '+' in percent encodings
+	assert(parse("https://%+f@example.org/") is invalid);
+	assert(parse("https://example.org/%+f") is invalid);
+	assert(parse("https://example.org/#%+f") is invalid);
+	assert(parse("https://example%+f.org/") is invalid);
 };
 
 @test fn percent_encoding() void = {
