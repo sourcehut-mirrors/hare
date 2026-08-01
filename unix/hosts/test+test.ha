@@ -54,6 +54,9 @@ def HOSTS_FILE = `
 	const s = "127.0.0.1\n";
 	assert(next(&read(&memio::fixed(strings::toutf8(s))))
 		is invalid);
+	const s = "+127.0.0.1\n";
+	assert(next(&read(&memio::fixed(strings::toutf8(s))))
+		is ip::invalid);
 };
 
 @test fn lookup() void = {
