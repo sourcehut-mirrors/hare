@@ -3,6 +3,16 @@
 
 use bytes;
 
+@test fn encodelen() void = {
+	const b: [31]u8 = [0xff...];
+
+	assert(encodelen(b[..3]) == 2);
+	assert(encodelen(b[..4]) == 3);
+	assert(encodelen(b[..30]) == 9);
+
+	assert(encodelen(b[..0]) == 2);
+	assert(encodelen(b) == 10);
+};
 
 @test fn encode() void = {
 	const decoded: [12]u8 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];

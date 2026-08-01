@@ -27,9 +27,9 @@ use crypto::math::*;
 // Minimal required words to encode 'x' into an []word. To statically allocate
 // resources, following expression may be used:
 //
-//     ((number_of_bits + WORD_BITSZ - 1) / WORD_BITSZ) + 1
+// 	((number_of_bits / WORD_BITSZ) + 2)
 export fn encodelen(x: []u8) size = {
-	return (((len(x) * 8) + WORD_BITSZ - 1) / WORD_BITSZ) + 1;
+	return (((len(x) * 8) / WORD_BITSZ) + 2);
 };
 
 // Encode 'src' from its big-endian unsigned encoding into the internal
