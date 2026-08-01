@@ -74,14 +74,8 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 			match (strconv::stoz(opt.1)) {
 			case let z: size =>
 				ctx.jobs = z;
-			case strconv::invalid =>
-				fmt::fatal("Number of jobs must be an integer");
-			case strconv::overflow =>
-				if (strings::hasprefix(opt.1, '-')) {
-					fmt::fatal("Number of jobs must be positive");
-				} else {
-					fmt::fatal("Number of jobs is too large");
-				};
+			case (strconv::invalid | strconv::overflow) =>
+				fmt::fatal("Number of jobs must be a positive integer that fits into size");
 			};
 			if (ctx.jobs == 0) {
 				fmt::fatal("Number of jobs must be non-zero");
