@@ -95,13 +95,12 @@ export fn verifier(
 		return expired;
 	};
 
-	let ku = match (leaf.keyusage) {
-	case void => yield 0u16;
-	case let ku: u16 => yield ku;
-	};
-
-	if (ku & opts.keyusage != opts.keyusage) {
-		return badusage;
+	match (leaf.keyusage) {
+	case void => void;
+	case let ku: u16 =>
+		if (ku & opts.keyusage != opts.keyusage) {
+			return badusage;
+		};
 	};
 
 	let eku = opts.extkeyusage;
