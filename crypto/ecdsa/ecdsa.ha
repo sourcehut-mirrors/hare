@@ -27,11 +27,10 @@
 
 use crypto::ec;
 use crypto::bigint;
-use hash;
 use crypto::bigint::{word};
+use hash;
 
-def POINTSZ = 1 + ((ec::MAX_COORDBITSZ + bigint::WORD_BITSZ - 1)
-	/ bigint::WORD_BITSZ);
+def POINTSZ = 2 + (ec::MAX_COORDBITSZ / bigint::WORD_BITSZ);
 
 // Maximum signature size of curves supported by [[crypto::ec]].
 export def MAX_SIGSZ = ec::MAX_POINTSZ - 1;

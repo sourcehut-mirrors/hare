@@ -34,12 +34,12 @@ use types;
 def MAXFACTOR: size = ((BITSZ + 64) >> 1);
 
 // Required buf size for the [[pubexp]] operation.
-def PUBEXP_BUFSZ: size = size(word) * (1 + (4 * (2
-		+ ((BITSZ + WORD_BITSZ - 1) / WORD_BITSZ))));
+def PUBEXP_BUFSZ: size = size(word)
+	* (1 + (4 * (3 + (BITSZ / WORD_BITSZ))));
 
 // Requried buf size for the [[privexp]] operation.
-def PRIVEXP_BUFSZ: size = size(word) * (1 + (8 * (2
-		+ ((MAXFACTOR + WORD_BITSZ - 1) / WORD_BITSZ))));
+def PRIVEXP_BUFSZ: size = size(word)
+	* (1 + (8 * (3 + (MAXFACTOR / WORD_BITSZ))));
 
 // Performs the modular exponentiation of 'x' with the public exponent of 'pub'.
 // 'x' is modified in place. 'x' must be the same length as the actual length
