@@ -120,6 +120,21 @@ export def AF_SIP: sa_family_t = 29;
 export def AF_KEY: sa_family_t = 30;
 export def pseudo_AF_HDRCMPLT: sa_family_t = 31;
 
+export def MSG_OOB: int = 0x1;
+export def MSG_PEEK: int = 0x2;
+export def MSG_DONTROUTE: int = 0x4;
+export def MSG_EOR: int = 0x8;
+export def MSG_TRUNC: int = 0x10;
+export def MSG_CTRUNC: int = 0x20;
+export def MSG_WAITALL: int = 0x40;
+export def MSG_DONTWAIT: int = 0x80;
+export def MSG_BCAST: int = 0x100;
+export def MSG_MCAST: int = 0x200;
+export def MSG_NOSIGNAL: int = 0x400;
+export def MSG_CMSG_CLOEXEC: int = 0x800;
+export def MSG_WAITFORONE: int = 0x1000;
+export def MSG_CMSG_CLOFORK: int = 0x2000;
+
 export def SO_DEBUG: int = 0x0001;
 export def SO_ACCEPTCONN: int = 0x0002;
 export def SO_REUSEADDR: int = 0x0004;
