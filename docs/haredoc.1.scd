@@ -96,6 +96,8 @@ The following environment variables affect *haredoc*'s execution:
 :< The list of directories to search for modules in. See *hare-module*(5).
 |  *NO_COLOR*
 :  Disables all color output when set to a non-empty string.
+|  *FORCE_COLOR*
+:  Force color output when set to a non-empty string.
 |  *HAREDOC_COLORS*
 :  See *CUSTOMIZING COLORS*.
 |  *HAREDOC_HTML_SRC*
