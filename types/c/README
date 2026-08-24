@@ -10,17 +10,17 @@ types provided here shouldn't be used by most Hare code.
 Some C types aren't provided by this module, since they are provided by the Hare
 language itself:
 
-- bool (or _Bool)        -> bool
-- double, _Float64       -> f64
-- float, _Float32        -> f32
-- intN_t (<stdint.h>)    -> iN (where N is a power of two from 8 to 64)
-- nullptr_t (<stddef.h>) -> null
-- (signed) int           -> int
-- size_t (<stddef.h>)    -> size
-- uintN_t (<stdint.h>)   -> uN (where N is a power of two from 8 to 64)
-- unsigned int           -> uint
-- uintptr_t (<stdint.h>) -> uintptr
-- va_list (<stdarg.h>)   -> valist
+- bool (or _Bool)                     -> bool
+- double, _Float64                    -> f64
+- float, _Float32                     -> f32
+- intN_t, int_leastN_t (<stdint.h>)   -> iN (N is a power of two from 8 to 64)
+- nullptr_t (<stddef.h>)              -> null
+- (signed) int                        -> int
+- size_t (<stddef.h>)                 -> size
+- uintN_t, uint_leastN_t (<stdint.h>) -> uN (N is a power of two from 8 to 64)
+- unsigned int                        -> uint
+- uintptr_t (<stdint.h>)              -> uintptr
+- va_list (<stdarg.h>)                -> valist
 
 Some C types are mostly compatible with Hare types, with minor differences:
 
@@ -45,11 +45,14 @@ The following C types are *not* supported by Hare:
 - Packed types: __m64, __m128, __m256, __m512
 - Integer types with any width other than 8, 16, 32, or 64
 - max_align_t
+- (u)int_fastN_t (see below)
 - float_t and double_t (see below)
 
-Equivalents for float_t and double_t (as defined in <math.h>) aren't provided by
-this module, because they're dependent on the value of FLT_EVAL_METHOD, which is
-unknown.
+Fastest minimum-width integer types (int_fastN_t/uint_fastN_t, as defined in
+<stdint.h>) aren't provided by this module, because they don't have a consistent
+ABI across compilers. Likewise, equivalents for float_t and double_t (as defined
+in <math.h>) aren't provided by this module, because they're dependent on the
+value of FLT_EVAL_METHOD, which is unknown.
 
 Note that Hare's fixed-width integer types are NOT guaranteed to be
 ABI-compatible with C's bit-precise integer types (_BitInt).
