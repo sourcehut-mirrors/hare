@@ -56,11 +56,11 @@ fn version(name: str, cmd: *getopt::command) (void | error) = {
 			fmt::printfln("\tLD={}", arch.ld_cmd)?;
 		};
 	case =>
-		const version = shlex::quotestr(VERSION);
+		const version = shlex::quotestr(VERSION)!;
 		defer free(version);
-		const harepath = shlex::quotestr(harepath());
+		const harepath = shlex::quotestr(harepath())!;
 		defer free(harepath);
-		const toolpaths = shlex::quotestr(toolpaths);
+		const toolpaths = shlex::quotestr(toolpaths)!;
 		defer free(toolpaths);
 
 		fmt::printfln(`VERSION={}`, version)?;
@@ -82,11 +82,11 @@ fn version(name: str, cmd: *getopt::command) (void | error) = {
 		for (let arch .. arches) {
 			const name = ascii::strupper(arch.name)!;
 			defer free(name);
-			const as_cmd = shlex::quotestr(arch.as_cmd);
+			const as_cmd = shlex::quotestr(arch.as_cmd)!;
 			defer free(as_cmd);
-			const cc_cmd = shlex::quotestr(arch.cc_cmd);
+			const cc_cmd = shlex::quotestr(arch.cc_cmd)!;
 			defer free(cc_cmd);
-			const ld_cmd = shlex::quotestr(arch.ld_cmd);
+			const ld_cmd = shlex::quotestr(arch.ld_cmd)!;
 			defer free(ld_cmd);
 
 			fmt::printfln("{}_AS={}", name, as_cmd)?;

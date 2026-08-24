@@ -47,8 +47,10 @@ export fn quote(sink: io::handle, s: str) (size | io::error) = {
 
 // Quotes a shell string and returns a new string. The caller must free the
 // return value.
-export fn quotestr(s: str) str = {
+export fn quotestr(s: str) (str | nomem) = {
 	const sink = memio::dynamic();
-	quote(&sink, s)!;
+	if (quote(&sink, s) is io::error) {
+		return nomem;
+	};
 	return memio::string(&sink)!;
 };
