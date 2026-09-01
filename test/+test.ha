@@ -162,7 +162,7 @@ export @symbol("__test_main") fn main() size = {
 		case void => void;
 		};
 
-		fmt::println("Failures:")!;
+		fmt::println("Failures:\n")!;
 		for (let failure .. ctx.failures) {
 			match (failure.reason.path) {
 			case null =>
@@ -178,7 +178,10 @@ export @symbol("__test_main") fn main() size = {
 					failure.reason.msg)!;
 			};
 
-			if (failure.trace == 0) continue;
+			if (failure.trace == 0) {
+				fmt::println()!;
+				continue;
+			};
 
 			const image = match (&image) {
 			case let img: *image::image =>
@@ -195,8 +198,8 @@ export @symbol("__test_main") fn main() size = {
 			if (colored()) fmt::print("\x1b[37m")!;
 			debug::backtrace(image, os::stdout, trace)!;
 			if (colored()) fmt::print("\x1b[m")!;
+			fmt::println()!;
 		};
-		fmt::println()!;
 	};
 
 	for (let i = 0z; i < len(ctx.output); i += 1) {
