@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
+use fmt;
+
 // Returns the name of the currently running test.
 export fn current() str = {
 	abort("Attempted to call test::current outside of @test function");
@@ -12,9 +14,16 @@ export fn expectabort() void = {
 	abort("Attempted to call test::expectabort outside of @test function");
 };
 
-// Skip the currently running test.
-export fn skip(reason: str) never = {
+// Skip the currently running test, formatting the message like with
+// [[fmt::fprint]].
+export fn skip(why: fmt::formattable...) never = {
 	abort("Attempted to call test::skip outside of @test function");
+};
+
+// Skip the currently running test, formatting the message like with
+// [[fmt::fprintf]].
+export fn skipf(fmt: str, args: fmt::field...) never = {
+	abort("Attempted to call test::skipf outside of @test function");
 };
 
 // Check the $HARETEST_INCLUDE space-delimited environment variable for

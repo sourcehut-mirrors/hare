@@ -78,6 +78,9 @@ fn finish_context(ctx: *context) void = {
 	io::close(&ctx.stdout)!;
 	io::close(&ctx.stderr)!;
 	free(ctx.failures);
+	for (let skipped .. ctx.skipped) {
+		free(skipped.reason);
+	};
 	free(ctx.skipped);
 	for (let out &.. ctx.output) {
 		finish_output(out);
