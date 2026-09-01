@@ -2,10 +2,11 @@
 // (c) Hare authors <https://harelang.org>
 
 use debug::image;
+use fmt;
+use os;
 use sys;
 use unix::signal;
 use unix::signal::{sig};
-use fmt;
 
 // altstack.s
 let altstack: [ALTSTACK_SIZE]uintptr;
@@ -60,7 +61,7 @@ fn signal_handler(sig: sig, info: *signal::siginfo, uctx: *opaque) void = {
 	defer image::close(&self);
 
 	_ = fmt::errorln("Backtrace:");
-	backtrace(&self, frame);
+	_ = backtrace(&self, os::stderr, frame);
 
 	halt();
 };

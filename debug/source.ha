@@ -10,14 +10,17 @@ use time;
 
 // Prints a context line from the source file.
 fn print_context(
+	out: io::handle,
 	path: str,
 	line: u64,
 	col: u64,
 	age: time::instant,
-) void = {
+) (size | io::error) = {
+	let z = 0z;
+
 	const file = match (os::open(path)) {
 	case fs::error =>
-		return;
+		return 0z;
 	case let file: io::file =>
 		yield file;
 	};
@@ -27,7 +30,7 @@ fn print_context(
 	case let st: fs::filestat =>
 		if (st.mask & fs::stat_mask::MTIME == 0) yield;
 		if (time::compare(st.mtime, age) == 1) {
-			_ = fmt::errorln("* Warning: file was modified after executable was built");
+			z += fmt::fprintln(out, "* Warning: file was modified after executable was built")?;
 		};
 	case => void;
 	};
@@ -41,19 +44,20 @@ fn print_context(
 		case let s: const str =>
 			context = s;
 		case =>
-			return;
+			return z;
 		};
 	};
 
-	_ = fmt::errorfln("| {}", context);
+	z += fmt::fprintfln(out, "| {}", context)?;
 
 	if (col != 0) {
-		_ = fmt::errorf("  ");
+		z += fmt::fprint(out, "  ")?;
 		for (let i = 1u; i < col - 1; i += 1) {
-			_ = fmt::errorf(" ");
+			z += fmt::fprint(out, " ")?;
 		};
-		_ = fmt::errorf("^");
+		z += fmt::fprint(out, "^")?;
 	};
 
-	_ = fmt::errorln();
+	z += fmt::fprintln(out)?;
+	return z;
 };

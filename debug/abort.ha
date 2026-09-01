@@ -40,7 +40,7 @@ fn debug_abort(
 	};
 
 	_ = fmt::errorfln("Abort: {}:{}:{}: {}", *path, line, col, msg);
-	print_context(*path, line, col, st.mtime);
+	_ = print_context(os::stderr, *path, line, col, st.mtime);
 
 	let frame = walk();
 	// Skip sys::abort and debug::debug_abort
@@ -52,7 +52,7 @@ fn debug_abort(
 		};
 	};
 
-	backtrace(&self, frame);
+	_ = backtrace(&self, os::stderr, frame);
 	halt();
 };
 

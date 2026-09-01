@@ -192,7 +192,7 @@ export @symbol("__test_main") fn main() size = {
 			case void => continue;
 			};
 
-			debug::backtrace(image, trace);
+			debug::backtrace(image, os::stderr, trace)!;
 		};
 		fmt::println()!;
 	};
