@@ -192,7 +192,9 @@ export @symbol("__test_main") fn main() size = {
 			case void => continue;
 			};
 
+			if (colored()) fmt::print("\x1b[37m")!;
 			debug::backtrace(image, os::stdout, trace)!;
+			if (colored()) fmt::print("\x1b[m")!;
 		};
 		fmt::println()!;
 	};
