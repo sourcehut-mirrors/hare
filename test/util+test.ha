@@ -32,8 +32,8 @@ export fn skipf(fmt: str, args: fmt::field...) never = {
 };
 
 // Check the $HARETEST_INCLUDE space-delimited environment variable for
-// keywords. If all the keywords are present, return void. Otherwise, skip the
-// currently running test.
+// keywords. If any of the keywords aren't present, the currently running test
+// is skipped.
 export fn require(keywords: str...) void = {
 	assert(jmp != null, "Attempted to call test::require outside of @test function");
 	if (len(keywords) == 0) {
