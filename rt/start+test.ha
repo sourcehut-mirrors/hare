@@ -3,11 +3,16 @@
 
 use sys;
 
-@symbol("__test_main") fn test_main() size;
+@symbol("__test_main") fn test_main() (bool | !void);
 
 export fn start_ha() never = {
 	init();
-	const nfail = test_main();
+	const status = match (test_main()) {
+	case let all_pass: bool =>
+		yield if (all_pass) 0 else 1;
+	case !void =>
+		yield 255;
+	};
 	fini();
-	sys::exit(if (nfail > 0) 1 else 0);
+	sys::exit(status);
 };

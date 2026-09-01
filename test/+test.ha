@@ -10,6 +10,7 @@ use encoding::hex;
 use encoding::utf8;
 use fmt;
 use fnmatch;
+use fs;
 use io;
 use memio;
 use os;
@@ -89,6 +90,7 @@ fn finish_context(ctx: *context) void = {
 	free(ctx.cwd);
 };
 
+// XXX: should only need to call this once
 fn colored() bool = {
 	return len(os::tryenv("NO_COLOR", "")) == 0
 		&& tty::isatty(os::stdout_file);
@@ -97,7 +99,20 @@ fn colored() bool = {
 @symbol("__hare_test_array_start") const test_start: [*]test;
 @symbol("__hare_test_array_end") const test_end: [*]test;
 
-export @symbol("__test_main") fn main() size = {
+export @symbol("__test_main") fn main() (bool | !void) = {
+	match (_main()) {
+	case let z: size =>
+		return z == 0;
+	case let err: fs::error =>
+		_ = fmt::errorln("Error:", fs::strerror(err));
+		return void: !void;
+	case let err: io::error =>
+		_ = fmt::errorln("Error:", io::strerror(err));
+		return void: !void;
+	};
+};
+
+fn _main() (size | fs::error | io::error) = {
 	const ntest = (&test_end: uintptr - &test_start: uintptr): size / size(test);
 	const tests = test_start[..ntest];
 	sort::sort(tests, size(test), &test_cmp)!;
@@ -115,8 +130,8 @@ export @symbol("__test_main") fn main() size = {
 		};
 	};
 	if (len(enabled_tests) == 0) {
-		fmt::println("No tests run")!;
-		return 0;
+		fmt::println("No tests run")?;
+		return 0z;
 	};
 
 	let maxname = 0z;
@@ -136,21 +151,21 @@ export @symbol("__test_main") fn main() size = {
 	};
 	defer finish_context(&ctx);
 
-	fmt::printfln("Running {}/{} tests:\n", len(enabled_tests), ntest)!;
+	fmt::printfln("Running {}/{} tests:\n", len(enabled_tests), ntest)?;
 	reset(&ctx);
 	for (let test &.. enabled_tests) {
-		do_test(&ctx, test);
+		do_test(&ctx, test)?;
 	};
-	fmt::println()!;
+	fmt::println()?;
 
 	if (len(ctx.skipped) > 0 && colored()) {
-		fmt::print("\x1b[37m")!;
+		fmt::print("\x1b[37m")?;
 	};
 	for (let skipped .. ctx.skipped) {
-		fmt::printfln("Skipped {}: {}", skipped.test, skipped.reason)!;
+		fmt::printfln("Skipped {}: {}", skipped.test, skipped.reason)?;
 	};
 	if (len(ctx.skipped) > 0) {
-		fmt::println(if (colored()) "\x1b[m" else "")!;
+		fmt::println(if (colored()) "\x1b[m" else "")?;
 	};
 
 	if (len(ctx.failures) > 0) {
@@ -165,24 +180,24 @@ export @symbol("__test_main") fn main() size = {
 		case void => void;
 		};
 
-		fmt::println("Failures:\n")!;
+		fmt::println("Failures:\n")?;
 		for (let failure .. ctx.failures) {
 			match (failure.reason.path) {
 			case null =>
 				fmt::printfln("{}: {}",
 					failure.test,
-					failure.reason.msg)!;
+					failure.reason.msg)?;
 			case let path: *str =>
 				fmt::printfln("{}: {}:{}:{}: {}",
 					failure.test,
 					*path,
 					failure.reason.line,
 					failure.reason.col,
-					failure.reason.msg)!;
+					failure.reason.msg)?;
 			};
 
 			if (failure.trace == 0) {
-				fmt::println()!;
+				fmt::println()?;
 				continue;
 			};
 
@@ -198,24 +213,25 @@ export @symbol("__test_main") fn main() size = {
 			case void => continue;
 			};
 
-			if (colored()) fmt::print("\x1b[37m")!;
-			debug::backtrace(image, os::stdout, trace)!;
-			if (colored()) fmt::print("\x1b[m")!;
-			fmt::println()!;
+			if (colored()) fmt::print("\x1b[37m")?;
+			debug::backtrace(image, os::stdout, trace)?;
+			if (colored()) fmt::print("\x1b[m")?;
+			fmt::println()?;
 		};
 	};
 
 	for (let i = 0z; i < len(ctx.output); i += 1) {
-		if (ctx.output[i].stdout != "") {
-			fmt::println(ctx.output[i].test, "stdout:")!;
-			fmt::println(ctx.output[i].stdout)!;
+		const output = ctx.output[i];
+		if (output.stdout != "") {
+			fmt::println(output.test, "stdout:")?;
+			fmt::println(output.stdout)?;
 		};
-		if (ctx.output[i].stderr != "") {
-			fmt::println(ctx.output[i].test, "stderr:")!;
-			fmt::println(ctx.output[i].stderr)!;
+		if (output.stderr != "") {
+			fmt::println(output.test, "stderr:")?;
+			fmt::println(output.stderr)?;
 		};
 		if (i == len(ctx.output) - 1) {
-			fmt::println()!;
+			fmt::println()?;
 		};
 	};
 
@@ -226,15 +242,15 @@ export @symbol("__test_main") fn main() size = {
 	const passed_cnt = total_cnt - failed_cnt - skipped_cnt;
 	const elapsed_whole = ctx.total_time / time::SECOND;
 	const elapsed_fraction = ctx.total_time % time::SECOND;
-	styled_print(if (passed_cnt > 0) 92 else 37, passed_cnt);
-	fmt::print(" passed; ")!;
-	styled_print(if (len(ctx.failures) > 0) 91 else 37, failed_cnt);
-	fmt::print(" failed; ")!;
+	styled_print(if (passed_cnt > 0) 92 else 37, passed_cnt)?;
+	fmt::print(" passed; ")?;
+	styled_print(if (len(ctx.failures) > 0) 91 else 37, failed_cnt)?;
+	fmt::print(" failed; ")?;
 	if (len(ctx.skipped) > 0) {
-		fmt::print(len(ctx.skipped), "skipped; ")!;
+		fmt::print(len(ctx.skipped), "skipped; ")?;
 	};
 	fmt::printfln("{} completed in {}.{:.9}s", total_cnt,
-		elapsed_whole, elapsed_fraction)!;
+		elapsed_whole, elapsed_fraction)?;
 
 	easter_egg(ctx.failures, enabled_tests);
 
@@ -251,27 +267,32 @@ fn reset(ctx: *context) void = {
 	arch::fesetround(ctx.default_round);
 	arch::feclearexcept(~0u);
 	signal::resetall();
-	os::chdir(ctx.cwd)!;
 	want_abort = false;
 };
 
-fn do_test(ctx: *context, test: *test) void = {
+fn do_test(ctx: *context, test: *test) (void | fs::error | io::error) = {
+	defer reset(ctx);
+
 	signal::handle(signal::sig::SEGV, &handle_segv,
 		signal::flag::NODEFER | signal::flag::ONSTACK);
 	memio::reset(&ctx.stdout);
 	memio::reset(&ctx.stderr);
 
+	fmt::print(test.name)?;
+	dots(ctx.maxname - len(test.name) + 3)?;
+	bufio::flush(os::stdout)?; // write test name before test runs
+
 	const start_time = time::now(time::clock::MONOTONIC);
 	const status = run_test(ctx, test);
 	const end_time = time::now(time::clock::MONOTONIC);
 
-	const failed = interpret_status(ctx, test.name, status);
+	const failed = interpret_status(ctx, test.name, status)?;
 	const time_diff = time::diff(start_time, end_time);
 	assert(time_diff >= 0);
 	ctx.total_time += time_diff;
 	fmt::printfln(" in {}.{:.9}s",
 		time_diff / 1000000000,
-		time_diff % 1000000000)!;
+		time_diff % 1000000000)?;
 
 	const stdout = printable(memio::buffer(&ctx.stdout));
 	const stderr = printable(memio::buffer(&ctx.stderr));
@@ -286,14 +307,10 @@ fn do_test(ctx: *context, test: *test) void = {
 		free(stderr);
 	};
 
-	reset(ctx);
+	os::chdir(ctx.cwd)?;
 };
 
 fn run_test(ctx: *context, test: *test) status = {
-	fmt::print(test.name)!;
-	dots(ctx.maxname - len(test.name) + 3);
-	bufio::flush(os::stdout)!; // write test name before test runs
-
 	let orig_stdout = os::stdout;
 	let orig_stderr = os::stderr;
 	os::stdout = &ctx.stdout;
@@ -339,18 +356,20 @@ fn printable(buf: []u8) str = {
 	return memio::string(&s)!;
 };
 
-fn dots(n: size) void = {
-	for (let i = 0z; i < n; i += 1) {
-		fmt::print(".")!;
-	};
+fn dots(n: size) (void | io::error) = {
+	fmt::printf("{%}", "", &fmt::mods { pad = '.', width = n, ... })?;
 };
 
 // returns true if test failed, false if it passed or was skipped
-fn interpret_status(ctx: *context, test: str, status: status) bool = {
+fn interpret_status(
+	ctx: *context,
+	test: str,
+	status: status,
+) (bool | io::error) = {
 	switch (status) {
 	case status::RETURN =>
 		if (want_abort) {
-			styled_print(91, "FAIL");
+			styled_print(91, "FAIL")?;
 			append(ctx.failures, failure {
 				test = test,
 				reason = abort_reason {
@@ -361,15 +380,15 @@ fn interpret_status(ctx: *context, test: str, status: status) bool = {
 			})!;
 			return true;
 		} else {
-			styled_print(92, "PASS");
+			styled_print(92, "PASS")?;
 			return false;
 		};
 	case status::ABORT =>
 		if (want_abort) {
-			styled_print(92, "PASS");
+			styled_print(92, "PASS")?;
 			return false;
 		} else {
-			styled_print(91, "FAIL");
+			styled_print(91, "FAIL")?;
 			append(ctx.failures, failure {
 				test = test,
 				reason = reason,
@@ -378,14 +397,14 @@ fn interpret_status(ctx: *context, test: str, status: status) bool = {
 			return true;
 		};
 	case status::SKIP =>
-		styled_print(37, "SKIP");
+		styled_print(37, "SKIP")?;
 		append(ctx.skipped, skipped {
 			test = test,
 			reason = reason.msg,
 		})!;
 		return false;
 	case status::SEGV =>
-		styled_print(91, "FAIL");
+		styled_print(91, "FAIL")?;
 		append(ctx.failures, failure {
 			test = test,
 			reason = abort_reason {
@@ -398,11 +417,11 @@ fn interpret_status(ctx: *context, test: str, status: status) bool = {
 	};
 };
 
-fn styled_print(color: int, result: fmt::formattable) void = {
+fn styled_print(color: int, result: fmt::formattable) (void | io::error) = {
 	if (colored()) {
-		fmt::printf("\x1b[{}m" "{}" "\x1b[m", color, result)!;
+		fmt::printf("\x1b[{}m" "{}" "\x1b[m", color, result)?;
 	} else {
-		fmt::print(result)!;
+		fmt::print(result)?;
 	};
 };
 
@@ -478,6 +497,6 @@ fn easter_egg(fails: []failure, tests: []test) void = {
 	};
 
 	if (-len(fails): u32 == words[0]) {
-		io::write(os::stdout, blob.1[size(u32)..])!;
+		_ = io::write(os::stdout, blob.1[size(u32)..]);
 	};
 };
