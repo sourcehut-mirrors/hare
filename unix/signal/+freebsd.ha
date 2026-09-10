@@ -249,8 +249,8 @@ export fn timedwait(
 		si_value = sys::sigval { ... },
 		...
 	};
-	let to = time::duration_to_timeval(timeout);
-	match (sys::sigwaitinfo(set: *sys::sigset, &info)) {
+	let to = time::duration_to_timespec(timeout);
+	match (sys::sigtimedwait(set: *sys::sigset, &info, &to)) {
 	case let err: sys::errno =>
 		switch (err) {
 		case sys::EINTR =>

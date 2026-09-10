@@ -243,15 +243,15 @@ export fn timedwait(
 	timeout: time::duration,
 ) (siginfo | errors::interrupted | errors::again) = {
 	let info = sys::siginfo { ... };
-	let to = time::duration_to_timeval(timeout);
-	match (sys::sigwaitinfo(set: *sys::sigset, &info)) {
+	let to = time::duration_to_timespec(timeout);
+	match (sys::sigtimedwait(set: *sys::sigset, &info, &to)) {
 	case let err: sys::errno =>
 		switch (err) {
 		case sys::EINTR =>
 			return errors::interrupted;
 		case sys::EAGAIN =>
 			return errors::again;
-		case => abort();
+		case => abort(sys::strerror(err));
 		};
 	case int =>
 		return *(&info: *siginfo);
