@@ -97,6 +97,7 @@ fn get_deps(cachedir: str, srcs: *srcset) ([]ast::ident | error) = {
 		deps = parse_deps(srcs.ha...)?;
 		io::trunc(depsfile, 0)?;
 		let out = bufio::init(depsfile, [], buf.buf);
+		defer _ = io::close(&out);
 		for (let dep .. deps) {
 			unparse::ident(&out, dep)?;
 			fmt::fprintln(&out)?;
