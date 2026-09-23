@@ -41,9 +41,7 @@ fn fd_write(fd: file, buf: const []u8) (size | error) = {
 };
 
 fn fd_close(fd: file) (void | error) = {
-	match (sys::close(fd)) {
-	case void => void;
-	case let err: sys::errno =>
+	if (let err: sys::errno = sys::close(fd)) {
 		return errors::errno(err);
 	};
 };
@@ -64,15 +62,14 @@ fn fd_seek(
 fn fd_copy(to: file, from: file) (size | error) = errors::unsupported;
 
 fn fd_lock(fd: file, flags: int) (bool | error) = {
-	match (sys::flock(fd: int, flags)) {
-	case void => return true;
-	case let e: sys::errno =>
-		if (e == sys::EWOULDBLOCK: sys::errno) {
+	if (let err: sys::errno = sys::flock(fd: int, flags)) {
+		if (err == sys::EWOULDBLOCK) {
 			return false;
 		} else {
-			return errors::errno(e);
+			return errors::errno(err);
 		};
 	};
+	return true;
 };
 
 fn fd_trunc(fd: file, ln: size) (void | error) = {

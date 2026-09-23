@@ -11,9 +11,7 @@ fn name_list(lexer: *lex::lexer) (ast::import_members | error) = {
 		append(names, want(lexer, ltok::NAME)?.1 as str)!;
 		switch (want(lexer, ltok::COMMA, ltok::RBRACE)?.0) {
 		case ltok::COMMA =>
-			match (try(lexer, ltok::RBRACE)?) {
-			case void => void;
-			case =>
+			if (try(lexer, ltok::RBRACE)? is lex::token) {
 				return names;
 			};
 		case ltok::RBRACE =>
@@ -27,9 +25,8 @@ fn name_list(lexer: *lex::lexer) (ast::import_members | error) = {
 export fn imports(lexer: *lex::lexer) ([]ast::import | error) = {
 	let imports: []ast::import = [];
 	for (true) {
-		match (try(lexer, ltok::USE)?) {
-		case void => break;
-		case => void;
+		if (try(lexer, ltok::USE)? is void) {
+			break;
 		};
 
 		append(imports, ast::import {

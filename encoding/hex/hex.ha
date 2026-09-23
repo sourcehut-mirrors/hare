@@ -35,11 +35,8 @@ export fn newencoder(out: io::handle) encoder = {
 
 fn encode_writer(s: *io::stream, in: const []u8) (size | io::error) = {
 	const s = s: *encoder;
-	match(s.err) {
-	case let err: io::error =>
-		return err;
-	case void => void;
-	};
+	s.err?;
+
 	let z = 0z;
 	for (let i = 0z; i < len(in); i += 1) {
 		const r = strconv::u8tos(in[i], strconv::base::HEX_LOWER);
@@ -128,11 +125,10 @@ export fn newdecoder(in: io::handle) decoder = {
 
 fn decode_reader(s: *io::stream, out: []u8) (size | io::EOF | io::error) = {
 	const s = s: *decoder;
-	match(s.state) {
-	case let err: (io::EOF | io::error) =>
-		return err;
-	case void => void;
+	if (let term: (io::EOF | io::error) = s.state) {
+		return term;
 	};
+
 	static let buf: [os::BUFSZ]u8 = [0...];
 	let n = len(out) * 2;
 	if (n > os::BUFSZ) {

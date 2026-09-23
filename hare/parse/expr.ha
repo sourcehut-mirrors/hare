@@ -219,8 +219,7 @@ fn append_insert_expr(
 
 	let length: nullable *ast::expr = null;
 	let variadic = false;
-	match (try(lexer, ltok::COMMA, ltok::ELLIPSIS)?) {
-	case let tok: lex::token =>
+	if (let tok: lex::token = try(lexer, ltok::COMMA, ltok::ELLIPSIS)?) {
 		switch (tok.0) {
 		case ltok::COMMA =>
 			length = alloc(expr(lexer)?)!;
@@ -228,8 +227,8 @@ fn append_insert_expr(
 			variadic = true;
 		case => abort();
 		};
-	case void => void;
 	};
+
 	want(lexer, ltok::RPAREN)?;
 
 	let expr = ast::append_expr {
@@ -327,11 +326,8 @@ fn binding_unpack(lexer: *lex::lexer) ([](str, ast::location) | error) = {
 		append(names, (name, loc_from(lexer, start)))!;
 		if (len(names) == 1) {
 			want(lexer, ltok::COMMA)?;
-		} else {
-			match (try(lexer, ltok::COMMA)?) {
-			case void => break;
-			case lex::token => void;
-			};
+		} else if (try(lexer, ltok::COMMA)? is void) {
+			break;
 		};
 	};
 	want(lexer, ltok::RPAREN)?;
@@ -381,9 +377,9 @@ fn binding(lexer: *lex::lexer, is_static: bool) (ast::expr | error) = {
 			_type = btype,
 			init = init,
 		})!;
-		match (try(lexer, ltok::COMMA)?) {
-		case void => break;
-		case lex::token => void;
+
+		if (try(lexer, ltok::COMMA)? is void) {
+			break;
 		};
 	};
 
@@ -463,24 +459,20 @@ fn call(lexer: *lex::lexer, lvalue: ast::expr) (ast::expr | error) = {
 	let variadic = false;
 
 	for (true) {
-		match (try(lexer, ltok::RPAREN)?) {
-		case lex::token => break;
-		case void => void;
+		if (try(lexer, ltok::RPAREN)? is lex::token) {
+			break;
 		};
 
 		append(args, alloc(expr(lexer)?)!)!;
 
-		match (try(lexer, ltok::ELLIPSIS)?) {
-		case lex::token =>
+		if (try(lexer, ltok::ELLIPSIS)? is lex::token) {
 			variadic = true;
 			want(lexer, ltok::RPAREN)?;
 			break;
-		case void => void;
 		};
 
-		switch (want(lexer, ltok::COMMA, ltok::RPAREN)?.0) {
-		case ltok::RPAREN => break;
-		case => void;
+		if (want(lexer, ltok::COMMA, ltok::RPAREN)?.0 == ltok::RPAREN) {
+			break;
 		};
 	};
 

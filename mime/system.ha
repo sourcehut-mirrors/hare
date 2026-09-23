@@ -53,25 +53,23 @@ fn load_systemdb() (void | fs::error | io::error | utf8::invalid | nomem) = {
 
 		const tok = strings::tokenize(exts, " ");
 		for (let ext => strings::next_token(&tok)) {
-			ext = match(strings::dup(ext)) {
+			ext = match (strings::dup(ext)) {
 			case let s: str =>
 				yield s;
 			case nomem =>
 				err = true;
 				return nomem;
 			};
-			match (append(entry.exts, ext)) {
-			case void => void;
-			case nomem =>
+
+			if (append(entry.exts, ext) is nomem) {
 				// This case is similar to the comment above.
 				free(ext);
 				err = true;
 				return nomem;
 			};
 		};
-		match (register_heap(entry)) {
-		case void => void;
-		case nomem =>
+
+		if (register_heap(entry) is nomem) {
 			err = true;
 			return nomem;
 		};

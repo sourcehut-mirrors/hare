@@ -191,11 +191,9 @@ export fn tryparse(args: []str, help: help...) (command | error | nomem) = {
 // Frees resources associated with the return value of [[parse]].
 export fn finish(cmd: *command) void = {
 	free(cmd.opts);
-	match (cmd.subcmd) {
-	case void => void;
-	case let s: (str, *command) =>
-		finish(s.1);
-		free(s.1);
+	if (let subcmd: (str, *command) = cmd.subcmd) {
+		finish(subcmd.1);
+		free(subcmd.1);
 	};
 };
 

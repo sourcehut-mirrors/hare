@@ -189,9 +189,7 @@ export fn getgroups(name: str) ([]grent | nomem) = {
 		for (const tok => strings::next_token(&tok)) {
 			if (tok == name) {
 				grent_dup(&ent)?;
-				match (append(groups, ent)) {
-				case void => void;
-				case nomem =>
+				if (append(groups, ent) is nomem) {
 					grent_finish(&ent);
 					return nomem;
 				};

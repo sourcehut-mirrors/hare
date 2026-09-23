@@ -137,11 +137,10 @@ fn get_flags(ctx: *context, t: *task) ([]str | error) = {
 			};
 		};
 	};
-	match (prefix) {
-	case let s: str =>
+
+	if (let s: str = prefix) {
 		append(flags, strings::dup("-M")!)!;
 		append(flags, fmt::asprintf("{}{}", s, path::SEP: rune)!)!;
-	case void => void;
 	};
 
 	let test = ctx.test && t.idx == ctx.top;

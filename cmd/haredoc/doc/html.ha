@@ -78,11 +78,9 @@ export fn emit_html(ctx: *context) (void | error) = {
 	};
 	fmt::fprintln(ctx.out, "</span></h2>")?;
 
-	match (ctx.readme) {
-	case void => void;
-	case let f: io::file =>
+	if (let readme: io::file = ctx.readme) {
 		fmt::fprintln(ctx.out, "<div class='readme'>")?;
-		markup_html(ctx, f, lex::location {
+		markup_html(ctx, readme, lex::location {
 			path = "README", // XXX: this is meh
 			line = 1,
 			col = 1,
@@ -237,8 +235,8 @@ fn details(ctx: *context, decl: *ast::decl) (void | error) = {
 	fmt::fprint(ctx.out, "</span><span class='heading-extra'><a href='#")?;
 	unparse::ident(ctx.out, decl_ident(decl))?;
 	fmt::fprint(ctx.out, "'>[permalink]</a>")?;
-	match (os::getenv("HAREDOC_HTML_SRC")) {
-	case let fmt: str =>
+
+	if (let fmt: str = os::getenv("HAREDOC_HTML_SRC")) {
 		const url = fmt::asprintf(fmt,
 			cwdpath(decl.loc.start.path),
 			decl.loc.start.line)!;
@@ -246,7 +244,6 @@ fn details(ctx: *context, decl: *ast::decl) (void | error) = {
 		fmt::fprint(ctx.out, " <a href='")?;
 		html_escape(ctx.out, url)?;
 		fmt::fprint(ctx.out, "'>[source]</a>")?;
-	case void => yield;
 	};
 
 	fmt::fprint(ctx.out, "</span>")?;

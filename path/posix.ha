@@ -21,10 +21,10 @@ export fn dirname(path: const str) const str = {
 	path = bytes::rtrim(path, SEP);
 	if (len(path) == 0) return sepstr;
 
-	match (bytes::rindex(path, SEP)) {
-	case void => return ".";
-	case let z: size => path = path[..z];
-	};
+	if (let z: size = bytes::rindex(path, SEP)) {
+		path = path[..z];
+	} else return ".";
+
 	path = bytes::rtrim(path, SEP);
 
 	if (len(path) == 0) return sepstr;
@@ -41,10 +41,10 @@ export fn basename(path: const str) const str = {
 	path = bytes::rtrim(path, SEP);
 	if (len(path) == 0) return sepstr;
 
-	match (bytes::rindex(path, SEP)) {
-	case void => void;
-	case let z: size => path = path[z+1..];
+	if (let z: size = bytes::rindex(path, SEP)) {
+		path = path[z+1..];
 	};
+
 	return strings::fromutf8_unsafe(path);
 };
 

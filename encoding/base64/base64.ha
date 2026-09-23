@@ -161,13 +161,11 @@ fn encode_writer(
 
 		fillobuf(s);
 
-		match (writeavail(s)) {
-		case let e: io::error =>
+		if (let err: io::error = writeavail(s)) {
 			if (i == 0) {
-				return e;
+				return err;
 			};
 			return i;
-		case void => void;
 		};
 	};
 

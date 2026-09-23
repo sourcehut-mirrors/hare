@@ -229,9 +229,7 @@ fn await_task(ctx: *context, jobs: *[]job) (size | void | error) = {
 		io::writeall(os::stderr, output)?;
 	};
 
-	match (exec::check(&status)) {
-	case void => void;
-	case let e: !exec::exit_status =>
+	if (let e: !exec::exit_status = exec::check(&status)) {
 		if (ctx.mode == output::DEFAULT) {
 			fmt::errorln()?;
 		};

@@ -64,9 +64,7 @@ export fn wordexp(s: str, flags: flag = flag::NONE) ([]str | nomem | error) = {
 		case io::EOF => break;
 		case let word: const str =>
 			let w = strings::dup(word)?;
-			match (append(words, w)) {
-			case void => void;
-			case nomem =>
+			if (append(words, w) is nomem) {
 				free(w);
 				return nomem;
 			};

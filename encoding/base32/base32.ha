@@ -129,11 +129,8 @@ fn encode_writer(
 	in: const []u8
 ) (size | io::error) = {
 	let s = s: *encoder;
-	match(s.err) {
-	case let err: io::error =>
-		return err;
-	case void => void;
-	};
+	s.err?;
+
 	let l = len(in);
 	let i = 0z;
 	for (i + 4 < l + s.avail; i += 5) {
@@ -323,11 +320,10 @@ fn decode_reader(
 	let s = s: *decoder;
 	let n = 0z;
 	let l = len(out);
-	match(s.state) {
-	case let err: (io::EOF | io ::error) =>
-		return err;
-	case void => void;
+	if (let term: (io::EOF | io::error) = s.state) {
+		return term;
 	};
+
 	if (len(s.avail) > 0) {
 		n += if (l < len(s.avail)) l else len(s.avail);
 		out[..n] = s.avail[0..n];

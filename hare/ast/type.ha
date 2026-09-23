@@ -168,10 +168,8 @@ export fn type_finish(t: nullable *_type) void = {
 				free(param.name);
 				type_finish(param._type);
 				free(param._type);
-				match(&param.default_value) {
-				case let e: *expr =>
+				if (let e: *expr = &param.default_value) {
 					expr_finish(e);
-				case void => void;
 				};
 			};
 			free(f.params);

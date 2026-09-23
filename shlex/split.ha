@@ -41,9 +41,7 @@ export fn split(in: const str) ([]str | syntaxerr | nomem) = {
 			if (!first) {
 				const item = memio::string(&s)!;
 				const item = strings::dup(item)?;
-				match (append(slice, item)) {
-				case void => void;
-				case nomem =>
+				if (append(slice, item) is nomem) {
 					free(item);
 					return nomem;
 				};
@@ -71,9 +69,7 @@ export fn split(in: const str) ([]str | syntaxerr | nomem) = {
 	if (dirty) {
 		const item = memio::string(&s)!;
 		const item = strings::dup(item)?;
-		match (append(slice, item)) {
-		case void => void;
-		case nomem =>
+		if (append(slice, item) is nomem) {
 			free(item);
 			return nomem;
 		};

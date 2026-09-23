@@ -223,11 +223,9 @@ export fn scan_bytes(
 ) ([]u8 | io::EOF | io::error) = {
 	let i = 0z;
 	for (true) {
-		match (bytes::index(scan.pending[i..], delim)) {
-		case let ix: size =>
+		if (let ix: size = bytes::index(scan.pending[i..], delim)) {
 			i += ix;
 			break;
-		case void => void;
 		};
 
 		match (scan_readahead(scan)?) {
@@ -260,12 +258,10 @@ export fn scan_rune(
 	scan: *scanner,
 ) (rune | io::EOF | io::error | utf8::invalid) = {
 	if (len(scan.pending) < 4) {
-		match (scan_readahead(scan)?) {
-		case io::EOF =>
+		if (scan_readahead(scan)? is io::EOF) {
 			if (len(scan.pending) == 0) {
 				return io::EOF;
 			};
-		case size => void;
 		};
 	};
 	const sz = utf8::utf8sz(scan.pending[0])?;

@@ -11,9 +11,8 @@ use unix;
 fn lookup(prog: str, var: str, default: str) str = {
 	static let buf = path::buffer { ... };
 	path::set(&buf)!;
-	match :m (os::getenv(var)) {
-	case let s: str =>
-		const path = path::push(&buf, s, prog)!;
+	if (let var: str = os::getenv(var)) {
+		const path = path::push(&buf, var, prog)!;
 		if (!path::abs(path)) {
 			yield :m;
 		};
@@ -26,17 +25,16 @@ fn lookup(prog: str, var: str, default: str) str = {
 				return path;
 			};
 		};
-	case void => void;
 	};
 
 	const home = os::getenv("HOME") as str;
 	const path = path::set(&buf, home, default, prog)!;
-	match (os::mkdirs(path, 0o755)) {
-	case let err: fs::error =>
+
+	if (let err: fs::error = os::mkdirs(path, 0o755)) {
 		fmt::fatalf("Error creating {}: {}",
 			path, fs::strerror(err));
-	case void => void;
 	};
+
 	return path;
 };
 
