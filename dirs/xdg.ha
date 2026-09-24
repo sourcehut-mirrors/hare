@@ -11,7 +11,7 @@ use unix;
 fn lookup(prog: str, var: str, default: str) str = {
 	static let buf = path::buffer { ... };
 	path::set(&buf)!;
-	if (let var: str = os::getenv(var)) {
+	if (let var: str = os::getenv(var)) :m {
 		const path = path::push(&buf, var, prog)!;
 		if (!path::abs(path)) {
 			yield :m;
