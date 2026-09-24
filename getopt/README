@@ -10,7 +10,8 @@ their use. Provide [[flag_help]] to add a flag which does not take a parameter,
 and [[parameter_help]] to add a flag with a required parameter. The first
 [[cmd_help]] is used as a short, one-line summary of the command's purpose, and
 any later [[cmd_help]] arguments are used to provide the name of any arguments
-which follow the options list.
+which follow the options list without any help. Alternatively, [[argument_help]]
+may be used to associate help text to the arguments.
 
 By convention, the caller should sort the list of options, first providing all
 flags, then all parameters, alpha-sorted within each group by the flag rune.
@@ -24,7 +25,7 @@ flags, then all parameters, alpha-sorted within each group by the flag rune.
 		('z', "separate lines by NUL characters"),
 		('e', "script", "execute commands from script"),
 		('f', "file", "execute commands from a file"),
-		"files...",
+		("files...", "files to operate on"),
 	);
 	defer getopt::finish(&cmd);
 

@@ -18,7 +18,7 @@ export type command = struct {
 };
 
 // Help text providing a short, one-line summary of the command; or providing
-// the name of an argument.
+// the name of an argument without help.
 export type cmd_help = str;
 
 // Help text for a flag, formatted as "-a: help text".
@@ -27,6 +27,10 @@ export type flag_help = (rune, str);
 // Help text for a parameter, formatted as "-a param: help text" where "param"
 // is the first string and "help text" is the second string.
 export type parameter_help = (rune, str, str);
+
+// Help text for an argument, formatted as "argument: help text" where
+// "argument" is the first string and "help text" is the second string.
+export type argument_help = (str, str);
 
 // Definition of a named subcommand.
 export type subcmd_help = (str, []help);
@@ -40,7 +44,7 @@ export type subcmd_help = (str, []help);
 // 		('b', "b help text"),
 // 		('c', "cflag", "c help text"),
 // 		('d', "dflag", "d help text"),
-// 		"files...",
+// 		("files...", "files help text"),
 // 	]
 //
 // will produce this help text:
@@ -53,7 +57,9 @@ export type subcmd_help = (str, []help);
 // 	-b: b help text
 // 	-c <cflag>: c help text
 // 	-d <dflag>: d help text
-export type help = (cmd_help | flag_help | parameter_help | subcmd_help);
+// 	files...: files help text
+export type help = (cmd_help | flag_help | parameter_help
+	| argument_help | subcmd_help);
 
 export type requires_arg = rune;
 export type unknown_option = rune;
@@ -244,6 +250,11 @@ fn _printusage(
 				z += fmt::fprintf(out, "\n\t")?;
 			};
 			z += fmt::fprintf(out, " [-{} <{}>]", h.0, h.1)?;
+		case let h: argument_help =>
+			if (indent) {
+				z += fmt::fprintf(out, "\n\t")?;
+			};
+			z += fmt::fprintf(out, " {} {}", h.0, h.1)?;
 		case => void;
 		};
 	};
@@ -304,6 +315,8 @@ export fn printhelp(
 			fmt::fprintfln(out, "-{}: {}", f.0, f.1)?;
 		case let p: parameter_help =>
 			fmt::fprintfln(out, "-{} <{}>: {}", p.0, p.1, p.2)?;
+		case let a: argument_help =>
+			fmt::fprintfln(out, "{}: {}", a.0, a.1)?;
 		case => void;
 		};
 	};
