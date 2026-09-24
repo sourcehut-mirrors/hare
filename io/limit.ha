@@ -49,7 +49,7 @@ fn limit_read(s: *stream, buf: []u8) (size | EOF | error) = {
 	if (len(buf) > stream.limit) {
 		buf = buf[..stream.limit];
 	};
-	match (read(stream.source, buf)) {
+	match (read(stream.source, buf)?) {
 	case EOF =>
 		return EOF;
 	case let z: size =>
