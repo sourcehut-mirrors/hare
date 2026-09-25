@@ -829,7 +829,7 @@ export fn setgroups(gids: []gid_t) (void | errno) = {
 };
 
 export fn getpriority(which: int, who: id_t) (int | errno) = {
-	return wrap_return(syscall2(SYS_setpriority,
+	return wrap_return(syscall2(SYS_getpriority,
 		which: u64, who: u64))?: int;
 };
 
