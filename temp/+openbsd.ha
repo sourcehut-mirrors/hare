@@ -3,6 +3,8 @@
 
 use crypto::random;
 use encoding::hex;
+use errors;
+use fmt;
 use fs;
 use io;
 use memio;
@@ -10,6 +12,57 @@ use os;
 use path;
 
 fn get_tmpdir() str = os::tryenv("TMPDIR", "/tmp");
+
+// Creates an unnamed temporary file. On OpenBSD, this creates a named
+// temporary file which is immediately unlinked.
+//
+// The I/O mode must be either [[io::mode::WRITE]] or [[io::mode::RDWR]].
+export fn file(iomode: io::mode, mode: fs::mode) (io::file | fs::error) = {
+	let (f, path) = named(os::cwd, get_tmpdir(), iomode, mode)?;
+	os::remove(path)?;
+	return f;
+};
+
+// Creates a named temporary file in the given directory of the given
+// filesystem. The caller is responsible for closing and removing the file when
+// they're done with it. The name is statically allocated, and will be
+// overwritten on subsequent calls.
+//
+// The I/O mode must be either [[io::mode::WRITE]] or [[io::mode::RDWR]].
+export fn named(
+	fs: *fs::fs,
+	path: str,
+	iomode: io::mode,
+	mode: fs::mode,
+) ((io::file, str) | fs::error) = {
+	assert(iomode == io::mode::WRITE || iomode == io::mode::RDWR);
+
+	let oflags = fs::flag::EXCL;
+	if (iomode == io::mode::RDWR) {
+		oflags |= fs::flag::RDWR;
+	} else {
+		oflags |= fs::flag::WRONLY;
+	};
+
+	static let pathbuf = path::buffer { ... };
+	static let namebuf: [32]u8 = [0...];
+	for (true) {
+		let id = 0u64;
+		random::buffer(&id: *[size(u64)]u8);
+
+		const name = fmt::bsprintf(namebuf, "temp.{}", id)!;
+		const path = path::set(&pathbuf, path, name)!;
+
+		match (fs::create_file(fs, path, mode, oflags)) {
+		case errors::exists =>
+			continue;
+		case let err: fs::error =>
+			return err;
+		case let f: io::file =>
+			return (f, path);
+		};
+	};
+};
 
 // Creates a temporary directory. This function only guarantees that the
 // directory will have a unique name and be placed in the system temp directory,
