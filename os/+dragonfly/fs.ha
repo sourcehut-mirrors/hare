@@ -4,6 +4,7 @@
 use fs;
 use sys;
 use types::c;
+use io;
 
 @init fn init_cwd() void = {
 	static let cwd_fs = os_filesystem { ... };
@@ -72,15 +73,18 @@ export fn access(path: str, mode: amode) (bool | fs::error) = {
 	};
 };
 
+export type fsblkcnt = sys::fsblkcnt_t;
+export type fsfilcnt = sys::fsfilcnt_t;
+
 export type vfsstat = struct {
 	bsize: u64,
 	frsize: u64,
-	blocks: fsblkcnt_t,
-	bfree: fsblkcnt_t,
-	bavail: fsblkcnt_t,
-	files: fsfilcnt_t,
-	ffree: fsfilcnt_t,
-	favail: fsfilcnt_t,
+	blocks: fsblkcnt,
+	bfree: fsblkcnt,
+	bavail: fsblkcnt,
+	files: fsfilcnt,
+	ffree: fsfilcnt,
+	favail: fsfilcnt,
 	fsid: u64,
 	flag: u64,
 	namemax: u64,
