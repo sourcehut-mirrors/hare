@@ -38,6 +38,9 @@ export const LOCAL_V4: addr4 = [127, 0, 0, 1];
 // An IPv6 address which represents the loopback address, i.e. "::1".
 export const LOCAL_V6: addr6 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
+// An IPv4 address which represents the broadcast address, i.e. "255.255.255.255".
+export const BROADCAST_V4: addr4 = [255, 255, 255, 255];
+
 // Invalid parse result.
 export type invalid = !void;
 
