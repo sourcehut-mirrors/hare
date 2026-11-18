@@ -3,6 +3,7 @@
 
 use errors;
 use io;
+use net::ip;
 use sys;
 
 // A network socket.
@@ -92,6 +93,95 @@ export fn close(sock: socket) (void | error) = {
 export fn shutdown(sock: socket, how: shut) (void | error) = {
 	match (sys::shutdown(sock, how)) {
 	case void => void;
+	case let err: sys::errno =>
+		return errors::errno(err);
+	};
+};
+
+// Joins an IPv4 multicast group. "group" must be a valid multicast address, and
+// "iface" is the local interface address which shall join the group, or
+// [[net::ip::ANY_V4]] to allow the system to choose a suitable default.
+//
+// See also [[leave_multicast_v4]].
+export fn join_multicast_v4(
+	sock: socket,
+	group: ip::addr4,
+	iface: ip::addr4,
+) (void | error) = {
+	const group = ip::to_native(group, 0).in.sin_addr;
+	const iface = ip::to_native(iface, 0).in.sin_addr;
+	return do_mreq(sock, sys::IPPROTO_IP, sys::IP_ADD_MEMBERSHIP,
+		&sys::ip_mreq {
+			imr_multiaddr = group,
+			imr_interface = iface,
+		}, size(sys::ip_mreq));
+};
+
+// Joins an IPv6 multicast group. "group" must be a valid multicast address, and
+// "iface" is the local interface index which shall join the group, or 0 to
+// allow the system to choose a suitable default.
+//
+// See also [[leave_multicast_v6]].
+export fn join_multicast_v6(
+	sock: socket,
+	group: ip::addr6,
+	iface: uint,
+) (void | error) = {
+	const group = ip::to_native(group, 0).in6.sin6_addr;
+	return do_mreq(sock, sys::IPPROTO_IPV6, sys::IPV6_JOIN_GROUP,
+		&sys::ipv6_mreq {
+			ipv6mr_multiaddr = group,
+			ipv6mr_interface = iface,
+		}, size(sys::ipv6_mreq));
+};
+
+// Leaves an IPv4 multicast group. "group" must be a valid multicast address,
+// and "iface" is the local interface address which shall join the group, or
+// [[net::ip::ANY_V4]] to allow the system to choose a suitable default.
+//
+// See also [[join_multicast_v4]].
+export fn leave_multicast_v4(
+	sock: socket,
+	group: ip::addr4,
+	iface: ip::addr4,
+) (void | error) = {
+	const group = ip::to_native(group, 0).in.sin_addr;
+	const iface = ip::to_native(iface, 0).in.sin_addr;
+	return do_mreq(sock, sys::IPPROTO_IP, sys::IP_DROP_MEMBERSHIP,
+		&sys::ip_mreq {
+			imr_multiaddr = group,
+			imr_interface = iface,
+		}, size(sys::ip_mreq));
+};
+
+// Leaves an IPv6 multicast group. "group" must be a valid multicast address,
+// and "iface" is the local interface index which shall join the group, or 0 to
+// allow the system to choose a suitable default.
+//
+// See also [[join_multicast_v6]].
+export fn leave_multicast_v6(
+	sock: socket,
+	group: ip::addr6,
+	iface: uint,
+) (void | error) = {
+	const group = ip::to_native(group, 0).in6.sin6_addr;
+	return do_mreq(sock, sys::IPPROTO_IPV6, sys::IPV6_LEAVE_GROUP,
+		&sys::ipv6_mreq {
+			ipv6mr_multiaddr = group,
+			ipv6mr_interface = iface,
+		}, size(sys::ipv6_mreq));
+};
+
+fn do_mreq(
+	sock: socket,
+	proto: int,
+	optname: int,
+	optval: *opaque,
+	optlen: size,
+) (void | error) = {
+	match (sys::setsockopt(sock, proto, optname, optval, optlen: u32)) {
+	case int =>
+		return;
 	case let err: sys::errno =>
 		return errors::errno(err);
 	};
