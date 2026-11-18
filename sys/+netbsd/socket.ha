@@ -76,6 +76,22 @@ export type cmsg = struct {
 	cmsg_data: [*]u8,
 };
 
+export type ip_mreq = struct {
+	imr_multiaddr: in_addr,
+	imr_interface: in_addr,
+};
+
+export def IP_ADD_MEMBERSHIP = 12;
+export def IP_DROP_MEMBERSHIP = 13;
+
+export type ipv6_mreq = struct {
+	ipv6mr_multiaddr: in6_addr,
+	ipv6mr_interface: uint,
+};
+
+export def IPV6_JOIN_GROUP = 12;
+export def IPV6_LEAVE_GROUP = 13;
+
 export def AF_UNSPEC: sa_family_t = 0;
 export def AF_UNIX: sa_family_t = 1;
 export def AF_LOCAL: sa_family_t = AF_UNIX;

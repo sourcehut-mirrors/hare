@@ -73,6 +73,22 @@ export type cmsg = struct {
 	cmsg_data: [*]u8,
 };
 
+export type ip_mreq = struct {
+	imr_multiaddr: in_addr,
+	imr_interface: in_addr,
+};
+
+export def IP_ADD_MEMBERSHIP = 12;
+export def IP_DROP_MEMBERSHIP = 13;
+
+export type ipv6_mreq = struct {
+	ipv6mr_multiaddr: in6_addr,
+	ipv6mr_interface: uint,
+};
+
+export def IPV6_JOIN_GROUP = 12;
+export def IPV6_LEAVE_GROUP = 13;
+
 export def SOCK_STREAM: int = 1;
 export def SOCK_DGRAM: int = 2;
 export def SOCK_RAW: int = 3;
@@ -119,6 +135,42 @@ export def AF_ENCAP: sa_family_t = 28;
 export def AF_SIP: sa_family_t = 29;
 export def AF_KEY: sa_family_t = 30;
 export def pseudo_AF_HDRCMPLT: sa_family_t = 31;
+
+export def IPPROTO_IP = 0;
+export def IPPROTO_HOPOPTS = IPPROTO_IP;
+export def IPPROTO_ICMP = 1;
+export def IPPROTO_IGMP = 2;
+export def IPPROTO_GGP = 3;
+export def IPPROTO_IPIP = 4;
+export def IPPROTO_IPV4 = IPPROTO_IPIP;
+export def IPPROTO_TCP = 6;
+export def IPPROTO_EGP = 8;
+export def IPPROTO_PUP = 12;
+export def IPPROTO_UDP = 17;
+export def IPPROTO_IDP = 22;
+export def IPPROTO_TP = 29;
+export def IPPROTO_IPV6 = 41;
+export def IPPROTO_ROUTING = 43;
+export def IPPROTO_FRAGMENT = 44;
+export def IPPROTO_RSVP = 46;
+export def IPPROTO_GRE = 47;
+export def IPPROTO_ESP = 50;
+export def IPPROTO_AH = 51;
+export def IPPROTO_MOBILE = 55;
+export def IPPROTO_ICMPV6 = 58;
+export def IPPROTO_NONE = 59;
+export def IPPROTO_DSTOPTS = 60;
+export def IPPROTO_EON = 80;
+export def IPPROTO_ETHERIP = 97;
+export def IPPROTO_ENCAP = 98;
+export def IPPROTO_PIM = 103;
+export def IPPROTO_IPCOMP = 108;
+export def IPPROTO_CARP = 112;
+export def IPPROTO_SCTP = 132;
+export def IPPROTO_UDPLITE = 136;
+export def IPPROTO_MPLS = 137;
+export def IPPROTO_PFSYNC = 240;
+export def IPPROTO_RAW = 255;
 
 export def MSG_OOB: int = 0x1;
 export def MSG_PEEK: int = 0x2;

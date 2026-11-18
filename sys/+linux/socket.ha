@@ -98,6 +98,22 @@ export type sock_fprog = struct {
 	__filter: *[*]sock_filter,
 };
 
+export type ip_mreq = struct {
+	imr_multiaddr: in_addr,
+	imr_interface: in_addr,
+};
+
+export def IP_ADD_MEMBERSHIP = 35;
+export def IP_DROP_MEMBERSHIP = 36;
+
+export type ipv6_mreq = struct {
+	ipv6mr_multiaddr: in6_addr,
+	ipv6mr_interface: uint,
+};
+
+export def IPV6_JOIN_GROUP = 20;
+export def IPV6_LEAVE_GROUP = 21;
+
 // domain for socket(2)
 
 // Unspecified
