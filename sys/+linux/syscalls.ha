@@ -88,24 +88,15 @@ export fn openat2(
 	how_sz: size,
 ) (int | errno) = {
 	let path = kpath(path)?;
-	match (wrap_return(syscall4(SYS_openat2,
+	if (how.resolve == 0) {
+		return openat(dirfd, path, how.flags: int, how.mode: uint);
+	};
+
+	return wrap_return(syscall4(SYS_openat2,
 		dirfd: u64,
 		path: uintptr: u64,
 		how: uintptr: u64,
-		how_sz: u64))) {
-	case let i: u64 =>
-		return i: int;
-	case let err: errno =>
-		if (err != ENOSYS) {
-			return err;
-		};
-	};
-
-	// Fallback if the requested behavior is compatible with openat(2)
-	if (how.resolve != 0) {
-		return ENOSYS;
-	};
-	return openat(dirfd, path, how.flags: int, how.mode: uint);
+		how_sz: u64))?: int;
 };
 
 export fn readlinkat(
@@ -448,18 +439,16 @@ export fn faccessat(
 	flags: int,
 ) (bool | errno) = {
 	let path = kpath(path)?;
+	if (flags == 0) {
+		return faccessat1(dirfd, path, mode);
+	};
+
 	match (wrap_return(syscall4(SYS_faccessat2, dirfd: u64,
-			path: uintptr: u64, mode: u64, flags: u64))) {
+		path: uintptr: u64, mode: u64, flags: u64))) {
 	case let err: errno =>
 		switch (err) {
 		case EACCES =>
 			return false;
-		case ENOSYS =>
-			if (flags == 0) {
-				return faccessat1(dirfd, path, mode);
-			} else {
-				return err;
-			};
 		case =>
 			return err;
 		};
