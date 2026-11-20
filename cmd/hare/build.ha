@@ -151,6 +151,9 @@ fn build(name: str, cmd: *getopt::command) (void | error) = {
 		merge_tags(&ctx.ctx.tags, "+libc")?;
 		ctx.cmds[build::stage::BIN] = os::tryenv("CC", arch.cc_cmd);
 	};
+	if (ctx.platform.extra_tags != "") {
+		merge_tags(&ctx.ctx.tags, ctx.platform.extra_tags)?;
+	};
 
 	for (let i = 1z; i < len(ctx.cmds); i += 1) {
 		const cmd_path = match (exec::lookup(ctx.cmds[i])) {

@@ -17,3 +17,10 @@ for platform in linux freebsd dragonfly openbsd netbsd; do
 			>makefiles/$platform.$arch.mk
 	done
 done
+
+# Android is a special snowflake
+for arch in x86_64 aarch64 riscv64; do
+	echo makefiles/android.$arch.mk
+	"${BINOUT:-.bin}"/genbootstrap linux android $arch \
+		>makefiles/android.$arch.mk
+done

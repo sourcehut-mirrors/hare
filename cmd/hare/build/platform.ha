@@ -9,12 +9,15 @@ export type platform = struct {
 	debug_supported: bool,
 	// Additional default flags for this platform.
 	default_flags: [NSTAGES][]str,
+	// Extra build tags for this platform
+	extra_tags: str,
 };
 
 const platforms: [_]platform = [
 	platform {
 		name = "Linux",
 		debug_supported = true,
+		extra_tags = extra_linux_tags,
 		...
 	},
 	platform {
@@ -49,6 +52,7 @@ const platforms: [_]platform = [
 			// creating a custom segment.
 			["-z", "nobtcfi"],
 		],
+		...
 	},
 ];
 
