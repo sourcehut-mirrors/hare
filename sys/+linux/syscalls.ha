@@ -442,6 +442,17 @@ export fn faccessat(
 	if (flags == 0) {
 		return faccessat1(dirfd, path, mode);
 	};
+	if (IS_ANDROID && flags == AT_EMPTY_PATH) {
+		// Crappy fallback path for Android, which filters out
+		// faccessat2 and will SIGSYS if we even try it
+		const proc_self_fd = "/proc/self/fd/";
+		let buf: [len("/proc/self/fd/") + U64_BUFSZ]u8 = [0...];
+		buf[..len(proc_self_fd)] = (&proc_self_fd: *[]u8)[..];
+		const n = len(u64tos(buf[len(proc_self_fd)..], dirfd: u64));
+		buf[len(proc_self_fd)+n] = 0;
+		let path: *u8 = &buf[0];
+		return faccessat1(AT_FDCWD, path, mode);
+	};
 
 	match (wrap_return(syscall4(SYS_faccessat2, dirfd: u64,
 		path: uintptr: u64, mode: u64, flags: u64))) {

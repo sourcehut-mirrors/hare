@@ -9,7 +9,7 @@ $(HARECACHE)/format_elf.ssa: $(format_elf_ha)
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/format_elf.td.tmp -N format::elf $(format_elf_ha)
 
-sys_ha = sys/+linux/+riscv64.ha sys/+linux/errno.ha sys/+linux/prctl.ha sys/+linux/signal.ha sys/+linux/socket.ha sys/+linux/stat.ha sys/+linux/syscallno+riscv64.ha sys/+linux/syscalls.ha sys/+linux/types.ha sys/u64tos.ha sys/unknown_errno.ha
+sys_ha = sys/+linux/+riscv64.ha sys/+linux/errno.ha sys/+linux/hack-android.ha sys/+linux/prctl.ha sys/+linux/signal.ha sys/+linux/socket.ha sys/+linux/stat.ha sys/+linux/syscallno+riscv64.ha sys/+linux/syscalls.ha sys/+linux/types.ha sys/u64tos.ha sys/unknown_errno.ha
 $(HARECACHE)/sys.ssa: $(sys_ha)
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"

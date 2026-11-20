@@ -66,6 +66,7 @@ fn open(path: str) (platform_cmd | error) = {
 	case let err: sys::errno =>
 		return errors::errno(err);
 	};
+
 	let success = false;
 	defer if (!success) sys::close(fd)!;
 	match (sys::faccessat(fd, "", sys::X_OK, sys::AT_EMPTY_PATH)) {
