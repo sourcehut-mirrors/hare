@@ -20,13 +20,13 @@ $(HARECACHE)/sys.o: $(sys_s)
 	@printf 'AS\t%s\n' "$@"
 	@$(AS) $(ASFLAGS) -o $@ $(sys_s)
 
-rt_ha = rt/+linux/env.ha rt/+linux/platform_abort.ha rt/+linux/platformstart-libc.ha rt/+linux/segmalloc.ha rt/abort.ha rt/ensure.ha rt/heap-libc.ha rt/initfini.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/start.ha rt/strcmp.ha rt/u64tos.ha
+rt_ha = rt/abort.ha rt/abort_posix.ha rt/alloc_mmap.ha rt/ensure.ha rt/entry.ha rt/env.ha rt/exit.ha rt/globals.ha rt/heap.ha rt/initfini.ha rt/main.ha rt/malloc.ha rt/memcpy.ha rt/memfunc_ptr.ha rt/memmove.ha rt/memset.ha rt/start_sysv.ha rt/strcmp.ha rt/u64tos.ha
 $(HARECACHE)/rt.ssa: $(rt_ha) $(HARECACHE)/format_elf.td $(HARECACHE)/sys.td
 	@mkdir -p -- "$(HARECACHE)"
 	@printf 'HAREC\t%s\n' "$@"
 	@$(TDENV) $(HAREC) $(HARECFLAGS) -o $@ -t $(HARECACHE)/rt.td.tmp -N rt $(rt_ha)
 
-rt_s = $(HARECACHE)/rt.s rt/+linux/restore+riscv64.s rt/+linux/start+riscv64-libc.s
+rt_s = $(HARECACHE)/rt.s rt/linux/riscv64/restore.s rt/linux/riscv64/start.s
 $(HARECACHE)/rt.o: $(rt_s)
 	@printf 'AS\t%s\n' "$@"
 	@$(AS) $(ASFLAGS) -o $@ $(rt_s)

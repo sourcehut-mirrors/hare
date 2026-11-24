@@ -12,7 +12,8 @@ fn u64tos(buf: []u8, u: u64) str = {
 		static append(sl, (u % 10): u8 + '0')!;
 		u /= 10;
 	};
-	for (let s = 0z, e = len(sl) - 1; s < e) {
+	let s = 0z;
+	for (let e = len(sl) - 1; s < e) {
 		let tmp = sl[s];
 		sl[s] = sl[e];
 		sl[e] = tmp;

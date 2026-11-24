@@ -23,7 +23,11 @@ export fn main() void = {
 	};
 	let mods: []module::module = [];
 	defer module::free_slice(mods);
-	module::gather(&ctx, &mods, ["rt"])!;
+	match (module::gather(&ctx, &mods, ["rt"])) {
+	case size => void;
+	case let err: module::error =>
+		fmt::fatal("rt:", module::strerror(err));
+	};
 	module::gather(&ctx, &mods, ["cmd", "hare"])!;
 
 	let ids: [](str, str) = [];

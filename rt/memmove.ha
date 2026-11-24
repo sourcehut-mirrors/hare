@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 // (c) Hare authors <https://harelang.org>
 
-def SZSZ = size(size);
-def MODSZ = size(size) - 1;
+const SZSZ = size(size);
+const MODSZ = size(size) - 1;
 
 export fn memmove(dest: *opaque, src: *const opaque, n: size) void = {
 	// implementation adapted from musl libc

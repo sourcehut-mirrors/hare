@@ -40,3 +40,4 @@ const reasons: [_]str = [
 export fn abort_fixed(path: *str, line: u64, col: u64, i: u64) void = {
 	handle_abort(path, line, col, reasons[i]);
 };
+
