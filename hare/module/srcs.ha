@@ -419,8 +419,9 @@ export fn parse_tags(s: str) ([]tag | error) = {
 	};
 	for (start < len(bs)) {
 		const end = start + 1 + tagindex(bs[start+1..]);
+		let t = strings::fromutf8_unsafe(bs[start+1..end]);
 		append(tags, tag {
-			name = strings::fromutf8_unsafe(bs[start+1..end]),
+			name = strings::trim(t),
 			include = bs[start] == '+',
 		})!;
 		start = end;
